@@ -2,11 +2,13 @@
 
 #include <Windows.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define NB_CHARAC 100
 
 typedef struct{ 
-  int forme, rotation, item;
+  char forme, rotation, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
 }casePlateau; // definition d'une structure qui stocke toutes les infos d'une tuile
 
 //déclaration de tous les prototypes
@@ -14,6 +16,8 @@ void rotationTuile(int tuile[9], int nbTour);
 void copyTab(int tab1[], int tab2[], int size);
 void printPlateau(casePlateau plateau[7][7]);
 void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne);
+void genererPlateau();
+int getRandomInt(int min, int max);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","  ","  ",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -23,8 +27,8 @@ char caractere[NB_CHARAC][10] = {"  ","▓▓","  ","  ",//3 // espace vide // m
                                  "🎁","🎨","🧶","🍩",//19
                                  "🍗","👑","💎","🏀",//23 // de 12 à 23 pour les tuiles fixes
                                  "🎯","🥇","🧩","🧸",//27
-                                 "🪅","🍕","🎵","🎸",//31
-                                 "🪛","🔨","🪨","🪵"};//35 // de 24 à 35 pour les tuiles mobiles
+                                 "🍬","🍕","🎵","🎸",//31
+                                 "💊","🔨","🌻","🍖"};//35 // de 24 à 35 pour les tuiles mobiles
 
 //déclaration des tuiles et de leur composition
 int tuileVide[9] = {0,0,0,
@@ -54,6 +58,7 @@ casePlateau plateau[7][7] = {1,2,6,   0,0,0,  2,3,12,  0,0,0,   2,3,13,  0,0,0, 
 int main(){
   SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
 
+  genererPlateau();
   printPlateau(plateau);
 
   return 0;
@@ -131,4 +136,67 @@ void copyTab(int tab1[], int tab2[], int size){
   {
     tab2[i] = tab1[i];
   }
+}
+
+void genererPlateau(){
+  srand(time(NULL));
+  char caseARemplir[7][7] = {0,1,0,1,0,1,0,
+                             1,1,1,1,1,1,1,
+                             0,1,0,1,0,1,0,
+                             1,1,1,1,1,1,1,
+                             0,1,0,1,0,1,0,
+                             1,1,1,1,1,1,1,
+                             0,1,0,1,0,1,0}; // défini les cases vides qu'il faut donc remplacer par une tuile aléatoire
+
+  char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
+
+  int indice = 24;
+  for(int i = 0; i< 7; i++){
+    for(int j = 0; j< 7; j++){
+      if(caseARemplir[i][j]){
+        while(1){
+          int rand = getRandomInt(0, 3);
+          //printf("%d", rand);
+          if(nbTuileRestant[rand] > 0){ // ne marche pas si la valeur est a 0
+            switch (rand){
+              case 0:
+                plateau[i][j].forme = 2; // tuile T
+                plateau[i][j].item = indice; // on donne un item
+                plateau[i][j].rotation = getRandomInt(0, 3);
+                nbTuileRestant[0] -= 1;
+                indice++;
+                break;
+              case 1:
+                plateau[i][j].forme = 1; // tuile L
+                plateau[i][j].item = indice; // on donne un item
+                plateau[i][j].rotation = getRandomInt(0, 3);
+                nbTuileRestant[1] -= 1;
+                indice++;
+                break;
+              case 2:
+                plateau[i][j].forme = 1; // tuile L
+                plateau[i][j].item = 0; // on ne donne pas d'item
+                plateau[i][j].rotation = getRandomInt(0, 3);
+                nbTuileRestant[2] -= 1;
+                break;
+              case 3:
+                plateau[i][j].forme = 3; // tuile I
+                plateau[i][j].item = 0; // on ne donne pas d'item
+                plateau[i][j].rotation = getRandomInt(0, 3);
+                nbTuileRestant[3] -= 1;
+                break;
+            }
+          break;
+          }
+        }
+        
+      }
+    }
+  }
+}
+
+int getRandomInt(int min, int max){
+  
+  int i = (rand() % (max-min+1)) + min;
+  return i;
 }
