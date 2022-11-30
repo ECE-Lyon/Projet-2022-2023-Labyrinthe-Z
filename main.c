@@ -62,4 +62,6 @@ void rotationTuile(int tuile[3][3]){
       mem = mem2;
     }
   }
+
+  
 }
