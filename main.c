@@ -66,7 +66,16 @@ void rotationTuile(int tuile[3][3]){
 
 void printPlateau(int plateau[12][12]){
   for(int i = 0; i<12; i++){
-    for(int j = 0; j<12; j++)
-    if(plateau[i][j])
+    for(int j = 0; j<12; j++){
+      for(int k = 0; k < 3; k++){
+        switch(plateau[i][j]){
+          case 0:
+            for(int l = 0; l < 3; l++){
+              printf("%s", caractere[tuileT[i][j]]);
+            }
+          break;
+        }
+      }
+    }
   }
 }
