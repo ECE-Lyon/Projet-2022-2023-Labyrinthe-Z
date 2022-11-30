@@ -6,6 +6,7 @@
 #define NB_CHARAC 10
 
 void rotationTuile(int tuile[3][3]);
+void copyTab(int tab1[][], int tab2[][], size_t sx, size_t sy);
 
 char caractere[NB_CHARAC][10] = {"▓▓","  ","🏂","⛄","ꎊ","é",}; //liste de tous les caractères dont on a besoin
 
@@ -29,8 +30,6 @@ int main(){
     printf("\n");
   }
 
-  int tuileActuelle[3][3];
-
   int len = sizeof(tuileT)/sizeof(tuileT[0]);
   //printf("%d ", len);
 
@@ -39,6 +38,17 @@ int main(){
   for(int i = 0; i <3; i++){
     for(int j = 0; j<3; j++){
       printf("%s", caractere[tuileT[i][j]]);
+    }
+    printf("\n");
+  }
+
+  int tuileActuelle[3][3] = {0};
+
+  copyTab(tuileT, tuileActuelle, 3, 3);
+
+  for(int i = 0; i <3; i++){
+    for(int j = 0; j<3; j++){
+      printf("%s", caractere[tuileActuelle[i][j]]);
     }
     printf("\n");
   }
@@ -83,4 +93,8 @@ void printPlateau(int plateau[12][12]){
       }
     }
   }
+}
+
+void copyTab(int tab1[][], int tab2[][], size_t sx, size_t sy){
+  memcpy(tab1,tab2,sizeof(tab1[0])*sx*sy);
 }
