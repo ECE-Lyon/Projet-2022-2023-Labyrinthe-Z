@@ -12,8 +12,6 @@ void rotationTuile(int tuile[3][3]);
 int main(){
   SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
 
-  printf("git");
-
   int plateau[12][12] = {};
 
   int tuileL[3][3] = {0,1,0,
