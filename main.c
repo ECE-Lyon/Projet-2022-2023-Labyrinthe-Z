@@ -9,18 +9,18 @@ char caractere[NB_CHARAC][10] = {"▓▓","  ","🏂","⛄","ꎊ","é",}; //list
 
 void rotationTuile(int tuile[3][3]);
 
+const int tuileL[3][3] = {0,1,0,
+                          1,1,0,
+                          0,0,0};
+
+const int tuileT[3][3] = {0,1,0,
+                          1,3,0,
+                          0,1,0};
+
 int main(){
   SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
 
   int plateau[12][12] = {};
-
-  int tuileL[3][3] = {0,1,0,
-                      1,1,0,
-                      0,0,0};
-
-  int tuileT[3][3] = {0,1,0,
-                      1,3,0,
-                      0,1,0};
 
   for(int i = 0; i <3; i++){
     for(int j = 0; j<3; j++){
@@ -62,4 +62,11 @@ void rotationTuile(int tuile[3][3]){
       mem = mem2;
     }
   }  
+}
+
+void printPlateau(int plateau[12][12]){
+  for(int i = 0; i<12; i++){
+    for(int j = 0; j<12; j++)
+    if(plateau[i][j])
+  }
 }
