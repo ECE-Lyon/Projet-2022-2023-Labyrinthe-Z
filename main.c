@@ -282,21 +282,21 @@ int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = ba
 
 void getTuileFormated(int tuileResultat[9], int posX, int posY){
   int formeTuile = plateau[posY][posX].forme;
-  switch (formeTuile)
+  switch (formeTuile) // selection de la bonne case depuis le modèle puis rotation
   {
-  case 0:
-    copyTab(tuileVide, tuileResultat, 9);
+  case 0: // case Vide
+    copyTab(tuileVide, tuileResultat, 9); 
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
     break;
-  case 1:
+  case 1: // case L
     copyTab(tuileL, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
     break;
-  case 2:
+  case 2: // case T
     copyTab(tuileT, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
     break;
-  case 3:
+  case 3: // case I
     copyTab(tuileI, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
     break;   
