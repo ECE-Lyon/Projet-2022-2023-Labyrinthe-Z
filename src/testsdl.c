@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     SDL_Window *window;
     SDL_Renderer *rendu;
 
-    if( SDL_Init(SDL_INIT_VIDEO) != 0 )
+    if(!SDL_Init(SDL_INIT_VIDEO))
         SDL_ExitError("Erreur initialisation video");
 
     if(SDL_CreateWindowAndRenderer(1920,1080, SDL_RENDERER_ACCELERATED, &window, &rendu) != 0) // CREE UNE FENETRE ET UN RENDU

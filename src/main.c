@@ -37,7 +37,11 @@ char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace v
                                  "🍗","👑","💎","🏀",//23 // de 12 à 23 pour les tuiles fixes
                                  "🎯","🥇","🧩","🧸",//27
                                  "🍬","🍕","🎵","🎸",//31
-                                 "💊","🔨","🌻","🍖"};//35 // de 24 à 35 pour les tuiles mobiles
+                                 "💊","🔨","🌻","🍖",//35 // de 24 à 35 pour les tuiles mobiles
+                                 "↓↓","↑↑","⇉ ","⇇ ",   //39
+                                 "1.","2.","3.","4.",   //43
+                                 "5.","6.","7.","8.",   //47
+                                 "9.","10. ","11. ","12. "};  //51
 
 //déclaration des tuiles et de leur composition
 int tuileVide[9] = {0,0,0,
@@ -104,13 +108,46 @@ void rotationTuile(int tuileActuelle[9], int nbTour){
 }
 
 void printPlateau(casePlateau plateau[7][7]){
+  printf("%s%s%s%s",caractere[0],caractere[0],caractere[0],caractere[0]);
+  for(int i = 0; i < 7; i++){
+    if(i == 1 || i == 3 || i == 5){
+      printf("%s%s%s%s",caractere[0], caractere[40+i/2], caractere[0], caractere[0]);
+    }
+    else{
+      printf("%s%s%s%s",caractere[0], caractere[0], caractere[0],caractere[0]);
+    }
+  }
+  printf("\n");
+  printf("%s%s%s%s",caractere[0],caractere[0],caractere[0],caractere[0]);
+  for(int i = 0; i < 7; i++){
+    if(i == 1 || i == 3 || i == 5){
+      printf("%s%s%s%s",caractere[0], caractere[36], caractere[0], caractere[0]);
+    }
+    else{
+      printf("%s%s%s%s",caractere[0], caractere[0], caractere[0],caractere[0]);
+    }
+  }
+  printf("\n");
+  printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
   for(int i = 0; i<7*4+1; i++){ // affiche le contour de la première ligne
     printf("%s", caractere[2]);
   }
   printf("\n");
   for(int i = 0; i<7; i++){ // affiche les 7 lignes de tuiles
     for(int k = 0; k < 9; k+=3){ // permet d'afficher les lignes 2 et 3 en prenant l'indice de la tuile +3k
-    printf("%s", caractere[2]);
+    if(i == 1 || i == 3 || i == 5){
+        if(k==3){
+          int nombre = (i == 1) ? 11 : (i == 3) ? 10 : (i == 5) ? 9 : 0;
+          printf("%s%s",caractere[40+nombre],caractere[38]);
+        }
+        else{
+          printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
+        }
+      }
+      else {
+        printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
+      }
+    printf("%s",caractere[2]);
       for(int j = 0; j<7; j++){ // parcourt les 7 tuiles de la ligne
         switch(plateau[i][j].forme){ // regarde quelle tuile prendre parmis les 4
           case 0: // tuile Vide
@@ -127,13 +164,48 @@ void printPlateau(casePlateau plateau[7][7]){
             break;
         }
       }
+      if(i == 1 || i == 3 || i == 5){
+        if(k==3){
+          int nombre = (i == 1) ? 3 : (i == 3) ? 4 : (i == 5) ? 5 : 0;
+          printf("%s%s",caractere[39],caractere[40+nombre]);
+        }
+        else{
+          printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
+        }
+      }
+      else {
+        printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
+      }
       printf("\n");
     }
+    printf("%s%s%s",caractere[0],caractere[0],caractere[0]);
     for(int i = 0; i<7*4+1; i++){ // affiche un séparateur entre chaque ligne
       printf("%s", caractere[2]);
     }
     printf("\n");
   }
+  printf("%s%s%s%s",caractere[0],caractere[0],caractere[0],caractere[0]);
+  for(int i = 0; i < 7; i++){
+    if(i == 1 || i == 3 || i == 5){
+      printf("%s%s%s%s",caractere[0], caractere[37], caractere[0], caractere[0]);
+    }
+    else{
+      printf("%s%s%s%s",caractere[0], caractere[0], caractere[0],caractere[0]);
+    }
+  }
+  printf("\n");
+  printf("%s%s%s%s",caractere[0],caractere[0],caractere[0],caractere[0]);
+  int nombre;
+  for(int i = 0; i < 7; i++){
+    if(i == 1 || i == 3 || i == 5){
+      nombre = (i == 1) ? 8 : (i == 3) ? 7 : (i == 5) ? 6 : 0; 
+      printf("%s%s%s%s",caractere[0], caractere[40+nombre], caractere[0], caractere[0]);
+    }
+    else{
+      printf("%s%s%s%s",caractere[0], caractere[0], caractere[0],caractere[0]);
+    }
+  }
+  printf("\n");
 }
 
 void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne, int posX, int posY){
@@ -394,5 +466,4 @@ void pushTuile(int emplacement){
     }
     plateau[pos][0] = bufferTuile; // tuile restante précédente
   }
-  
 }
