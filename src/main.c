@@ -26,6 +26,7 @@ void clrScreen(void);
 void delay(int tps_sec);
 void getTuileFormated(int tuileResultat[9], int posX, int posY);
 int checkDeplacement(int joueur, int direction);
+void pushTuile(int emplacement);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -67,11 +68,22 @@ casePlateau tuileRestante;
 
 point2D posPlayer[4] = {0,0,  0,6,  6,0,  6,6}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
-int main(){
-  SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
+int main(int argc, char **argv){
+  SetConsoleOutputCP(65001); // format de la console pour affichser l'unicode
 
   genererPlateau();
   printPlateau(plateau);
+
+  // --------------------------------------------------------------------------------------------------- 
+
+    SDL_version nb;
+    SDL_VERSION(&nb);
+
+    printf("Bienvenue sur la version SDL %d.%d.%d !\n", nb.major,nb.minor,nb.patch);
+
+  // gcc src/main.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
+
+  // ---------------------------------------------------------------------------------------------------
 
   return 0;
 }
@@ -178,8 +190,11 @@ void genererPlateau(){
   char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
   int indice = 24;
-  for(int i = 0; i< 7; i++){
-    for(int j = 0; j< 7; j++){
+  int i, j;
+  for(int k = 0; k < 50; k++){
+    i = k % 7;
+    j = k / 7;
+    if(k < 49){
       if(caseARemplir[i][j]){ // regarde dans le tableau si la tuile doit être générée
         while(1){
           int rand = getRandomInt(0, 3);
@@ -215,6 +230,42 @@ void genererPlateau(){
             }
           break; // break le while(1)
           }
+        }
+      }
+    }
+    else{
+    while(1){
+        int rand = getRandomInt(0, 3);
+        if(nbTuileRestant[rand]){ // ne marche pas si la valeur est a 0
+          switch (rand){
+            case 0:
+              tuileRestante.forme = 2; // tuile T
+              tuileRestante.item = indice; // on donne un item
+              tuileRestante.rotation = getRandomInt(0, 3);
+              nbTuileRestant[0] -= 1;
+              indice++;
+              break;
+            case 1:
+              tuileRestante.forme = 1; // tuile L
+              tuileRestante.item = indice; // on donne un item
+              tuileRestante.rotation = getRandomInt(0, 3);
+              nbTuileRestant[1] -= 1;
+              indice++;
+              break;
+            case 2:
+              tuileRestante.forme = 1; // tuile L
+              tuileRestante.item = 0; // on ne donne pas d'item
+              tuileRestante.rotation = getRandomInt(0, 3);
+              nbTuileRestant[2] -= 1;
+              break;
+            case 3:
+              tuileRestante.forme = 3; // tuile I
+              tuileRestante.item = 0; // on ne donne pas d'item
+              tuileRestante.rotation = getRandomInt(0, 3);
+              nbTuileRestant[3] -= 1;
+              break;
+          }
+        break; // break le while(1)
         }
       }
     }
@@ -302,4 +353,57 @@ void getTuileFormated(int tuileResultat[9], int posX, int posY){
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
     break;   
   }
+}
+
+/*pousse les tuile
+       0   1   2
+       ↓   ↓   ↓
+    |_|_|_|_|_|_|_|
+11 →|_|_|_|_|_|_|_|← 3
+    |_|_|_|_|_|_|_|
+10 →|_|_|_|_|_|_|_|← 4
+    |_|_|_|_|_|_|_|
+ 9 →|_|_|_|_|_|_|_|← 5
+    |_|_|_|_|_|_|_|
+       ↑   ↑   ↑
+       8   7   6
+*/
+
+void pushTuile(int emplacement){
+  casePlateau bufferTuile = tuileRestante;
+  if(emplacement < 3){
+    int pos = (emplacement % 3)*2 + 1;
+    tuileRestante = plateau[6][pos]; // définition de la nouvelle tuile restante
+    for(int i = 6; i > 0; i-=1){
+      plateau[i][pos] = plateau[i-1][pos];
+    }
+    plateau[0][pos] = bufferTuile; // tuile restante précédente
+  }
+  else if(emplacement >= 3 && emplacement < 6){
+    int pos = (emplacement % 3)*2 + 1;
+    tuileRestante = plateau[pos][0]; // définition de la nouvelle tuile restante
+    for(int i = 0; i < 6; i+=1){
+      plateau[pos][i] = plateau[pos][i+1];
+    }
+    plateau[pos][6] = bufferTuile; // tuile restante précédente
+  }
+  else if(emplacement >= 6 && emplacement < 9){
+    int pos = (emplacement % 3)*2 + 1;
+    pos = (pos == 1) ? 5 : (pos == 5) ? 1 : 3; // part de 1 3 5 pour avoir 5 3 1
+    tuileRestante = plateau[0][pos]; // définition de la nouvelle tuile restante
+    for(int i = 0; i < 6; i+=1){
+      plateau[i][pos] = plateau[i+1][pos];
+    }
+    plateau[6][pos] = bufferTuile; // tuile restante précédente
+  }
+  else if(emplacement >= 9 && emplacement < 12){
+    int pos = (emplacement % 3)*2 + 1;
+    pos = (pos == 1) ? 5 : (pos == 5) ? 1 : 3; // part de 1 3 5 pour avoir 5 3 1
+    tuileRestante = plateau[pos][6]; // définition de la nouvelle tuile restante
+    for(int i = 6; i > 0; i-=1){
+      plateau[pos][i] = plateau[pos][i-1];
+    }
+    plateau[pos][0] = bufferTuile; // tuile restante précédente
+  }
+  
 }
