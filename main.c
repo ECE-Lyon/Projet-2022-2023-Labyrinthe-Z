@@ -179,7 +179,7 @@ void genererPlateau(){
                 indice++;
                 break;
               case 2:
-                plateau[i][j].forme = 1; // tuile L
+                plateau[i][j].forme = 2; // tuile L
                 plateau[i][j].item = 0; // on ne donne pas d'item
                 plateau[i][j].rotation = getRandomInt(0, 3);
                 nbTuileRestant[2] -= 1;
