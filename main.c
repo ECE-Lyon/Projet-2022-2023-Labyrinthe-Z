@@ -124,7 +124,7 @@ void printPlateau(casePlateau plateau[7][7]){
 
 void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne){
   int tuileActuelle[9];
-  copyTab(typeTuile, tuileActuelle, 9); // on copie le modèle de la tuile pour ne pas tourner l'orgiginal
+  copyTab(typeTuile, tuileActuelle, 9); // on copie le modèle de la tuile pour ne pas tourner l'original
   rotationTuile(tuileActuelle, rotation); // rotaion de la tuile de 0°/90°/180° ou 270° selon "rotation"
   for(int l = 0; l < 3; l++){
     if(l+indiceLigne == 4){ // permet d'afficher l'item au centre
@@ -158,11 +158,11 @@ void genererPlateau(){
   int indice = 24;
   for(int i = 0; i< 7; i++){
     for(int j = 0; j< 7; j++){
-      if(caseARemplir[i][j]){
+      if(caseARemplir[i][j]){ // regarde dans le tableau si la tuile doit être générée
         while(1){
           int rand = getRandomInt(0, 3);
           //printf("%d", rand);
-          if(nbTuileRestant[rand] > 0){ // ne marche pas si la valeur est a 0
+          if(nbTuileRestant[rand]){ // ne marche pas si la valeur est a 0
             switch (rand){
               case 0:
                 plateau[i][j].forme = 2; // tuile T
@@ -191,17 +191,15 @@ void genererPlateau(){
                 nbTuileRestant[3] -= 1;
                 break;
             }
-          break;
+          break; // break le while(1)
           }
         }
-        
       }
     }
   }
 }
 
 int getRandomInt(int min, int max){
-  
   int i = (rand() % (max-min+1)) + min;
   return i;
 }
