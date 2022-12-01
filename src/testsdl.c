@@ -72,6 +72,35 @@ int main(int argc, char **argv)
                 break;
             
             default:
+                image = SDL_LoadBMP("src/test.bmp");
+
+                if( image == NULL ){
+                    SDL_ExitErrorBoth("Erreur de chargement de l'image", rendu , window);  
+                }
+
+                texture = SDL_CreateTextureFromSurface(rendu, image);
+                SDL_FreeSurface(image);
+
+                if( texture == NULL ){
+                    SDL_ExitErrorBoth("Erreur de création de la texture", rendu , window);     
+                }
+
+                SDL_Rect rectangle;
+                rectangle.h = 257;
+                rectangle.w = 261;
+
+                if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h)){
+                    SDL_ExitErrorBoth("Erreur de chargement de la texture", rendu , window); 
+                }
+
+                rectangle.x = (1920 - rectangle.w) / 2;
+                rectangle.y = (1080 - rectangle.h) / 2;
+
+                if(SDL_RenderCopy(rendu, texture, NULL, &rectangle)){
+                    SDL_ExitErrorBoth("Erreur d'affichage de l'image", rendu , window);       
+                }
+
+                SDL_RenderPresent(rendu);
                 break;
             }
 
@@ -79,7 +108,7 @@ int main(int argc, char **argv)
 
     }
 
-    image = SDL_LoadBMP("src/test.bmp");
+    /*image = SDL_LoadBMP("src/test.bmp");
 
     if( image == NULL ){
         SDL_ExitErrorBoth("Erreur de chargement de l'image", rendu , window);  
@@ -112,7 +141,7 @@ int main(int argc, char **argv)
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(rendu);
     SDL_DestroyWindow(window);
-    SDL_Quit();
+    SDL_Quit();*/
     return 0;
 }
 
