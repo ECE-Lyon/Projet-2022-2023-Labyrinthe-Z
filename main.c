@@ -11,13 +11,19 @@ typedef struct{
   char forme, rotation, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
 }casePlateau; // definition d'une structure qui stocke toutes les infos d'une tuile
 
+typedef struct{
+  char posX, posY;
+}point2D;
+
 //déclaration de tous les prototypes
 void rotationTuile(int tuile[9], int nbTour);
 void copyTab(int tab1[], int tab2[], int size);
 void printPlateau(casePlateau plateau[7][7]);
-void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne);
+void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne, int posX, int posY);
 void genererPlateau();
 int getRandomInt(int min, int max);
+void clrScreen(void);
+void delay(int tps_sec);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -53,7 +59,9 @@ casePlateau plateau[7][7] = {1,2,6,   0,0,0,  2,3,12,  0,0,0,   2,3,13,  0,0,0, 
                              0,0,0,   0,0,0,  0,0,0,   0,0,0,   0,0,0,   0,0,0,  0,0,0,
                              2,2,18,  0,0,0,  2,1,19,  0,0,0,   2,0,20,  0,0,0,  2,0,21,
                              0,0,0,   0,0,0,  0,0,0,   0,0,0,   0,0,0,   0,0,0,  0,0,0,
-                             1,1,7,   0,0,0,  2,1,22,  0,0,0,   2,1,23,  0,0,0,  1,0,4,};
+                             1,1,7,   0,0,0,  2,1,22,  0,0,0,   2,1,23,  0,0,0,  1,0,4};
+
+point2D posPlayer[4] = {0,0,  0,6,  6,0,  6,6}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
 int main(){
   SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
@@ -100,16 +108,16 @@ void printPlateau(casePlateau plateau[7][7]){
       for(int j = 0; j<7; j++){ // parcourt les 7 tuiles de la ligne
         switch(plateau[i][j].forme){ // regarde quelle tuile prendre parmis les 4
           case 0: // tuile Vide
-            printTuile(tuileVide, plateau[i][j].rotation, plateau[i][j].item, k);
+            printTuile(tuileVide, plateau[i][j].rotation, plateau[i][j].item, k, i, j);
             break;
           case 1: // tuile L
-            printTuile(tuileL, plateau[i][j].rotation, plateau[i][j].item, k);
+            printTuile(tuileL, plateau[i][j].rotation, plateau[i][j].item, k, i, j);
             break;
           case 2: // tuile T
-            printTuile(tuileT, plateau[i][j].rotation, plateau[i][j].item, k);
+            printTuile(tuileT, plateau[i][j].rotation, plateau[i][j].item, k, i, j);
             break;
           case 3: // tuile I
-            printTuile(tuileI, plateau[i][j].rotation, plateau[i][j].item, k);
+            printTuile(tuileI, plateau[i][j].rotation, plateau[i][j].item, k, i, j);
             break;
         }
       }
@@ -122,13 +130,22 @@ void printPlateau(casePlateau plateau[7][7]){
   }
 }
 
-void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne){
+void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne, int posX, int posY){
   int tuileActuelle[9];
+  int playerHere = 0;
   copyTab(typeTuile, tuileActuelle, 9); // on copie le modèle de la tuile pour ne pas tourner l'original
   rotationTuile(tuileActuelle, rotation); // rotaion de la tuile de 0°/90°/180° ou 270° selon "rotation"
   for(int l = 0; l < 3; l++){
     if(l+indiceLigne == 4){ // permet d'afficher l'item au centre
-      printf("%s", caractere[item]);
+      for(int i = 0; i < 4; i++){
+        if(posPlayer[i].posX == posX && posPlayer[i].posY == posY){
+          printf("%s", caractere[i+8]);
+          playerHere = 1;
+        }
+      }
+      if (!playerHere){
+        printf("%s", caractere[item]);
+      }
     }else{ // affiche le reste des cases selon le modèle
       printf("%s", caractere[tuileActuelle[l+indiceLigne]]);
     }
@@ -202,4 +219,13 @@ void genererPlateau(){
 int getRandomInt(int min, int max){
   int i = (rand() % (max-min+1)) + min;
   return i;
+}
+
+void clrScreen(void){
+  printf("\e[1;1H\e[2J");
+}
+
+void delay(int tps_ms){
+  clock_t start_time = clock();
+  while (clock() < start_time + tps_ms);
 }
