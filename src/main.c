@@ -74,12 +74,6 @@ int main(int argc, char **argv){
 
   genererPlateau();
   printPlateau(plateau);
-  delay(500);
-  pushTuile(10);
-  printPlateau(plateau);
-  delay(500);
-  pushTuile(10);
-  printPlateau(plateau);
 
   // --------------------------------------------------------------------------------------------------- 
 
@@ -95,13 +89,6 @@ int main(int argc, char **argv){
   return 0;
 }
 
-void testsdl(){
-  
-    SDL_version nb;
-    SDL_VERSION(&nb);
-
-    printf("Bienvenue sur la version SDL %d.%d.%d !\n", nb.major,nb.minor,nb.patch);
-}
 
 void rotationTuile(int tuileActuelle[9], int nbTour){
   int ordre[9] = {0, //a   |a|b|c|   b va devenir a, puis c va devenir b et ainsi de suite
