@@ -121,6 +121,8 @@ void printPlateau(casePlateau plateau[7][7]){
       afficherEspace(4);
     }
   }
+  afficherEspace(4);
+  printGUI(0);
   printf("\n");
   afficherEspace(4);
   for(int i = 0; i < 7; i++){
@@ -133,11 +135,15 @@ void printPlateau(casePlateau plateau[7][7]){
       afficherEspace(4);
     }
   }
+  afficherEspace(3);
+  printGUI(1);
   printf("\n");
   afficherEspace(3);
   for(int i = 0; i<7*4+1; i++){ // affiche le contour de la première ligne
     printf("%s", caractere[2]);
   }
+  afficherEspace(3);
+  printGUI(2);
   printf("\n");
   for(int i = 0; i<7; i++){ // affiche les 7 lignes de tuiles
     for(int k = 0; k < 9; k+=3){ // permet d'afficher les lignes 2 et 3 en prenant l'indice de la tuile +3k
@@ -182,7 +188,7 @@ void printPlateau(casePlateau plateau[7][7]){
       else {
         afficherEspace(3);
       }
-      printGUI(k/3+4*i);
+      printGUI(k/3+4*i +3);
       printf("\n");
     }
     afficherEspace(3);
@@ -190,7 +196,7 @@ void printPlateau(casePlateau plateau[7][7]){
       printf("%s", caractere[2]);
     }
     afficherEspace(3);
-    printGUI(4*(i+1)-1);
+    printGUI(4*(i+1)+2);
     printf("\n");
   }
   afficherEspace(4);
@@ -490,16 +496,33 @@ void afficherEspace(int nombre){
 void printGUI(int nbLigne){
   switch (nbLigne)
   {
-  case 0: printf(" /$$                 /$$                           /$$             /$$     /$$                      "); break;
-  case 1: printf("| $$                | $$                          |__/            | $$    | $$                      "); break;
-  case 2: printf("| $$        /$$$$$$ | $$$$$$$  /$$   /$$  /$$$$$$  /$$ /$$$$$$$  /$$$$$$  | $$$$$$$   /$$$$$$       "); break;
-  case 3: printf("| $$       |____  $$| $$__  $$| $$  | $$ /$$__  $$| $$| $$__  $$|_  $$_/  | $$__  $$ /$$__  $$      "); break;
-  case 4: printf("| $$        /$$$$$$$| $$  \\ $$| $$  | $$| $$  \\__/| $$| $$  \\ $$  | $$    | $$  \\ $$| $$$$$$$$      "); break;
-  case 5: printf("| $$       /$$__  $$| $$  | $$| $$  | $$| $$      | $$| $$  | $$  | $$ /$$| $$  | $$| $$_____/      "); break;
-  case 6: printf("| $$$$$$$$|  $$$$$$$| $$$$$$$/|  $$$$$$$| $$      | $$| $$  | $$  |  $$$$/| $$  | $$|  $$$$$$$      "); break;
-  case 7: printf("|________/ \\_______/|_______/  \\____  $$|__/      |__/|__/  |__/   \\___/  |__/  |__/ \\_______/      "); break;
-  case 8: printf("                               /$$  | $$                                                            "); break;
-  case 9: printf("                              |  $$$$$$/                                                            "); break;
-  case 10: printf("                               \\______/                                                             "); break;
+  case 0: printf("         /$$                 /$$                           /$$             /$$     /$$                      "); break;
+  case 1: printf("        | $$                | $$                          |__/            | $$    | $$                      "); break;
+  case 2: printf("        | $$        /$$$$$$ | $$$$$$$  /$$   /$$  /$$$$$$  /$$ /$$$$$$$  /$$$$$$  | $$$$$$$   /$$$$$$       "); break;
+  case 3: printf("        | $$       |____  $$| $$__  $$| $$  | $$ /$$__  $$| $$| $$__  $$|_  $$_/  | $$__  $$ /$$__  $$      "); break;
+  case 4: printf("        | $$        /$$$$$$$| $$  \\ $$| $$  | $$| $$  \\__/| $$| $$  \\ $$  | $$    | $$  \\ $$| $$$$$$$$      "); break;
+  case 5: printf("        | $$       /$$__  $$| $$  | $$| $$  | $$| $$      | $$| $$  | $$  | $$ /$$| $$  | $$| $$_____/      "); break;
+  case 6: printf("        | $$$$$$$$|  $$$$$$$| $$$$$$$/|  $$$$$$$| $$      | $$| $$  | $$  |  $$$$/| $$  | $$|  $$$$$$$      "); break;
+  case 7: printf("        |________/ \\_______/|_______/  \\____  $$|__/      |__/|__/  |__/   \\___/  |__/  |__/ \\_______/      "); break;
+  case 8: printf("                                       /$$  | $$                                                            "); break;
+  case 9: printf("                                      |  $$$$$$/                                                            "); break;
+  case 10: printf("                                       \\______/                                                             "); break;
+  case 11: printf("                                                                                                           "); break;
+  case 12: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 13: printf("          |J|O|U|E|U|R| |1|       |J|O|U|E|U|R| |2|       |J|O|U|E|U|R| |3|       |J|O|U|E|U|R| |4|        "); break;
+  case 14: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 15: printf("                                                                                                           "); break;
+  case 16: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 17: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 18: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 19: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 20: printf("          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
+  case 21: printf("          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
+  case 22: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 23: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 24: printf("          +               +       +               +       +               +       +               +        "); break;
+  case 25: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+
+  
   }
 }
