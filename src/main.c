@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <SDL.h>
 
 #define NB_CHARAC 100
 
