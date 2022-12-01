@@ -90,7 +90,7 @@ void rotationTuile(int tuileActuelle[9], int nbTour){
 }
 
 void printPlateau(casePlateau plateau[7][7]){
-  for(int i = 0; i<7*4; i++){ // affiche le contour de la première ligne
+  for(int i = 0; i<7*4+1; i++){ // affiche le contour de la première ligne
     printf("%s", caractere[2]);
   }
   printf("\n");
