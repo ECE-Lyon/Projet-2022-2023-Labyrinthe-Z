@@ -20,7 +20,7 @@ void genererPlateau();
 int getRandomInt(int min, int max);
 
 //liste de tous les caractères dont on a besoin
-char caractere[NB_CHARAC][10] = {"  ","▓▓","  ","  ",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
+char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
                                  "🟥","🟩","🟦","🟨",//7
                                  "🔴","🟢","🔵","🟡",//11
                                  "🎈","🧨","✨","🎫",//15
@@ -90,8 +90,13 @@ void rotationTuile(int tuileActuelle[9], int nbTour){
 }
 
 void printPlateau(casePlateau plateau[7][7]){
+  for(int i = 0; i<7*4; i++){ // affiche le contour de la première ligne
+    printf("%s", caractere[2]);
+  }
+  printf("\n");
   for(int i = 0; i<7; i++){ // affiche les 7 lignes de tuiles
     for(int k = 0; k < 9; k+=3){ // permet d'afficher les lignes 2 et 3 en prenant l'indice de la tuile +3k
+    printf("%s", caractere[2]);
       for(int j = 0; j<7; j++){ // parcourt les 7 tuiles de la ligne
         switch(plateau[i][j].forme){ // regarde quelle tuile prendre parmis les 4
           case 0: // tuile Vide
@@ -110,7 +115,7 @@ void printPlateau(casePlateau plateau[7][7]){
       }
       printf("\n");
     }
-    for(int i = 0; i<12*3; i++){ // affiche un séparateur entre chaque ligne
+    for(int i = 0; i<7*4+1; i++){ // affiche un séparateur entre chaque ligne
       printf("%s", caractere[2]);
     }
     printf("\n");
