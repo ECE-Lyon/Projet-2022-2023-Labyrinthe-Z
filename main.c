@@ -24,6 +24,8 @@ void genererPlateau();
 int getRandomInt(int min, int max);
 void clrScreen(void);
 void delay(int tps_sec);
+void getTuileFormated(int tuileResultat[9], int posX, int posY);
+int checkDeplacement(int joueur, int direction);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -68,6 +70,8 @@ int main(){
 
   genererPlateau();
   printPlateau(plateau);
+  if(checkDeplacement(0,1)) printf("le joueur peut se déplacer à droite");
+  else printf("le joueur ne peut pas se déplacer à droite");
 
   return 0;
 }
@@ -196,7 +200,7 @@ void genererPlateau(){
                 indice++;
                 break;
               case 2:
-                plateau[i][j].forme = 2; // tuile L
+                plateau[i][j].forme = 1; // tuile L
                 plateau[i][j].item = 0; // on ne donne pas d'item
                 plateau[i][j].rotation = getRandomInt(0, 3);
                 nbTuileRestant[2] -= 1;
@@ -228,4 +232,78 @@ void clrScreen(void){
 void delay(int tps_ms){
   clock_t start_time = clock();
   while (clock() < start_time + tps_ms);
+}
+
+int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = bas, 3 = gauche
+  int tuileActuelle[9];
+  getTuileFormated(tuileActuelle, posPlayer[joueur].posX, posPlayer[joueur].posY);
+
+  int tuileSuivante[9];
+  switch (direction)
+  {
+  case 0: // le joueur veut aller en haut
+    if(!posPlayer[joueur].posY){// vérifie que le joueur n'est pas tout en haut du plateau
+      getTuileFormated(tuileSuivante, posPlayer[joueur].posX, posPlayer[joueur].posY-1); // la tuile située au dessus
+      if(tuileActuelle[1] == 0 && tuileSuivante[7] == 0){
+        return 1;
+      }else return 0;
+    }
+    else return 0;
+    break;
+  case 1: // le joueur veut aller a droite
+    if(posPlayer[joueur].posX != 6){// vérifie que le joueur n'est pas tout à droite du plateau
+      getTuileFormated(tuileSuivante, posPlayer[joueur].posX+1, posPlayer[joueur].posY); // la tuile située à droite
+      if(tuileActuelle[5] == 0 && tuileSuivante[3] == 0){
+        return 1;
+      }else return 0;
+    }
+    else return 0;
+    break;
+  case 2: // le joueur veut aller en bas
+    if(posPlayer[joueur].posY != 6){// vérifie que le joueur n'est pas tout en bas du plateau
+      getTuileFormated(tuileSuivante, posPlayer[joueur].posX, posPlayer[joueur].posY+1); // la tuile située en dessous
+      if(tuileActuelle[7] == 0 && tuileSuivante[1] == 0){
+        return 1;
+      }else return 0;
+    }
+    else return 0;
+    break;
+  case 3: // le joueur veut aller a gauche
+    if(!posPlayer[joueur].posX){// vérifie que le joueur n'est pas tout à gauche du plateau
+      getTuileFormated(tuileSuivante, posPlayer[joueur].posX-1, posPlayer[joueur].posY); // la tuile située à gauche
+      if(tuileActuelle[3] == 0 && tuileSuivante[5] == 0){
+        return 1;
+      }else return 0;
+    }
+    else return 0;
+    break;
+  }
+}
+
+void getTuileFormated(int tuileResultat[9], int posX, int posY){
+  int formeTuile = plateau[posY][posX].forme;
+  printf("%d ", formeTuile);
+  switch (formeTuile)
+  {
+  case 0:
+    copyTab(tuileVide, tuileResultat, 9);
+    rotationTuile(tuileResultat, plateau[posY][posX].rotation);
+    printf("la tuile est Vide \n");
+    break;
+  case 1:
+    copyTab(tuileL, tuileResultat, 9);
+    rotationTuile(tuileResultat, plateau[posY][posX].rotation);
+    printf("la tuile est un L \n");
+    break;
+  case 2:
+    copyTab(tuileT, tuileResultat, 9);
+    rotationTuile(tuileResultat, plateau[posY][posX].rotation);
+    printf("la tuile est un T \n");
+    break;
+  case 3:
+    copyTab(tuileI, tuileResultat, 9);
+    rotationTuile(tuileResultat, plateau[posY][posX].rotation);
+    printf("la tuile est un I \n");
+    break;   
+  }
 }
