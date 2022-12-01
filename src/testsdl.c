@@ -4,6 +4,7 @@
 // gcc src/testsdl.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
 void SDL_ExitError(const char *message);
+void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer, SDL_Window *window);
 
 int main(int argc, char **argv)
 {
@@ -46,21 +47,78 @@ int main(int argc, char **argv)
     SDL_Surface *image = NULL;
     SDL_Texture *texture = NULL;
 
-    image = SDL_LoadBMP("src/test.bmp");
+    SDL_bool lauched = SDL_TRUE;
 
-    if(image){
-        SDL_DestroyRenderer( rendu );
-        SDL_DestroyWindow( window );
-        SDL_ExitError("Erreur de chargement de l'image");
+    while ( lauched ){   
+
+        SDL_Event event;    
+
+        while ( SDL_PollEvent(&event) ){
+
+            switch ( event.type ){
+            case SDL_KEYDOWN:
+
+                switch ( event.key.keysym.sym ){
+                case SDLK_ESCAPE:
+                    lauched = SDL_FALSE;    
+                    break;
+                
+                default:
+                    break;
+                }
+                
+            case SDL_QUIT:
+                lauched = SDL_FALSE;
+                break;
+            
+            default:
+                image = SDL_LoadBMP("src/test.bmp");
+
+                if( image == NULL ){
+                    SDL_ExitErrorBoth("Erreur de chargement de l'image", rendu , window);  
+                }
+
+                texture = SDL_CreateTextureFromSurface(rendu, image);
+                SDL_FreeSurface(image);
+
+                if( texture == NULL ){
+                    SDL_ExitErrorBoth("Erreur de création de la texture", rendu , window);     
+                }
+
+                SDL_Rect rectangle;
+                rectangle.h = 257;
+                rectangle.w = 261;
+
+                if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h)){
+                    SDL_ExitErrorBoth("Erreur de chargement de la texture", rendu , window); 
+                }
+
+                rectangle.x = (1920 - rectangle.w) / 2;
+                rectangle.y = (1080 - rectangle.h) / 2;
+
+                if(SDL_RenderCopy(rendu, texture, NULL, &rectangle)){
+                    SDL_ExitErrorBoth("Erreur d'affichage de l'image", rendu , window);       
+                }
+
+                SDL_RenderPresent(rendu);
+                break;
+            }
+
+        }
+
+    }
+
+    /*image = SDL_LoadBMP("src/test.bmp");
+
+    if( image == NULL ){
+        SDL_ExitErrorBoth("Erreur de chargement de l'image", rendu , window);  
     }
 
     texture = SDL_CreateTextureFromSurface(rendu, image);
     SDL_FreeSurface(image);
 
-    if(texture){
-        SDL_DestroyRenderer(rendu);
-        SDL_DestroyWindow(window);
-        SDL_ExitError("Erreur de création de la texture");
+    if( texture == NULL ){
+        SDL_ExitErrorBoth("Erreur de création de la texture", rendu , window);     
     }
 
     SDL_Rect rectangle;
@@ -68,28 +126,22 @@ int main(int argc, char **argv)
     rectangle.w = 261;
 
     if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h)){
-        SDL_DestroyRenderer(rendu);
-        SDL_DestroyWindow(window);
-        SDL_ExitError("Erreur de chargement de la texture");
+        SDL_ExitErrorBoth("Erreur de chargement de la texture", rendu , window); 
     }
 
-    rectangle.x = (261 - rectangle.w) / 2;
-    rectangle.y = (257 - rectangle.h) / 2;
+    rectangle.x = (1920 - rectangle.w) / 2; // CENTRE L'IMAGE
+    rectangle.y = (1080 - rectangle.h) / 2;
 
     if(SDL_RenderCopy(rendu, texture, NULL, &rectangle)){
-        SDL_DestroyRenderer(rendu);
-        SDL_DestroyWindow(window);
-        SDL_ExitError("Erreur d'afficher la texture");        
+        SDL_ExitErrorBoth("Erreur d'affichage de l'image", rendu , window);       
     }
 
     SDL_RenderPresent(rendu);
 
-    SDL_Delay(5000);
-
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(rendu);
     SDL_DestroyWindow(window);
-    SDL_Quit();
+    SDL_Quit();*/
     return 0;
 }
 
@@ -97,4 +149,10 @@ void SDL_ExitError(const char *message){
     SDL_Log("%s > %s\n",message,SDL_GetError());
     exit(EXIT_FAILURE);
     SDL_Quit();
+}   
+
+void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer,SDL_Window *window){
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_ExitError("Erreur d'afficher la texture");       
 }
