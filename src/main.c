@@ -74,17 +74,6 @@ int main(int argc, char **argv){
   genererPlateau();
   printPlateau(plateau);
 
-  // --------------------------------------------------------------------------------------------------- 
-
-    SDL_version nb;
-    SDL_VERSION(&nb);
-
-    printf("Bienvenue sur la version SDL %d.%d.%d !\n", nb.major,nb.minor,nb.patch);
-
-  // gcc src/main.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
-
-  // ---------------------------------------------------------------------------------------------------
-
   return 0;
 }
 
