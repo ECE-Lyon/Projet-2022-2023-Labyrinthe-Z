@@ -282,28 +282,23 @@ int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = ba
 
 void getTuileFormated(int tuileResultat[9], int posX, int posY){
   int formeTuile = plateau[posY][posX].forme;
-  printf("%d ", formeTuile);
   switch (formeTuile)
   {
   case 0:
     copyTab(tuileVide, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
-    printf("la tuile est Vide \n");
     break;
   case 1:
     copyTab(tuileL, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
-    printf("la tuile est un L \n");
     break;
   case 2:
     copyTab(tuileT, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
-    printf("la tuile est un T \n");
     break;
   case 3:
     copyTab(tuileI, tuileResultat, 9);
     rotationTuile(tuileResultat, plateau[posY][posX].rotation);
-    printf("la tuile est un I \n");
     break;   
   }
 }
