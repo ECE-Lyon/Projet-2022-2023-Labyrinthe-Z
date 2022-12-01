@@ -63,6 +63,8 @@ casePlateau plateau[7][7] = {1,2,6,   0,0,0,  2,3,12,  0,0,0,   2,3,13,  0,0,0, 
                              0,0,0,   0,0,0,  0,0,0,   0,0,0,   0,0,0,   0,0,0,  0,0,0,
                              1,1,7,   0,0,0,  2,1,22,  0,0,0,   2,1,23,  0,0,0,  1,0,4};
 
+casePlateau tuileRestante;
+
 point2D posPlayer[4] = {0,0,  0,6,  6,0,  6,6}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
 int main(){
@@ -70,8 +72,6 @@ int main(){
 
   genererPlateau();
   printPlateau(plateau);
-  if(checkDeplacement(0,1)) printf("le joueur peut se déplacer à droite");
-  else printf("le joueur ne peut pas se déplacer à droite");
 
   return 0;
 }
