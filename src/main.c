@@ -68,33 +68,15 @@ casePlateau tuileRestante;
 
 point2D posPlayer[4] = {0,0,  0,6,  6,0,  6,6}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
-int main(int argc, char **argv){
+int main(){
   SetConsoleOutputCP(65001); // format de la console pour afficher l'unicode
 
   genererPlateau();
   printPlateau(plateau);
 
-  // --------------------------------------------------------------------------------------------------- 
-
-    SDL_version nb;
-    SDL_VERSION(&nb);
-
-    printf("Bienvenue sur la version SDL %d.%d.%d !\n", nb.major,nb.minor,nb.patch);
-
-  // gcc src/main.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
-
-  // ---------------------------------------------------------------------------------------------------
-
   return 0;
 }
 
-void testsdl(){
-  
-    SDL_version nb;
-    SDL_VERSION(&nb);
-
-    printf("Bienvenue sur la version SDL %d.%d.%d !\n", nb.major,nb.minor,nb.patch);
-}
 
 void rotationTuile(int tuileActuelle[9], int nbTour){
   int ordre[9] = {0, //a   |a|b|c|   b va devenir a, puis c va devenir b et ainsi de suite
