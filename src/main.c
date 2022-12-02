@@ -29,6 +29,9 @@ int checkDeplacement(int joueur, int direction);
 void pushTuile(int emplacement);
 void afficherEspace(int nombre);
 void printGUI(int nbLigne);
+void melangerTab(int* tab, size_t tailleTab);
+void printTab(int* tab, size_t tailleTab);
+void genererCarte(int carte[24]);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -79,7 +82,13 @@ int main(int argc, char **argv){
 
   genererPlateau();
   printPlateau(plateau);
-
+  int carte[24];
+  genererCarte(carte);
+  printTab(carte, sizeof(carte) / sizeof(carte[0]));
+  melangerTab(carte, sizeof(carte) / sizeof(carte[0]));
+  printf("\n");
+  printTab(carte, sizeof(carte) / sizeof(carte[0]));
+  
   return 0;
 }
 
@@ -521,8 +530,29 @@ void printGUI(int nbLigne){
   case 22: printf("          +               +       +               +       +               +       +               +        "); break;
   case 23: printf("          +               +       +               +       +               +       +               +        "); break;
   case 24: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 25: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 25: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;  
+  }
+}
 
-  
+void genererCarte(int carte[24]){
+  for(int i = 0; i<24; i++){ //on génère 24 tuiles
+    carte[i] = i;
+  }
+}
+
+void printTab(int* tab, size_t tailleTab){
+  for(int i = 0; i < tailleTab; i++){
+    printf("%d ",tab[i]);
+  }
+}
+
+void melangerTab(int* tab, size_t tailleTab){
+  int j; //position avec laquelle notre valeur va être échangée
+  int buffer;
+  for(int i = 0; i < tailleTab; i++){ //on parcours le tableau pour échanger la valeur d'une case avec une autre
+    j = getRandomInt(0,tailleTab-1); //on génère l'indice de la case avec laquelle notre valeur est échangée
+    buffer = tab[j]; //on mémorise la valeur pour ne pas la perdre
+    tab[j] = tab[i]; //on met i dans j
+    tab[i] = buffer; //on met j dans i
   }
 }
