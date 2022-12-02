@@ -20,8 +20,6 @@ int main(int argc, char **argv)
     
     SDL_Window *window = NULL;
     SDL_Renderer *rendu = NULL;
-    SDL_Surface *image = NULL;
-    SDL_Texture *plateau = NULL;
     SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
     SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
     SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
@@ -99,50 +97,9 @@ int main(int argc, char **argv)
 
     }
 
-    SDL_DestroyTexture(plateau);
     SDL_DestroyRenderer(rendu);
     SDL_DestroyWindow(window);
     SDL_Quit();
 
     return EXIT_SUCCESS;
 }
-
-
-
-    /*rendu_image = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if( rendu_image == NULL ){
-        SDL_Log("Erreur render_image > %s\n",SDL_GetError());
-        clean(window,NULL,NULL);
-        exit(EXIT_FAILURE);        
-    }   
-
-    image = SDL_LoadBMP("src/test.bmp");
-    if( image == NULL ){
-        SDL_Log("Erreur load_image > %s\n",SDL_GetError());
-        clean(window,rendu_image,NULL);
-        exit(EXIT_FAILURE);
-    }
-
-    texture_image = SDL_CreateTextureFromSurface(rendu_image,image);
-    SDL_FreeSurface(image);
-    if( texture_image == NULL ){
-        SDL_Log("Erreur creation texture > %s\n",SDL_GetError());
-        clean(window,rendu_image,NULL);
-        exit(EXIT_FAILURE);        
-    }
-
-    if( SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h) ){
-        SDL_Log("Erreur querytexture > %s\n",SDL_GetError());
-        clean(window, rendu_image, texture_image);
-        exit(EXIT_FAILURE);         
-    }
-
-    rect_image.x = (1920 - rect_image.w) / 2;       // REVOIR POUR CENTRER
-    rect_image.y = (1080 - rect_image.h) / 2; 
-
-
-    if( SDL_RenderCopy(rendu_image, texture_image, NULL, &rect_image) ){
-        SDL_Log("Erreur rendercopy > %s\n",SDL_GetError());
-        clean(window, rendu_image, texture_image);
-        exit(EXIT_FAILURE); 
-    }*/
