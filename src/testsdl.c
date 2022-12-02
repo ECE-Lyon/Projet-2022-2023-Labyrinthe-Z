@@ -4,19 +4,33 @@
 // gcc src/testsdl.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
 void SDL_ExitError(const char *message);
+void SDL_ExitErrorRenderer(SDL_Renderer *renderer);
+void SDL_ExitErrorWindow(SDL_Window *window);
 void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer, SDL_Window *window);
 
 int main(int argc, char **argv)
 {
 
-    SDL_Window *window;
+    SDL_Window *window = NULL;
+    SDL_Renderer *background;
     SDL_Renderer *rendu;
 
     if(SDL_Init(SDL_INIT_VIDEO))
         SDL_ExitError("Erreur initialisation video");
 
-    if(SDL_CreateWindowAndRenderer(1920,1080, SDL_RENDERER_ACCELERATED, &window, &rendu)) // CREE UNE FENETRE ET UN RENDU
-        SDL_ExitError("Erreur de fenetre et rendu");
+    window = SDL_CreateWindow("Labyrinthe-Z", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1980, 1080, SDL_WINDOW_MAXIMIZED);
+
+    if( window == NULL )
+        SDL_ExitErrorWindow(window);
+
+    if(SDL_CreateRenderer(window, -1, 0))
+        SDL_ExitErrorRenderer(background);
+    
+    if(SDL_SetRenderDrawColor(background, 164, 122, 17, SDL_ALPHA_OPAQUE))
+        SDL_ExitError("Erreur de couleur backgroud");
+
+    if(SDL_CreateRenderer(window, -1, 0))
+        SDL_ExitErrorRenderer(rendu);
 
     /*if(SDL_SetRenderDrawColor(rendu,82,192,213, SDL_ALPHA_OPAQUE)) // SET COULEUR POUR DESSINER
         SDL_ExitError("Erreur drawcolor pour rendu");
@@ -51,7 +65,8 @@ int main(int argc, char **argv)
 
     while ( launched ){   
 
-        SDL_Event event;    
+        SDL_Event event;
+        SDL_bool background_test = SDL_FALSE; 
 
         while ( SDL_PollEvent(&event) ){
 
@@ -63,7 +78,7 @@ int main(int argc, char **argv)
                     launched = SDL_FALSE;    
                     break;
                 case SDLK_0:
-                    printf("Vous avez appuyé sur 0");
+                    background_test = SDL_TRUE;
                     continue;
                 default:
                     continue;
@@ -112,6 +127,10 @@ int main(int argc, char **argv)
                 if(SDL_RenderCopy(rendu, texture, NULL, &rectangle)){
                     SDL_ExitErrorBoth("Erreur d'affichage de l'image", rendu , window);       
                 }
+
+                if( background_test == SDL_TRUE ){
+                    SDL_RenderPresent(background);
+                }else{background_test = SDL_TRUE;}
 
                 SDL_RenderPresent(rendu);
                 break;
@@ -168,4 +187,14 @@ void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer,SDL_Window *w
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_ExitError("Erreur d'afficher la texture");       
+}
+
+void SDL_ExitErrorWindow(SDL_Window *window){
+    SDL_DestroyWindow(window);
+    SDL_ExitError("Erreur de fenetre");       
+}
+
+void SDL_ExitErrorRenderer(SDL_Renderer *renderer){
+    SDL_DestroyRenderer(renderer);
+    SDL_ExitError("Erreur de rendu");       
 }
