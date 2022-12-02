@@ -4,62 +4,39 @@
 // gcc src/testsdl.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
 void SDL_ExitError(const char *message);
-void SDL_ExitErrorRenderer(SDL_Renderer *renderer);
-void SDL_ExitErrorWindow(SDL_Window *window);
+void SDL_ExitErrorRenderer(const char *message,SDL_Renderer *renderer);
+void SDL_ExitErrorWindow(const char *message,SDL_Window *window);
 void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer, SDL_Window *window);
 
 int main(int argc, char **argv)
 {
 
     SDL_Window *window = NULL;
-    SDL_Renderer *background;
-    SDL_Renderer *rendu;
+    SDL_Renderer *background = NULL;
+    SDL_Renderer *rendu = NULL;
+    SDL_Surface *image = NULL;
+    SDL_Texture *texture = NULL;
 
     if(SDL_Init(SDL_INIT_VIDEO))
         SDL_ExitError("Erreur initialisation video");
 
-    window = SDL_CreateWindow("Labyrinthe-Z", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1980, 1080, SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_MAXIMIZED);
 
     if( window == NULL )
-        SDL_ExitErrorWindow(window);
+        SDL_ExitErrorWindow("Erreur fenetre",window);
 
-    if(SDL_CreateRenderer(window, -1, 0))
-        SDL_ExitErrorRenderer(background);
+    background = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    if( background == NULL )
+        SDL_ExitErrorRenderer("Erreur background",background);
     
     if(SDL_SetRenderDrawColor(background, 164, 122, 17, SDL_ALPHA_OPAQUE))
         SDL_ExitError("Erreur de couleur backgroud");
 
-    if(SDL_CreateRenderer(window, -1, 0))
-        SDL_ExitErrorRenderer(rendu);
+    rendu = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    /*if(SDL_SetRenderDrawColor(rendu,82,192,213, SDL_ALPHA_OPAQUE)) // SET COULEUR POUR DESSINER
-        SDL_ExitError("Erreur drawcolor pour rendu");
-
-    if(SDL_RenderDrawPoint(rendu, 960,540)) // DESSINE UN POINT EN COORD 940/540 (au centre)
-        SDL_ExitError("Erreur dessin point");
-
-    if(SDL_RenderDrawLine(rendu,0,0,1920,1080)) // DESSINE UNE LIGNE DEPUIS 0/0 à 1920/1080
-        SDL_ExitError("Erreur dessin ligne");
-
-    SDL_Rect rectangle;
-    rectangle.x = 300;
-    rectangle.y = 300;
-    rectangle.h = 120;
-    rectangle.w = 200;
-
-    if(SDL_RenderFillRect(rendu,&rectangle) != 0) // REMPLI
-        SDL_ExitError("Erreur dessin rectangle");
-
-    if(SDL_SetRenderDrawColor(rendu,190,245,255, SDL_ALPHA_OPAQUE)) // SET COULEUR POUR DESSINER
-        SDL_ExitError("Erreur drawcolor pour rendu");
-
-    if(SDL_RenderDrawRect(rendu,&rectangle) != 0) // CONTOUR 
-        SDL_ExitError("Erreur dessin rectangle");
-
-    SDL_RenderPresent(rendu); // ACTIVE LE RENDU  */
-
-    SDL_Surface *image = NULL;
-    SDL_Texture *texture = NULL;
+    if( rendu == NULL )
+        SDL_ExitErrorRenderer("Erreur rendu",rendu);
 
     SDL_bool launched = SDL_TRUE;
 
@@ -78,8 +55,15 @@ int main(int argc, char **argv)
                     launched = SDL_FALSE;    
                     break;
                 case SDLK_0:
-                    background_test = SDL_TRUE;
-                    continue;
+                
+                    if(background_test == SDL_FALSE){
+                        background_test = SDL_TRUE;
+                        continue;
+                    }else{
+                        background_test = SDL_FALSE;
+                        continue;
+                    }
+                    
                 default:
                     continue;
                 }
@@ -110,7 +94,7 @@ int main(int argc, char **argv)
                 SDL_FreeSurface(image);
 
                 if( texture == NULL ){
-                    SDL_ExitErrorBoth("Erreur de création de la texture", rendu , window);     
+                    SDL_ExitErrorBoth("Erreur de creation de la texture", rendu , window);     
                 }
 
                 SDL_Rect rectangle;
@@ -130,7 +114,7 @@ int main(int argc, char **argv)
 
                 if( background_test == SDL_TRUE ){
                     SDL_RenderPresent(background);
-                }else{background_test = SDL_TRUE;}
+                }
 
                 SDL_RenderPresent(rendu);
                 break;
@@ -139,6 +123,33 @@ int main(int argc, char **argv)
         }
 
     }
+
+    return 0;
+}
+
+void SDL_ExitError(const char *message){
+    SDL_Log("%s > %s\n",message,SDL_GetError());
+    exit(EXIT_FAILURE);
+    SDL_Quit();
+}   
+
+void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer,SDL_Window *window){
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    printf("%s\t",message);
+    SDL_ExitError("Erreur d'affichage de la texture");     
+}
+
+void SDL_ExitErrorWindow(const char *message,SDL_Window *window){
+    SDL_DestroyWindow(window);
+    SDL_ExitError("Erreur de fenetre");       
+}
+
+void SDL_ExitErrorRenderer(const char *message,SDL_Renderer *renderer){
+    SDL_DestroyRenderer(renderer);
+    SDL_ExitError("Erreur de rendu");       
+}
+
 
     /*image = SDL_LoadBMP("src/test.bmp");
 
@@ -174,27 +185,3 @@ int main(int argc, char **argv)
     SDL_DestroyRenderer(rendu);
     SDL_DestroyWindow(window);
     SDL_Quit();*/
-    return 0;
-}
-
-void SDL_ExitError(const char *message){
-    SDL_Log("%s > %s\n",message,SDL_GetError());
-    exit(EXIT_FAILURE);
-    SDL_Quit();
-}   
-
-void SDL_ExitErrorBoth(const char *message, SDL_Renderer *renderer,SDL_Window *window){
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_ExitError("Erreur d'afficher la texture");       
-}
-
-void SDL_ExitErrorWindow(SDL_Window *window){
-    SDL_DestroyWindow(window);
-    SDL_ExitError("Erreur de fenetre");       
-}
-
-void SDL_ExitErrorRenderer(SDL_Renderer *renderer){
-    SDL_DestroyRenderer(renderer);
-    SDL_ExitError("Erreur de rendu");       
-}
