@@ -12,8 +12,8 @@ typedef struct{
 }casePlateau; // definition d'une structure qui stocke toutes les infos d'une tuile
 
 typedef struct{
-  char posX, posY;
-}point2D;
+  char posX, posY, itemFound;
+}playerData;
 
 //déclaration de tous les prototypes
 void rotationTuile(int tuile[9], int nbTour);
@@ -28,10 +28,13 @@ void getTuileFormated(int tuileResultat[9], int posX, int posY);
 int checkDeplacement(int joueur, int direction);
 void pushTuile(int emplacement);
 void afficherEspace(int nombre);
-void printGUI(int nbLigne);
+void getGUI(int nbLigne, char ligne[110]);
 void melangerTab(int* tab, size_t tailleTab);
 void printTab(int* tab, size_t tailleTab);
 void genererCarte(int carte[24]);
+void movePlayer(int player, int direction);
+int askDeplacement(int joueur);
+void printGUI(int indiceLigne);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -75,7 +78,7 @@ casePlateau plateau[7][7] = {1,2,6,   0,0,0,  2,3,12,  0,0,0,   2,3,13,  0,0,0, 
 
 casePlateau tuileRestante;
 
-point2D posPlayer[4] = {0,0,  0,6,  6,0,  6,6}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
+playerData playerList[4] = {0,0,0,  0,6,0,  6,0,0,  6,6,0}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
 int main(int argc, char **argv){
   SetConsoleOutputCP(65001); // format de la console pour affichser l'unicode
@@ -84,10 +87,7 @@ int main(int argc, char **argv){
   printPlateau(plateau);
   int carte[24];
   genererCarte(carte);
-  printTab(carte, sizeof(carte) / sizeof(carte[0]));
-  melangerTab(carte, sizeof(carte) / sizeof(carte[0]));
-  printf("\n");
-  printTab(carte, sizeof(carte) / sizeof(carte[0]));
+  askDeplacement(0);
   
   return 0;
 }
@@ -244,7 +244,7 @@ void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne, int p
   for(int l = 0; l < 3; l++){
     if(l+indiceLigne == 4){ // permet d'afficher l'item au centre
       for(int i = 0; i < 4; i++){
-        if(posPlayer[i].posX == posX && posPlayer[i].posY == posY){
+        if(playerList[i].posX == posX && playerList[i].posY == posY){
           printf("%s", caractere[i+8]);
           playerHere = 1;
         }
@@ -377,14 +377,14 @@ void delay(int tps_ms){
 
 int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = bas, 3 = gauche
   int tuileActuelle[9];
-  getTuileFormated(tuileActuelle, posPlayer[joueur].posX, posPlayer[joueur].posY);
+  getTuileFormated(tuileActuelle, playerList[joueur].posX, playerList[joueur].posY);
 
   int tuileSuivante[9];
   switch (direction)
   {
   case 0: // le joueur veut aller en haut
-    if(!posPlayer[joueur].posY){// vérifie que le joueur n'est pas tout en haut du plateau
-      getTuileFormated(tuileSuivante, posPlayer[joueur].posX, posPlayer[joueur].posY-1); // la tuile située au dessus
+    if(!playerList[joueur].posY){// vérifie que le joueur n'est pas tout en haut du plateau
+      getTuileFormated(tuileSuivante, playerList[joueur].posX, playerList[joueur].posY-1); // la tuile située au dessus
       if(tuileActuelle[1] == 0 && tuileSuivante[7] == 0){
         return 1;
       }else return 0;
@@ -392,8 +392,8 @@ int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = ba
     else return 0;
     break;
   case 1: // le joueur veut aller a droite
-    if(posPlayer[joueur].posX != 6){// vérifie que le joueur n'est pas tout à droite du plateau
-      getTuileFormated(tuileSuivante, posPlayer[joueur].posX+1, posPlayer[joueur].posY); // la tuile située à droite
+    if(playerList[joueur].posX != 6){// vérifie que le joueur n'est pas tout à droite du plateau
+      getTuileFormated(tuileSuivante, playerList[joueur].posX+1, playerList[joueur].posY); // la tuile située à droite
       if(tuileActuelle[5] == 0 && tuileSuivante[3] == 0){
         return 1;
       }else return 0;
@@ -401,8 +401,8 @@ int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = ba
     else return 0;
     break;
   case 2: // le joueur veut aller en bas
-    if(posPlayer[joueur].posY != 6){// vérifie que le joueur n'est pas tout en bas du plateau
-      getTuileFormated(tuileSuivante, posPlayer[joueur].posX, posPlayer[joueur].posY+1); // la tuile située en dessous
+    if(playerList[joueur].posY != 6){// vérifie que le joueur n'est pas tout en bas du plateau
+      getTuileFormated(tuileSuivante, playerList[joueur].posX, playerList[joueur].posY+1); // la tuile située en dessous
       if(tuileActuelle[7] == 0 && tuileSuivante[1] == 0){
         return 1;
       }else return 0;
@@ -410,8 +410,8 @@ int checkDeplacement(int joueur, int direction){ // 0 = haut, 1 = droite, 2 = ba
     else return 0;
     break;
   case 3: // le joueur veut aller a gauche
-    if(!posPlayer[joueur].posX){// vérifie que le joueur n'est pas tout à gauche du plateau
-      getTuileFormated(tuileSuivante, posPlayer[joueur].posX-1, posPlayer[joueur].posY); // la tuile située à gauche
+    if(!playerList[joueur].posX){// vérifie que le joueur n'est pas tout à gauche du plateau
+      getTuileFormated(tuileSuivante, playerList[joueur].posX-1, playerList[joueur].posY); // la tuile située à gauche
       if(tuileActuelle[3] == 0 && tuileSuivante[5] == 0){
         return 1;
       }else return 0;
@@ -502,35 +502,43 @@ void afficherEspace(int nombre){
   }
 }
 
-void printGUI(int nbLigne){
+void printGUI(int indiceLigne){
+  char ligne[130] = {0};
+  getGUI(indiceLigne, ligne);
+  printf("%s", ligne);
+}
+
+
+
+void getGUI(int nbLigne, char ligne[130]){
   switch (nbLigne)
   {
-  case 0: printf("         /$$                 /$$                           /$$             /$$     /$$                      "); break;
-  case 1: printf("        | $$                | $$                          |__/            | $$    | $$                      "); break;
-  case 2: printf("        | $$        /$$$$$$ | $$$$$$$  /$$   /$$  /$$$$$$  /$$ /$$$$$$$  /$$$$$$  | $$$$$$$   /$$$$$$       "); break;
-  case 3: printf("        | $$       |____  $$| $$__  $$| $$  | $$ /$$__  $$| $$| $$__  $$|_  $$_/  | $$__  $$ /$$__  $$      "); break;
-  case 4: printf("        | $$        /$$$$$$$| $$  \\ $$| $$  | $$| $$  \\__/| $$| $$  \\ $$  | $$    | $$  \\ $$| $$$$$$$$      "); break;
-  case 5: printf("        | $$       /$$__  $$| $$  | $$| $$  | $$| $$      | $$| $$  | $$  | $$ /$$| $$  | $$| $$_____/      "); break;
-  case 6: printf("        | $$$$$$$$|  $$$$$$$| $$$$$$$/|  $$$$$$$| $$      | $$| $$  | $$  |  $$$$/| $$  | $$|  $$$$$$$      "); break;
-  case 7: printf("        |________/ \\_______/|_______/  \\____  $$|__/      |__/|__/  |__/   \\___/  |__/  |__/ \\_______/      "); break;
-  case 8: printf("                                       /$$  | $$                                                            "); break;
-  case 9: printf("                                      |  $$$$$$/                                                            "); break;
-  case 10: printf("                                       \\______/                                                             "); break;
-  case 11: printf("                                                                                                           "); break;
-  case 12: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
-  case 13: printf("          |J|O|U|E|U|R| |1|       |J|O|U|E|U|R| |2|       |J|O|U|E|U|R| |3|       |J|O|U|E|U|R| |4|        "); break;
-  case 14: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
-  case 15: printf("                                                                                                           "); break;
-  case 16: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
-  case 17: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 18: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 19: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 20: printf("          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
-  case 21: printf("          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
-  case 22: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 23: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 24: printf("          +               +       +               +       +               +       +               +        "); break;
-  case 25: printf("          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;  
+  case 0: sprintf(ligne,"         /$$                 /$$                           /$$             /$$     /$$                      "); break;
+  case 1: sprintf(ligne,"        | $$                | $$                          |__/            | $$    | $$                      "); break;
+  case 2: sprintf(ligne,"        | $$        /$$$$$$ | $$$$$$$  /$$   /$$  /$$$$$$  /$$ /$$$$$$$  /$$$$$$  | $$$$$$$   /$$$$$$       "); break;
+  case 3: sprintf(ligne,"        | $$       |____  $$| $$__  $$| $$  | $$ /$$__  $$| $$| $$__  $$|_  $$_/  | $$__  $$ /$$__  $$      "); break;
+  case 4: sprintf(ligne,"        | $$        /$$$$$$$| $$  \\ $$| $$  | $$| $$  \\__/| $$| $$  \\ $$  | $$    | $$  \\ $$| $$$$$$$$      "); break;
+  case 5: sprintf(ligne,"        | $$       /$$__  $$| $$  | $$| $$  | $$| $$      | $$| $$  | $$  | $$ /$$| $$  | $$| $$_____/      "); break;
+  case 6: sprintf(ligne,"        | $$$$$$$$|  $$$$$$$| $$$$$$$/|  $$$$$$$| $$      | $$| $$  | $$  |  $$$$/| $$  | $$|  $$$$$$$      "); break;
+  case 7: sprintf(ligne,"        |________/ \\_______/|_______/  \\____  $$|__/      |__/|__/  |__/   \\___/  |__/  |__/ \\_______/      "); break;
+  case 8: sprintf(ligne,"                                       /$$  | $$                                                            "); break;
+  case 9: sprintf(ligne,"                                      |  $$$$$$/                                                            "); break;
+  case 10: sprintf(ligne,"                                       \\______/                                                             "); break;
+  case 11: sprintf(ligne,"                                                                                                           "); break;
+  case 12: sprintf(ligne,"          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 13: sprintf(ligne,"          |J|O|U|E|U|R| |1|       |J|O|U|E|U|R| |2|       |J|O|U|E|U|R| |3|       |J|O|U|E|U|R| |4|        "); break;
+  case 14: sprintf(ligne,"          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 15: sprintf(ligne,"                                                                                                           "); break;
+  case 16: sprintf(ligne,"          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;
+  case 17: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 18: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 19: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 20: sprintf(ligne,"          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
+  case 21: sprintf(ligne,"          +     🎈🎈      +       +     🏀🏀      +       +     💎💎      +       +     🎁🎁      +        "); break;
+  case 22: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 23: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 24: sprintf(ligne,"          +               +       +               +       +               +       +               +        "); break;
+  case 25: sprintf(ligne,"          +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+       +-+-+-+-+-+-+-+-+        "); break;  
   }
 }
 
@@ -555,4 +563,23 @@ void melangerTab(int* tab, size_t tailleTab){
     tab[j] = tab[i]; //on met i dans j
     tab[i] = buffer; //on met j dans i
   }
+}
+
+void movePlayer(int player, int direction){
+  if(checkDeplacement(player, direction)){
+    switch (direction) {
+      case 0: playerList[player].posY -= 1; break;
+      case 1: playerList[player].posX += 1; break;
+      case 2: playerList[player].posY += 1; break;
+      case 3: playerList[player].posX -= 1; break;
+    }
+  }
+}
+
+int askDeplacement(int joueur){
+  int direction;
+  printf("Joueur %d, c'est à vous. Dans quelle direction voulez vous aller ? \n", joueur+1);
+  printf("%s : 1     %s : 2     %s : 3     %s : 4 \n", caractere[37], caractere[38], caractere[36], caractere[39]);
+  scanf("%d", &direction);
+  return direction-1;
 }
