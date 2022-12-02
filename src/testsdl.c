@@ -59,23 +59,25 @@ int main(int argc, char **argv)
             case SDL_KEYDOWN:
 
                 switch ( event.key.keysym.sym ){
-                case SDLK_ESCAPE:
+                case SDLK_ESCAPE:                 // Appuie sur Echap
                     launched = SDL_FALSE;    
                     break;
-                
+                case SDLK_0:
+                    printf("Vous avez appuyé sur 0");
+                    continue;
                 default:
-                    break;
+                    continue;
                 }
 
             case SDL_MOUSEBUTTONDOWN:
 
                 switch ( event.button.clicks ){
-                case 1:
+                case 2:                            // Double-click
                     launched = SDL_FALSE; 
                     break;
                 
                 default:
-                    break;
+                    continue;
                 }  
 
             case SDL_QUIT:
