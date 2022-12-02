@@ -47,9 +47,9 @@ int main(int argc, char **argv)
     SDL_Surface *image = NULL;
     SDL_Texture *texture = NULL;
 
-    SDL_bool lauched = SDL_TRUE;
+    SDL_bool launched = SDL_TRUE;
 
-    while ( lauched ){   
+    while ( launched ){   
 
         SDL_Event event;    
 
@@ -59,16 +59,29 @@ int main(int argc, char **argv)
             case SDL_KEYDOWN:
 
                 switch ( event.key.keysym.sym ){
-                case SDLK_ESCAPE:
-                    lauched = SDL_FALSE;    
+                case SDLK_ESCAPE:                 // Appuie sur Echap
+                    launched = SDL_FALSE;    
+                    break;
+                case SDLK_0:
+                    printf("Vous avez appuyé sur 0");
+                    continue;
+                default:
+                    continue;
+                }
+
+            case SDL_MOUSEBUTTONDOWN:
+
+                switch ( event.button.clicks ){
+                case 2:                            // Double-click
+                    launched = SDL_FALSE; 
                     break;
                 
                 default:
-                    break;
-                }
-                
+                    continue;
+                }  
+
             case SDL_QUIT:
-                lauched = SDL_FALSE;
+                launched = SDL_FALSE;
                 break;
             
             default:
