@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <E:\Dossier\Github\Projet-2022-2023-Labyrinthe-Z\src\library.h>
 #include <SDL.h>
 
-// gcc src/testsdl2.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
+// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     
