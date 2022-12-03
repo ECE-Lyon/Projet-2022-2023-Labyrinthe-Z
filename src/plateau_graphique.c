@@ -1,4 +1,5 @@
-#include <E:\Dossier\Github\Projet-2022-2023-Labyrinthe-Z\src\library.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <SDL.h>
 
 // gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
