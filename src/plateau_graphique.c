@@ -1,3 +1,4 @@
+#include <E:\Dossier\Github\Projet-2022-2023-Labyrinthe-Z\src\library.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -13,6 +14,29 @@ void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     if(w)
         SDL_DestroyWindow(w);
     SDL_Quit();
+}
+
+void SDL_SetPlateauVide(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+
+    SDL_SetRenderDrawColor(rendu, 229, 204, 178, 255);
+    for( int i=0 ; i<18 ; i++){
+        SDL_RenderDrawRect(rendu,&rect_plateau);
+        rect_plateau.h -= 2;
+        rect_plateau.w -= 2;
+        rect_plateau.x = (1920-(rect_plateau.w))/2;
+        rect_plateau.y = (1080-(rect_plateau.h))/2;
+    }
+
+    for( int i=0 ; i<6 ; i++){
+        SDL_RenderFillRect(rendu,&rect_plateau2);
+        rect_plateau2.x += 4*18;
+    }
+
+    for( int i=0 ; i<6 ; i++){
+        SDL_RenderFillRect(rendu,&rect_plateau3);
+        rect_plateau3.y += 4*18;
+    }    
+
 }
 
 int main(int argc, char **argv)
@@ -47,24 +71,7 @@ int main(int argc, char **argv)
     SDL_SetRenderDrawColor(rendu, 255, 233, 210, 255);
     SDL_RenderClear(rendu);
 
-    SDL_SetRenderDrawColor(rendu, 229, 204, 178, 255);
-    for( int i=0 ; i<18 ; i++){
-        SDL_RenderDrawRect(rendu,&rect_plateau);
-        rect_plateau.h -= 2;
-        rect_plateau.w -= 2;
-        rect_plateau.x = (1920-(rect_plateau.w))/2;
-        rect_plateau.y = (1080-(rect_plateau.h))/2;
-    }
-
-    for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau2);
-        rect_plateau2.x += 4*18;
-    }
-
-    for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau3);
-        rect_plateau3.y += 4*18;
-    }
+    SDL_SetPlateauVide(rendu, rect_plateau, rect_plateau2, rect_plateau3);
 
     SDL_RenderPresent(rendu);
 

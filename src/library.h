@@ -78,12 +78,6 @@ casePlateau tuileRestante;
 
 playerData playerList[4] = {0,0,0,  0,6,0,  6,0,0,  6,6,0}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
-int main(){
-
-
-  return 0;
-}
-
 void rotationTuile(int tuileActuelle[9], int nbTour){
   int ordre[9] = {0, //a   |a|b|c|   b va devenir a, puis c va devenir b et ainsi de suite
                   1, //b   |h|°|d|   ° ne change jamais car il est au centre
