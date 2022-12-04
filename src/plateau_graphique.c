@@ -1,4 +1,4 @@
-#include <C:\Users\romeo\Desktop\GitHub\Projet-2022-2023-Labyrinthe-Z\src\library.h>  // A changer pour son pc
+#include <E:\Dossier\Github\Projet-2022-2023-Labyrinthe-Z\src\library.h>  // A changer pour son pc
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -52,20 +52,78 @@ Case SDLplateau[7][7] = { 1,1,   0,0,   7,2,   0,0,   7,3,   0,0,   4,4,
                           2,13,  0,0,   5,14,  0,0,   5,15,  0,0,   3,16
 };
 
-char chemin_tuile[10][18] = {"images/TuileL1.bmp",
-                            "images/TuileL2.bmp",          
-                            "images/TuileL3.bmp",                   
-                            "images/TuileL4.bmp",                   
-                            "images/TuileT1.bmp",                   
-                            "images/TuileT2.bmp",
-                            "images/TuileT3.bmp",                   
-                            "images/TuileT4.bmp",
-                            "images/TuileI1.bmp",
-                            "images/TuileI2.bmp",
+char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
+
+const char chemin_tuile[10][19] = {"images/TuileL1.bmp",
+                                   "images/TuileL2.bmp",          
+                                   "images/TuileL3.bmp",                   
+                                   "images/TuileL4.bmp",                   
+                                   "images/TuileT1.bmp",                   
+                                   "images/TuileT2.bmp",
+                                   "images/TuileT3.bmp",                   
+                                   "images/TuileT4.bmp",
+                                   "images/TuileI1.bmp",
+                                   "images/TuileI2.bmp",
                                                 };
 
-void AfficheTuiles( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect){
+void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect, int i, int j){
     
+    if ( (SDLplateau[i][j].tuile) == 0 ){
+    
+        while(1){
+            
+            int rand = getRandomInt(0,3);
+            if(nbTuileRestant[rand]){
+
+                switch ( rand )
+                {
+                case 0:
+                    SDLplateau[i][j].tuile = getRandomInt(5,8);
+                    nbTuileRestant[0] -= 1;
+                    break;
+                case 1:
+                    SDLplateau[i][j].tuile = getRandomInt(1,4);
+                    nbTuileRestant[1] -= 1;
+                    break;
+
+                case 2:
+                    SDLplateau[i][j].tuile = getRandomInt(1,4);
+                    nbTuileRestant[2] -= 1;
+                    break;
+
+                case 3:
+                    SDLplateau[i][j].tuile = getRandomInt(9,10);
+                    nbTuileRestant[3] -= 1;
+                    break;
+                }
+            break;
+            }
+        
+        }
+        
+        image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
+        texture = SDL_CreateTextureFromSurface(renderer, image);
+        SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+        SDL_RenderCopy(renderer, texture, NULL, &rect);        
+
+    }else{
+
+        image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
+        texture = SDL_CreateTextureFromSurface(renderer, image);
+        SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+    }
+     
+    
+}
+
+void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect){
+
+    char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
+
+    srand(time(NULL));
+
     for( int i=0 ; i<7 ; i++ ){
         if(i)
             rect.y += 4*18;
@@ -73,10 +131,7 @@ void AfficheTuiles( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *tex
         for( int j=0 ; j<7 ; j++){
             if(j)
                 rect.x += 4*18;
-            image = SDL_LoadBMP("images/TuileT4.bmp"); // A CHANGER AVEC TAB
-            texture = SDL_CreateTextureFromSurface(renderer, image);
-            SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
-            SDL_RenderCopy(renderer, texture, NULL, &rect);
+            printTuile(renderer, image, texture, rect, i, j);
         }
     }
 
@@ -147,7 +202,7 @@ int main(int argc, char **argv)
             default:
                 // FONCTION POUR AFFICHER LA TUILE
 
-                AfficheTuiles(rendu, image_tuile, texture_tuile, rect_tuile);
+                AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
 
                 // FONCTION POUR AFFICHER LA TUILE
 
@@ -160,6 +215,7 @@ int main(int argc, char **argv)
 
     }
 
+    SDL_DestroyTexture(texture_tuile);
     SDL_DestroyRenderer(rendu);
     SDL_DestroyWindow(window);
     SDL_Quit();
