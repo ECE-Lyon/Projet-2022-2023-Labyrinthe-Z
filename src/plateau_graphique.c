@@ -39,7 +39,20 @@ void SDL_SetPlateauVide(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect re
 
 }
 
-char chemin_image[10][18] = {"images/TuileL1.bmp",
+typedef struct{ 
+  char  tuile, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
+}Case;
+
+Case SDLplateau[7][7] = { 1,1,   0,0,   7,2,   0,0,   7,3,   0,0,   4,4,
+                          0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
+                          8,5,   0,0,   8,6,   0,0,   7,7,   0,0,   6,8,
+                          0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
+                          8,9,   0,0,   5,10,  0,0,   6,11,  0,0,   6,12,
+                          0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
+                          2,13,  0,0,   5,14,  0,0,   5,15,  0,0,   3,16
+};
+
+char chemin_tuile[10][18] = {"images/TuileL1.bmp",
                             "images/TuileL2.bmp",          
                             "images/TuileL3.bmp",                   
                             "images/TuileL4.bmp",                   
@@ -60,7 +73,7 @@ void AfficheTuiles( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *tex
         for( int j=0 ; j<7 ; j++){
             if(j)
                 rect.x += 4*18;
-            image = SDL_LoadBMP("images/TuileL1.bmp"); // A CHANGER AVEC TAB
+            image = SDL_LoadBMP("images/TuileT4.bmp"); // A CHANGER AVEC TAB
             texture = SDL_CreateTextureFromSurface(renderer, image);
             SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
             SDL_RenderCopy(renderer, texture, NULL, &rect);
