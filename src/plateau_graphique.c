@@ -1,4 +1,4 @@
-#include <C:\Users\nolan\OneDrive\Bureau\github\Projet-2022-2023-Labyrinthe-Z\src\library.h>  // A changer pour son pc
+#include "library.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
