@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 {
 
     SDL_Window *window = NULL;
-    SDL_Renderer *background = NULL;
     SDL_Renderer *rendu = NULL;
     SDL_Surface *image = NULL;
     SDL_Texture *texture = NULL;
@@ -25,25 +24,19 @@ int main(int argc, char **argv)
     if( window == NULL )
         SDL_ExitErrorWindow("Erreur fenetre",window);
 
-    background = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    if( background == NULL )
-        SDL_ExitErrorRenderer("Erreur background",background);
-    
-    if(SDL_SetRenderDrawColor(background, 164, 122, 17, SDL_ALPHA_OPAQUE))
-        SDL_ExitError("Erreur de couleur backgroud");
-
     rendu = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if( rendu == NULL )
         SDL_ExitErrorRenderer("Erreur rendu",rendu);
-
+    
+    SDL_SetRenderDrawColor(rendu, 255, 233, 210, 255);
+    SDL_RenderClear(rendu);
+    
     SDL_bool launched = SDL_TRUE;
 
     while ( launched ){   
 
         SDL_Event event;
-        SDL_bool background_test = SDL_FALSE; 
 
         while ( SDL_PollEvent(&event) ){
 
@@ -54,15 +47,6 @@ int main(int argc, char **argv)
                 case SDLK_ESCAPE:                 // Appuie sur Echap
                     launched = SDL_FALSE;    
                     break;
-                case SDLK_0:
-                
-                    if(background_test == SDL_FALSE){
-                        background_test = SDL_TRUE;
-                        continue;
-                    }else{
-                        background_test = SDL_FALSE;
-                        continue;
-                    }
                     
                 default:
                     continue;
@@ -110,10 +94,6 @@ int main(int argc, char **argv)
 
                 if(SDL_RenderCopy(rendu, texture, NULL, &rectangle)){
                     SDL_ExitErrorBoth("Erreur d'affichage de l'image", rendu , window);       
-                }
-
-                if( background_test == SDL_TRUE ){
-                    SDL_RenderPresent(background);
                 }
 
                 SDL_RenderPresent(rendu);
