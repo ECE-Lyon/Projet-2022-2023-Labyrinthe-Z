@@ -54,16 +54,43 @@ Case SDLplateau[7][7] = { 1,1,   0,0,   7,2,   0,0,   7,3,   0,0,   4,4,
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
-const char chemin_tuile[10][19] = {"images/TuileL1.bmp",
-                                   "images/TuileL2.bmp",          
-                                   "images/TuileL3.bmp",                   
-                                   "images/TuileL4.bmp",                   
-                                   "images/TuileT1.bmp",                   
-                                   "images/TuileT2.bmp",
-                                   "images/TuileT3.bmp",                   
-                                   "images/TuileT4.bmp",
-                                   "images/TuileI1.bmp",
-                                   "images/TuileI2.bmp"};
+char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+
+const char chemin_tuile[10][26] = {"images/tuiles/TuileL1.bmp",
+                                   "images/tuiles/TuileL2.bmp",          
+                                   "images/tuiles/TuileL3.bmp",                   
+                                   "images/tuiles/TuileL4.bmp",                   
+                                   "images/tuiles/TuileT1.bmp",                   
+                                   "images/tuiles/TuileT2.bmp",
+                                   "images/tuiles/TuileT3.bmp",                   
+                                   "images/tuiles/TuileT4.bmp",
+                                   "images/tuiles/TuileI1.bmp",
+                                   "images/tuiles/TuileI2.bmp"};
+
+const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
+                                  "images/items16px/iitem2.bmp", // COOKIE
+                                  "images/items16px/iitem3.bmp", // EMERAUDE
+                                  "images/items16px/iitem4.bmp", // PASTEQUE
+                                  "images/items16px/iitem5.bmp", // LIVRE
+                                  "images/items16px/iitem6.bmp", // POMME
+                                  "images/items16px/iitem7.bmp", // CAROTTE
+                                  "images/items16px/iitem8.bmp", // DIAMANT
+                                  "images/items16px/iitem9.bmp", // PEARL
+                                  "images/items16px/item10.bmp", // NEMO
+                                  "images/items16px/item11.bmp", // NETHERSTAR            
+                                  "images/items16px/item12.bmp", // DISQUE
+                                  "images/items16px/item13.bmp", // FEUILLE
+                                  "images/items16px/item14.bmp", // LASSO
+                                  "images/items16px/item15.bmp", // BERRIES
+                                  "images/items16px/item16.bmp", // POTION
+                                  "images/items16px/item17.bmp", // XP BOTTLE
+                                  "images/items16px/item18.bmp", // PAPIER
+                                  "images/items16px/item19.bmp", // POISSON BOULE
+                                  "images/items16px/item20.bmp", // OEUF
+                                  "images/items16px/item21.bmp", // FLECHE
+                                  "images/items16px/item22.bmp", // TARTE
+                                  "images/items16px/item23.bmp", // BOUSSOLE
+                                  "images/items16px/item24.bmp"};// POULET
 
 void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect, int i, int j){
     
@@ -109,8 +136,6 @@ void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture
 
 void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect){
 
-    char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
-
     srand(time(NULL));
 
     for( int i=0 ; i<7 ; i++ ){
@@ -136,6 +161,7 @@ int main(int argc, char **argv)
     SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
     SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
     SDL_Rect rect_tuile = {717, 297, 54, 54};
+    SDL_Rect rect_item = {697, 277, 16 , 16};
 
     if(SDL_Init(SDL_INIT_VIDEO)){
         SDL_Log("Erreur init > %s\n",SDL_GetError());
@@ -162,6 +188,10 @@ int main(int argc, char **argv)
 
     SDL_SetPlateauVide(rendu, rect_plateau, rect_plateau2, rect_plateau3);
 
+    AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
+
+    SDL_RenderPresent(rendu);
+
     SDL_bool launched = SDL_TRUE;
 
     while( launched ){
@@ -186,14 +216,6 @@ int main(int argc, char **argv)
                 break;
 
             default:
-                // FONCTION POUR AFFICHER LA TUILE
-
-                AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
-
-                // FONCTION POUR AFFICHER LA TUILE
-
-                SDL_RenderPresent(rendu);
-
                 break;
             }
 
