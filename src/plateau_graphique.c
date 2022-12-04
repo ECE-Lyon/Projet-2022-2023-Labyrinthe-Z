@@ -1,4 +1,4 @@
-#include <E:\Dossier\Github\Projet-2022-2023-Labyrinthe-Z\src\library.h>  // A changer pour son pc
+#include <C:\Users\nolan\OneDrive\Bureau\github\Projet-2022-2023-Labyrinthe-Z\src\library.h>  // A changer pour son pc
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -63,8 +63,7 @@ const char chemin_tuile[10][19] = {"images/TuileL1.bmp",
                                    "images/TuileT3.bmp",                   
                                    "images/TuileT4.bmp",
                                    "images/TuileI1.bmp",
-                                   "images/TuileI2.bmp",
-                                                };
+                                   "images/TuileI2.bmp"};
 
 void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect, int i, int j){
     
@@ -100,22 +99,12 @@ void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture
             }
         
         }
-        
-        image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-        texture = SDL_CreateTextureFromSurface(renderer, image);
-        SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
-        SDL_RenderCopy(renderer, texture, NULL, &rect);        
-
-    }else{
-
-        image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-        texture = SDL_CreateTextureFromSurface(renderer, image);
-        SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
-        SDL_RenderCopy(renderer, texture, NULL, &rect);
-
     }
-     
-    
+        
+    image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
+    texture = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
 }
 
 void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect){
@@ -125,16 +114,13 @@ void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image, SDL_Textur
     srand(time(NULL));
 
     for( int i=0 ; i<7 ; i++ ){
-        if(i)
-            rect.y += 4*18;
-            rect.x = 717;
+        rect.x = 717;
         for( int j=0 ; j<7 ; j++){
-            if(j)
-                rect.x += 4*18;
             printTuile(renderer, image, texture, rect, i, j);
+            rect.x += 4*18;
         }
+        rect.y += 4*18;
     }
-
 }
 
 int main(int argc, char **argv)
