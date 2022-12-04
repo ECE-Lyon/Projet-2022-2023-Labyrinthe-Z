@@ -90,6 +90,8 @@ int main(int argc, char **argv)
                 case SDLK_ESCAPE:
                     launched = SDL_FALSE;
                     break;
+                default:
+                    continue;
                 }
 
             case SDL_QUIT:
