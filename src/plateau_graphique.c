@@ -176,6 +176,10 @@ int main(int argc, char **argv)
 
     SDL_SetPlateauVide(rendu, rect_plateau, rect_plateau2, rect_plateau3);
 
+    AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
+    
+    SDL_RenderPresent(rendu);
+
     SDL_bool launched = SDL_TRUE;
 
     while( launched ){
@@ -200,14 +204,6 @@ int main(int argc, char **argv)
                 break;
 
             default:
-                // FONCTION POUR AFFICHER LA TUILE
-
-                AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
-
-                // FONCTION POUR AFFICHER LA TUILE
-
-                SDL_RenderPresent(rendu);
-
                 break;
             }
 
