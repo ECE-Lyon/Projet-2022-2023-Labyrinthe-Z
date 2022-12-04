@@ -43,18 +43,18 @@ typedef struct{
   char  tuile, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
 }Case;
 
-Case SDLplateau[7][7] = { 1,1,   0,0,   7,2,   0,0,   7,3,   0,0,   4,4,
+Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
-                          8,5,   0,0,   8,6,   0,0,   7,7,   0,0,   6,8,
+                          8,3,   0,0,   8,4,   0,0,   7,5,   0,0,   6,6,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
-                          8,9,   0,0,   5,10,  0,0,   6,11,  0,0,   6,12,
+                          8,7,   0,0,   5,8,   0,0,   6,9,   0,0,   6,10,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
-                          2,13,  0,0,   5,14,  0,0,   5,15,  0,0,   3,16
+                          2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
 };
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
-char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
 
 const char chemin_tuile[10][26] = {"images/tuiles/TuileL1.bmp",
                                    "images/tuiles/TuileL2.bmp",          
@@ -92,7 +92,7 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
 
-void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect, int i, int j){
+void printTuile(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
     
     if ( (SDLplateau[i][j].tuile) == 0 ){
     
@@ -104,11 +104,32 @@ void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture
                 switch ( rand )
                 {
                 case 0:
+
                     SDLplateau[i][j].tuile = getRandomInt(5,8);
+                    while(1){
+
+                        int rand_item = getRandomInt(1,24);
+                        if(nbItemRestant[rand_item-1]){
+                            SDLplateau[i][j].item = rand_item;
+                            nbItemRestant[rand_item-1] = 0;
+                        break;
+                        }
+                    }
+                    
                     nbTuileRestant[0] -= 1;
                     break;
                 case 1:
+
                     SDLplateau[i][j].tuile = getRandomInt(1,4);
+                    while(1){
+
+                        int rand_item = getRandomInt(1,24);
+                        if(nbItemRestant[rand_item-1]){
+                            SDLplateau[i][j].item = rand_item;
+                            nbItemRestant[rand_item-1] = 0;
+                        break;
+                        }
+                    }
                     nbTuileRestant[1] -= 1;
                     break;
 
@@ -128,23 +149,34 @@ void printTuile(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture
         }
     }
         
-    image = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-    texture = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
+    texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
+    SDL_FreeSurface(image_tuile);
+    SDL_QueryTexture(texture_tuile, NULL, NULL, &rect_tuile.w, &rect_tuile.h);
+    SDL_RenderCopy(renderer, texture_tuile, NULL, &rect_tuile);
+
+    image_item = SDL_LoadBMP(chemin_item[(SDLplateau[i][j].item)-1]);
+    texture_item = SDL_CreateTextureFromSurface(renderer, image_item);
+    SDL_FreeSurface(image_item);
+    SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
+    SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
+
 }
 
-void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture, SDL_Rect rect){
+void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item){
 
     srand(time(NULL));
 
     for( int i=0 ; i<7 ; i++ ){
-        rect.x = 717;
+        rect_tuile.x = 717;
+        rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
-            printTuile(renderer, image, texture, rect, i, j);
-            rect.x += 4*18;
+            printTuile(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
+            rect_tuile.x += 4*18;
+            rect_item.x += 4*18;
         }
-        rect.y += 4*18;
+        rect_tuile.y += 4*18;
+        rect_item.y += 4*18;
     }
 }
 
@@ -155,13 +187,16 @@ int main(int argc, char **argv)
     SDL_Renderer *rendu = NULL;
 
     SDL_Surface *image_tuile = NULL;
+    SDL_Surface *image_item = NULL;
+
     SDL_Texture *texture_tuile = NULL;
+    SDL_Texture *texture_item = NULL;
 
     SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
     SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
     SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
     SDL_Rect rect_tuile = {717, 297, 54, 54};
-    SDL_Rect rect_item = {697, 277, 16 , 16};
+    SDL_Rect rect_item = {736, 316, 16 , 16};
 
     if(SDL_Init(SDL_INIT_VIDEO)){
         SDL_Log("Erreur init > %s\n",SDL_GetError());
@@ -188,7 +223,7 @@ int main(int argc, char **argv)
 
     SDL_SetPlateauVide(rendu, rect_plateau, rect_plateau2, rect_plateau3);
 
-    AffichePlateauTuile(rendu, image_tuile, texture_tuile, rect_tuile);
+    AffichePlateauTuile(rendu, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);
 
     SDL_RenderPresent(rendu);
 
