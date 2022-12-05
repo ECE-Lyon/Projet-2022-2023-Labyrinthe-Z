@@ -118,11 +118,11 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
 
-void AffichePlateau(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
 
-    SDL_SetRenderDrawColor(rendu, 229, 204, 178, 255);
+    SDL_SetRenderDrawColor(renderer, 229, 204, 178, 255);
     for( int i=0 ; i<18 ; i++){
-        SDL_RenderDrawRect(rendu,&rect_plateau);
+        SDL_RenderDrawRect(renderer,&rect_plateau);
         rect_plateau.h -= 2;
         rect_plateau.w -= 2;
         rect_plateau.x = (1920-(rect_plateau.w))/2;
@@ -130,17 +130,16 @@ void AffichePlateau(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect rect_p
     }
 
     for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau2);
+        SDL_RenderFillRect(renderer,&rect_plateau2);
         rect_plateau2.x += 4*18;
     }
 
     for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau3);
+        SDL_RenderFillRect(renderer,&rect_plateau3);
         rect_plateau3.y += 4*18;
     }    
 
 }
-
 
 void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
 
@@ -241,16 +240,23 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer,
                              SDL_Texture *texture_tuile, SDL_Texture *texture_item, 
                              SDL_Rect rect_tuile, SDL_Rect rect_item, SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
 
+    SDL_SetRenderDrawColor(renderer, 255, 233, 210, 255);
+    SDL_RenderClear(renderer);
     AffichePlateau(renderer, rect_plateau, rect_plateau2, rect_plateau3);
-    AfficheTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);    
+    AfficheTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);  
+    SDL_RenderPresent(renderer);  
 
 }
 
 int main(int argc, char **argv)
 {
     
-    SDL_Window *window = NULL;
-    SDL_Renderer *rendu = NULL;
+    SDL_Window *window_jeu = NULL;
+    SDL_Window *window_menu = NULL;
+
+    SDL_Renderer *jeu = NULL;
+    SDL_Renderer *menu = NULL;
+
 
     SDL_Surface *image_tuile = NULL;
     SDL_Surface *image_item = NULL;
@@ -270,31 +276,39 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
-    if( window == NULL ){
+
+    /*window_menu = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
+    if( window_menu == NULL ){
+        SDL_Log("Erreur create_window > %s\n",SDL_GetError());
+        clean(NULL,NULL,NULL);
+        exit(EXIT_FAILURE);        
+    }
+    
+    menu = SDL_CreateRenderer(window_menu, -1, SDL_RENDERER_ACCELERATED);
+    if( menu == NULL ){
+        SDL_Log("Erreur render > %s\n",SDL_GetError());
+        clean(window_menu,NULL,NULL);
+        exit(EXIT_FAILURE);        
+    }*/
+
+    window_jeu = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
+    if( window_jeu == NULL ){
         SDL_Log("Erreur create_window > %s\n",SDL_GetError());
         clean(NULL,NULL,NULL);
         exit(EXIT_FAILURE);        
     }
 
-    rendu = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if( rendu == NULL ){
+    jeu = SDL_CreateRenderer(window_jeu, -1, SDL_RENDERER_ACCELERATED);
+    if( jeu == NULL ){
         SDL_Log("Erreur render > %s\n",SDL_GetError());
-        clean(window,NULL,NULL);
+        clean(window_jeu,NULL,NULL);
         exit(EXIT_FAILURE);        
     }
 
-    SDL_SetRenderDrawColor(rendu, 255, 233, 210, 255);
-    SDL_RenderClear(rendu);
-
-    AffichePlateauTuileItem(rendu, 
+    AffichePlateauTuileItem(jeu, 
                             image_tuile, image_item, 
                             texture_tuile, texture_item, 
                             rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
-
-    //sdl_ellipse(rendu, 100, 100, 45,45); // TEST CERCLE
-
-    SDL_RenderPresent(rendu);
 
     SDL_bool launched = SDL_TRUE;
 
@@ -311,6 +325,9 @@ int main(int argc, char **argv)
                 case SDLK_ESCAPE:
                     launched = SDL_FALSE;
                     break;
+                case SDLK_0:
+
+
                 default:
                     continue;
                 }
@@ -328,8 +345,14 @@ int main(int argc, char **argv)
     }
 
     SDL_DestroyTexture(texture_tuile);
-    SDL_DestroyRenderer(rendu);
-    SDL_DestroyWindow(window);
+    SDL_DestroyTexture(texture_item);
+    
+    SDL_DestroyRenderer(jeu);
+    SDL_DestroyRenderer(menu);
+
+    SDL_DestroyWindow(window_jeu);
+    SDL_DestroyWindow(window_menu);
+
     SDL_Quit();
 
     return EXIT_SUCCESS;
