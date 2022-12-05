@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
+#include "SDL_ttf.h"
 
 // gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
@@ -117,6 +118,13 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item22.bmp", // TARTE
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
+
+void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+
+    SDL_SetRenderDrawColor(renderer, 255, 233, 210, 255);
+    SDL_RenderClear(renderer);
+
+}
 
 void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
 
@@ -240,8 +248,7 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer,
                              SDL_Texture *texture_tuile, SDL_Texture *texture_item, 
                              SDL_Rect rect_tuile, SDL_Rect rect_item, SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
 
-    SDL_SetRenderDrawColor(renderer, 255, 233, 210, 255);
-    SDL_RenderClear(renderer);
+    ResetRender(renderer, 255, 233, 210, 255);
     AffichePlateau(renderer, rect_plateau, rect_plateau2, rect_plateau3);
     AfficheTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);  
     SDL_RenderPresent(renderer);  
@@ -251,12 +258,9 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer,
 int main(int argc, char **argv)
 {
     
-    SDL_Window *window_jeu = NULL;
-    SDL_Window *window_menu = NULL;
+    SDL_Window *window = NULL;
 
     SDL_Renderer *jeu = NULL;
-    SDL_Renderer *menu = NULL;
-
 
     SDL_Surface *image_tuile = NULL;
     SDL_Surface *image_item = NULL;
@@ -276,32 +280,17 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-
-    /*window_menu = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
-    if( window_menu == NULL ){
-        SDL_Log("Erreur create_window > %s\n",SDL_GetError());
-        clean(NULL,NULL,NULL);
-        exit(EXIT_FAILURE);        
-    }
-    
-    menu = SDL_CreateRenderer(window_menu, -1, SDL_RENDERER_ACCELERATED);
-    if( menu == NULL ){
-        SDL_Log("Erreur render > %s\n",SDL_GetError());
-        clean(window_menu,NULL,NULL);
-        exit(EXIT_FAILURE);        
-    }*/
-
-    window_jeu = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
-    if( window_jeu == NULL ){
+    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
+    if( window == NULL ){
         SDL_Log("Erreur create_window > %s\n",SDL_GetError());
         clean(NULL,NULL,NULL);
         exit(EXIT_FAILURE);        
     }
 
-    jeu = SDL_CreateRenderer(window_jeu, -1, SDL_RENDERER_ACCELERATED);
+    jeu = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if( jeu == NULL ){
         SDL_Log("Erreur render > %s\n",SDL_GetError());
-        clean(window_jeu,NULL,NULL);
+        clean(window,NULL,NULL);
         exit(EXIT_FAILURE);        
     }
 
@@ -348,10 +337,8 @@ int main(int argc, char **argv)
     SDL_DestroyTexture(texture_item);
     
     SDL_DestroyRenderer(jeu);
-    SDL_DestroyRenderer(menu);
 
-    SDL_DestroyWindow(window_jeu);
-    SDL_DestroyWindow(window_menu);
+    SDL_DestroyWindow(window);
 
     SDL_Quit();
 
