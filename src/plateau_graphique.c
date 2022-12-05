@@ -1,9 +1,58 @@
 #include "library.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
 
 // gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2
+
+/*void sdl_ellipse(SDL_Renderer* r, int x0, int y0, int radiusX, int radiusY) // FAIS UN CERCLE
+{
+    float pi  = 3.14159265358979323846264338327950288419716939937510;
+    float pih = pi / 2.0; //half of pi
+
+    //drew  28 lines with   4x4  circle with precision of 150 0ms
+    //drew 132 lines with  25x14 circle with precision of 150 0ms
+    //drew 152 lines with 100x50 circle with precision of 150 3ms
+    const int prec = 27; // precision value; value of 1 will draw a diamond, 27 makes pretty smooth circles.
+    float theta = 0;     // angle that will be increased each loop
+
+    //starting point
+    int x  = (float)radiusX * cos(theta);//start point
+    int y  = (float)radiusY * sin(theta);//start point
+    int x1 = x;
+    int y1 = y;
+
+    //repeat until theta >= 90;
+    float step = pih/(float)prec; // amount to add to theta each time (degrees)
+    for(theta=step;  theta <= pih;  theta+=step)//step through only a 90 arc (1 quadrant)
+    {
+        //get new point location
+        x1 = (float)radiusX * cosf(theta) + 0.5; //new point (+.5 is a quick rounding method)
+        y1 = (float)radiusY * sinf(theta) + 0.5; //new point (+.5 is a quick rounding method)
+
+        //draw line from previous point to new point, ONLY if point incremented
+        if( (x != x1) || (y != y1) )//only draw if coordinate changed
+        {
+            //SDL_RenderDrawLine(r, x0 + x, y0 - y,    x0 + x1, y0 - y1 );//quadrant TR
+            //SDL_RenderDrawLine(r, x0 - x, y0 - y,    x0 - x1, y0 - y1 );//quadrant TL
+            //SDL_RenderDrawLine(r, x0 - x, y0 + y,    x0 - x1, y0 + y1 );//quadrant BL
+            SDL_RenderDrawLine(r, x0 + x, y0 + y,    x0 + x1, y0 + y1 );//quadrant BR
+        }
+        //save previous points
+        x = x1;//save new previous point
+        y = y1;//save new previous point
+    }
+    //arc did not finish because of rounding, so finish the arc
+    if(x!=0)
+    {
+        x=0;
+        //SDL_RenderDrawLine(r, x0 + x, y0 - y,    x0 + x1, y0 - y1 );//quadrant TR
+        //SDL_RenderDrawLine(r, x0 - x, y0 - y,    x0 - x1, y0 - y1 );//quadrant TL
+        //SDL_RenderDrawLine(r, x0 - x, y0 + y,    x0 - x1, y0 + y1 );//quadrant BL
+        SDL_RenderDrawLine(r, x0 + x, y0 + y,    x0 + x1, y0 + y1 );//quadrant BR
+    }
+}*/
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     
@@ -14,29 +63,6 @@ void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     if(w)
         SDL_DestroyWindow(w);
     SDL_Quit();
-}
-
-void SDL_SetPlateauVide(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
-
-    SDL_SetRenderDrawColor(rendu, 229, 204, 178, 255);
-    for( int i=0 ; i<18 ; i++){
-        SDL_RenderDrawRect(rendu,&rect_plateau);
-        rect_plateau.h -= 2;
-        rect_plateau.w -= 2;
-        rect_plateau.x = (1920-(rect_plateau.w))/2;
-        rect_plateau.y = (1080-(rect_plateau.h))/2;
-    }
-
-    for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau2);
-        rect_plateau2.x += 4*18;
-    }
-
-    for( int i=0 ; i<6 ; i++){
-        SDL_RenderFillRect(rendu,&rect_plateau3);
-        rect_plateau3.y += 4*18;
-    }    
-
 }
 
 typedef struct{ 
@@ -92,7 +118,47 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
 
-void printTuile(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+void AffichePlateau(SDL_Renderer *rendu,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+
+    SDL_SetRenderDrawColor(rendu, 229, 204, 178, 255);
+    for( int i=0 ; i<18 ; i++){
+        SDL_RenderDrawRect(rendu,&rect_plateau);
+        rect_plateau.h -= 2;
+        rect_plateau.w -= 2;
+        rect_plateau.x = (1920-(rect_plateau.w))/2;
+        rect_plateau.y = (1080-(rect_plateau.h))/2;
+    }
+
+    for( int i=0 ; i<6 ; i++){
+        SDL_RenderFillRect(rendu,&rect_plateau2);
+        rect_plateau2.x += 4*18;
+    }
+
+    for( int i=0 ; i<6 ; i++){
+        SDL_RenderFillRect(rendu,&rect_plateau3);
+        rect_plateau3.y += 4*18;
+    }    
+
+}
+
+
+void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+
+    image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
+    texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
+    SDL_FreeSurface(image_tuile);
+    SDL_QueryTexture(texture_tuile, NULL, NULL, &rect_tuile.w, &rect_tuile.h);
+    SDL_RenderCopy(renderer, texture_tuile, NULL, &rect_tuile);
+
+    image_item = SDL_LoadBMP(chemin_item[(SDLplateau[i][j].item)-1]);
+    texture_item = SDL_CreateTextureFromSurface(renderer, image_item);
+    SDL_FreeSurface(image_item);
+    SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
+    SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
+
+}
+
+void RandomTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
     
     if ( (SDLplateau[i][j].tuile) == 0 ){
     
@@ -149,21 +215,11 @@ void printTuile(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *i
         }
     }
         
-    image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-    texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
-    SDL_FreeSurface(image_tuile);
-    SDL_QueryTexture(texture_tuile, NULL, NULL, &rect_tuile.w, &rect_tuile.h);
-    SDL_RenderCopy(renderer, texture_tuile, NULL, &rect_tuile);
-
-    image_item = SDL_LoadBMP(chemin_item[(SDLplateau[i][j].item)-1]);
-    texture_item = SDL_CreateTextureFromSurface(renderer, image_item);
-    SDL_FreeSurface(image_item);
-    SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
-    SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
+    printTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
 
 }
 
-void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item){
+void AfficheTuileItem( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item){
 
     srand(time(NULL));
 
@@ -171,13 +227,23 @@ void AffichePlateauTuile( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_
         rect_tuile.x = 717;
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
-            printTuile(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
+            RandomTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
         }
         rect_tuile.y += 4*18;
         rect_item.y += 4*18;
     }
+}
+
+void AffichePlateauTuileItem(SDL_Renderer *renderer, 
+                             SDL_Surface *image_tuile, SDL_Surface *image_item, 
+                             SDL_Texture *texture_tuile, SDL_Texture *texture_item, 
+                             SDL_Rect rect_tuile, SDL_Rect rect_item, SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+
+    AffichePlateau(renderer, rect_plateau, rect_plateau2, rect_plateau3);
+    AfficheTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);    
+
 }
 
 int main(int argc, char **argv)
@@ -211,7 +277,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);        
     }
 
-    rendu = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    rendu = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if( rendu == NULL ){
         SDL_Log("Erreur render > %s\n",SDL_GetError());
         clean(window,NULL,NULL);
@@ -221,9 +287,12 @@ int main(int argc, char **argv)
     SDL_SetRenderDrawColor(rendu, 255, 233, 210, 255);
     SDL_RenderClear(rendu);
 
-    SDL_SetPlateauVide(rendu, rect_plateau, rect_plateau2, rect_plateau3);
+    AffichePlateauTuileItem(rendu, 
+                            image_tuile, image_item, 
+                            texture_tuile, texture_item, 
+                            rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
 
-    AffichePlateauTuile(rendu, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);
+    //sdl_ellipse(rendu, 100, 100, 45,45); // TEST CERCLE
 
     SDL_RenderPresent(rendu);
 
