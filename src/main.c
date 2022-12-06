@@ -18,7 +18,7 @@ typedef struct{
 //déclaration de tous les prototypes
 void rotationTuile(int tuile[9], int nbTour);
 void copyTab(int tab1[], int tab2[], int size);
-void printPlateau(casePlateau plateau[7][7]);
+void printPlateau(casePlateau plateau[7][7], int gameState);
 void printTuile(int typeTuile[9], int rotation, int item, int indiceLigne, int posX, int posY);
 void genererPlateau();
 int getRandomInt(int min, int max);
@@ -32,9 +32,9 @@ void getGUI(int nbLigne, char ligne[110]);
 void melangerTab(int* tab, size_t tailleTab);
 void printTab(int* tab, size_t tailleTab);
 void genererCarte(int carte[24]);
-void movePlayer(int player, int direction);
-int askDeplacement(int joueur);
-void printGUI(int indiceLigne);
+int movePlayer(int player, int direction);
+int askDeplacement(int joueur, char ligne[130], int indiceLigne);
+int printGUI(int indiceLigne, int gameState);
 
 //liste de tous les caractères dont on a besoin
 char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace vide // mur // séparateur de tuile horizontal // séparateur de tuile vertical
@@ -49,7 +49,8 @@ char caractere[NB_CHARAC][10] = {"  ","▓▓","░░","░░",//3 // espace v
                                  "↓↓","↑↑","⇉ ","⇇ ",   //39
                                  "1.","2.","3."," 4. ",   //43
                                  " 5. "," 6. ","7.","8.",   //47
-                                 "9.","10. ","11. ","12. "};  //51
+                                 "9.","10. ","11. ","12. ", //51
+                                 "⚠️"};  
 
 //déclaration des tuiles et de leur composition
 int tuileVide[9] = {0,0,0,
@@ -80,14 +81,16 @@ casePlateau tuileRestante;
 
 playerData playerList[4] = {0,0,0,  0,6,0,  6,0,0,  6,6,0}; //position initiale des joueurs (0,0 etant le coin supérieur gauche, et 6,6 le coin inférieur droit)
 
+int carte[24];
+
 int main(int argc, char **argv){
   SetConsoleOutputCP(65001); // format de la console pour affichser l'unicode
+  clrScreen();
 
   genererPlateau();
-  printPlateau(plateau);
-  int carte[24];
-  genererCarte(carte);
-  askDeplacement(0);
+  printPlateau(plateau, 1); // le joueur 1 choisis son déplacement
+  clrScreen();
+  printPlateau(plateau, 0); // on affiche rien
   
   return 0;
 }
@@ -118,7 +121,7 @@ void rotationTuile(int tuileActuelle[9], int nbTour){
   }  
 }
 
-void printPlateau(casePlateau plateau[7][7]){
+void printPlateau(casePlateau plateau[7][7], int gameState){
   afficherEspace(3);
   for(int i = 0; i < 7; i++){
     if(i == 1 || i == 3 || i == 5){
@@ -131,7 +134,7 @@ void printPlateau(casePlateau plateau[7][7]){
     }
   }
   afficherEspace(4);
-  printGUI(0);
+  printGUI(0, gameState);
   printf("\n");
   afficherEspace(4);
   for(int i = 0; i < 7; i++){
@@ -145,14 +148,14 @@ void printPlateau(casePlateau plateau[7][7]){
     }
   }
   afficherEspace(3);
-  printGUI(1);
+  printGUI(1, gameState);
   printf("\n");
   afficherEspace(3);
   for(int i = 0; i<7*4+1; i++){ // affiche le contour de la première ligne
     printf("%s", caractere[2]);
   }
   afficherEspace(3);
-  printGUI(2);
+  printGUI(2, gameState);
   printf("\n");
   for(int i = 0; i<7; i++){ // affiche les 7 lignes de tuiles
     for(int k = 0; k < 9; k+=3){ // permet d'afficher les lignes 2 et 3 en prenant l'indice de la tuile +3k
@@ -197,7 +200,7 @@ void printPlateau(casePlateau plateau[7][7]){
       else {
         afficherEspace(3);
       }
-      printGUI(k/3+4*i +3);
+      printGUI(k/3+4*i +3, gameState);
       printf("\n");
     }
     afficherEspace(3);
@@ -205,7 +208,7 @@ void printPlateau(casePlateau plateau[7][7]){
       printf("%s", caractere[2]);
     }
     afficherEspace(3);
-    printGUI(4*(i+1)+2);
+    printGUI(4*(i+1)+2, gameState);
     printf("\n");
   }
   afficherEspace(4);
@@ -219,6 +222,7 @@ void printPlateau(casePlateau plateau[7][7]){
       afficherEspace(4);
     }
   }
+  printGUI(32, gameState);
   printf("\n");
   afficherEspace(4);
   int nombre;
@@ -233,6 +237,7 @@ void printPlateau(casePlateau plateau[7][7]){
       afficherEspace(4);
     }
   }
+  printGUI(33, gameState);
   printf("\n");
 }
 
@@ -354,7 +359,7 @@ void genererPlateau(){
               nbTuileRestant[3] -= 1;
               break;
           }
-        break; // break le while(1)
+          break; // break le while(1)
         }
       }
     }
@@ -502,13 +507,20 @@ void afficherEspace(int nombre){
   }
 }
 
-void printGUI(int indiceLigne){
+int printGUI(int indiceLigne, int gameState){
   char ligne[130] = {0};
-  getGUI(indiceLigne, ligne);
+  if (indiceLigne <= 25){
+    getGUI(indiceLigne, ligne);
+  } else if (indiceLigne <= 33 && gameState == 1){
+    gameState = askDeplacement(0, ligne, indiceLigne);
+  }
+  if (indiceLigne == 33 && gameState == 5){
+    printf("                %s%s DEPLACEMENT IMPOSSIBLE %s%s", caractere[52], caractere[52], caractere[52], caractere[52]);
+    delay(1000);
+  }
   printf("%s", ligne);
+  return gameState;
 }
-
-
 
 void getGUI(int nbLigne, char ligne[130]){
   switch (nbLigne)
@@ -546,6 +558,7 @@ void genererCarte(int carte[24]){
   for(int i = 0; i<24; i++){ //on génère 24 tuiles
     carte[i] = i;
   }
+  melangerTab(carte, 24);
 }
 
 void printTab(int* tab, size_t tailleTab){
@@ -565,21 +578,43 @@ void melangerTab(int* tab, size_t tailleTab){
   }
 }
 
-void movePlayer(int player, int direction){
+int movePlayer(int player, int direction){
   if(checkDeplacement(player, direction)){
     switch (direction) {
-      case 0: playerList[player].posY -= 1; break;
-      case 1: playerList[player].posX += 1; break;
-      case 2: playerList[player].posY += 1; break;
-      case 3: playerList[player].posX -= 1; break;
+      case 0: playerList[player].posX -= 1; break;
+      case 1: playerList[player].posY += 1; break;
+      case 2: playerList[player].posX += 1; break;
+      case 3: playerList[player].posY -= 1; break;
+      case 4: break;
     }
-  }
+    return 0;
+  } else return 1;
 }
 
-int askDeplacement(int joueur){
+int askDeplacement(int joueur, char ligne[130], int indiceLigne){
   int direction;
-  printf("Joueur %d, c'est à vous. Dans quelle direction voulez vous aller ? \n", joueur+1);
-  printf("%s : 1     %s : 2     %s : 3     %s : 4 \n", caractere[37], caractere[38], caractere[36], caractere[39]);
-  scanf("%d", &direction);
-  return direction-1;
+  switch (indiceLigne)
+  {
+  case 27:
+    sprintf(ligne, "                      Joueur %d, c'est à vous. Dans quelle direction voulez vous aller ? ", joueur+1);
+    return -2;
+    break;
+  case 28:
+    sprintf(ligne, "                         %s : 1     %s : 2     %s : 3     %s : 4     ne rien faire : 5", caractere[37], caractere[38], caractere[36], caractere[39]);
+    return -2;
+    break;
+  case 33:
+    scanf("%d", &direction);
+    if(direction < 0 || direction > 5){
+      return -1;
+    } else return direction-1;
+    /*if (direction == 5) return 2;
+    else if (movePlayer(joueur, direction-1)){
+      return 4;
+    } else return direction-1;*/
+    break;
+  default:
+    return -2;
+    break;
+  }
 }
