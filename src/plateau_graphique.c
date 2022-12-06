@@ -11,7 +11,7 @@ void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file);
 void AfficheButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file,Uint8 r, Uint8 g, Uint8 b, int px);
-void AfficheMenu(SDL_Renderer *renderer,const char* file);
+void AfficheMenu(SDL_Renderer *renderer,const char* file, Uint8 r, Uint8 g, Uint8 b);
 
 void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3);
 void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
@@ -83,6 +83,9 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
 
+
+SDL_Rect rect_button = {(1920-805)/2-12, (1080-83)/2-12, 805+24, 83+24};
+
 int main(int argc, char **argv)
 {
     
@@ -106,7 +109,7 @@ int main(int argc, char **argv)
 
 //------------------------------------------------//
 
-    SDL_Rect rect_exit = {(1920-300)/2, (1080-100)/2+125, 300, 100};
+    //SDL_Rect rect_exit = {(1920-300)/2, (1080-100)/2+125, 300, 100};
 
     SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
     SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
@@ -137,9 +140,12 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);        
     }
 
-    AfficheMenu(jeu, "images/button/newgame.bmp");
+    ResetRender(jeu,255, 233, 210, 255);
+    AfficheMenu(jeu, "images/button/newgame.bmp",229, 204, 178);
 
     SDL_bool launched = SDL_TRUE;
+
+    int x,y;
 
     while( launched ){
 
@@ -163,10 +169,19 @@ int main(int argc, char **argv)
                 default:
                     continue;
                 }
-            //case SDL_MOUSEMOTION:
-                //x = event.motion.x;
-                //y = event.motion.y;
+            case SDL_MOUSEMOTION:
+                x = event.motion.x;
+                y = event.motion.y;
+                if(x >= rect_button.x && x <= rect_button.x + rect_button.w && y >= rect_button.y && y <= rect_button.y + rect_button.h){
 
+                    ResetRender(jeu,255, 233, 210, 255);
+                    AfficheMenu(jeu, "images/button/newgame.bmp",216, 192, 168);
+
+                }else{
+                    ResetRender(jeu,255, 233, 210, 255);
+                    AfficheMenu(jeu, "images/button/newgame.bmp",229, 204, 178);
+                }
+                continue;
             case SDL_QUIT:
                 launched = SDL_FALSE;
                 break;
@@ -210,12 +225,7 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 
 }
 
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file,Uint8 r, Uint8 g, Uint8 b, int px){
-
-    rect_button.x -= px;
-    rect_button.y -= px;
-    rect_button.h += 2*px;
-    rect_button.w += 2*px;
+void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Uint8 r, Uint8 g, Uint8 b, int px){
 
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
 
@@ -230,15 +240,13 @@ void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *textu
 
 }
 
-void AfficheMenu(SDL_Renderer *renderer,const char* file){
+void AfficheMenu(SDL_Renderer *renderer,const char* file, Uint8 r, Uint8 g, Uint8 b){
 
     SDL_Surface *image = NULL;
     SDL_Texture *texture_button = NULL;
-    SDL_Rect rect_button = {(1920-805)/2, (1080-83)/2, 805, 83};
 
-    ResetRender(renderer,255, 233, 210, 255);
-    AfficheButton(renderer, image, texture_button, rect_button, file, 229, 204, 178, 8);
-   // AfficheButton(renderer,)
+    AfficheButton(renderer, image, texture_button, rect_button, file, r, g, b, 12);
+   //AfficheButton
     SDL_RenderPresent(renderer);
 
 }
