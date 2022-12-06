@@ -144,6 +144,7 @@ int main(int argc, char **argv)
     AfficheMenu(jeu, "images/button/newgame.bmp",229, 204, 178);
 
     SDL_bool launched = SDL_TRUE;
+    SDL_bool lauched_game = SDL_FALSE;
 
     int x,y;
 
@@ -153,6 +154,7 @@ int main(int argc, char **argv)
 
         while( SDL_PollEvent(&event) ){
 
+
             switch( event.type ){
             case SDL_KEYDOWN:
                 
@@ -160,6 +162,7 @@ int main(int argc, char **argv)
                 case SDLK_ESCAPE:
                     launched = SDL_FALSE;
                     continue;
+
                 case SDLK_0:
                     AffichePlateauTuileItem(jeu, 
                         image_tuile, image_item, 
@@ -169,19 +172,42 @@ int main(int argc, char **argv)
                 default:
                     continue;
                 }
+
             case SDL_MOUSEMOTION:
-                x = event.motion.x;
-                y = event.motion.y;
-                if(x >= rect_button.x && x <= rect_button.x + rect_button.w && y >= rect_button.y && y <= rect_button.y + rect_button.h){
 
-                    ResetRender(jeu,255, 233, 210, 255);
-                    AfficheMenu(jeu, "images/button/newgame.bmp",216, 192, 168);
-
+                if( lauched_game == SDL_TRUE ){
+                    continue;
                 }else{
-                    ResetRender(jeu,255, 233, 210, 255);
-                    AfficheMenu(jeu, "images/button/newgame.bmp",229, 204, 178);
+                    x = event.motion.x;
+                    y = event.motion.y;
+                    if(x >= rect_button.x && x <= rect_button.x + rect_button.w && y >= rect_button.y && y <= rect_button.y + rect_button.h){
+                        ResetRender(jeu,255, 233, 210, 255);
+                        AfficheMenu(jeu, "images/button/newgame.bmp",216, 192, 168);
+                    }else{
+                        ResetRender(jeu,255, 233, 210, 255);
+                        AfficheMenu(jeu, "images/button/newgame.bmp",229, 204, 178);
+                    }
+                    continue;
                 }
-                continue;
+
+            case SDL_MOUSEBUTTONDOWN:
+
+                if ( lauched_game == SDL_FALSE){
+
+                    x = event.motion.x;
+                    y = event.motion.y;
+
+                    if(x >= rect_button.x && x <= rect_button.x + rect_button.w && y >= rect_button.y && y <= rect_button.y + rect_button.h){
+                        
+                        AffichePlateauTuileItem(jeu, 
+                                image_tuile, image_item, 
+                                texture_tuile, texture_item, 
+                                rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
+                        lauched_game = SDL_TRUE;
+                    }
+
+                }break;  
+
             case SDL_QUIT:
                 launched = SDL_FALSE;
                 break;
