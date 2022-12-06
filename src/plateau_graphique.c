@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     int x,y;
 
     while( launched ){
-        
+        printDebugGrid(jeu);
 
         SDL_Event event;
 
@@ -285,15 +285,15 @@ void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, in
     SDL_Texture *texture_button = NULL;
 
     if (etatSelection == 1){
-        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonSelected, 12);
+        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonSelected, MENU_BUTTON_BORDER);
     } else {
-        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonNotSelected, 12);
+        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonNotSelected, MENU_BUTTON_BORDER);
     }
 
     if (etatSelection == 2){
-        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonSelected, 12);
+        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonSelected, MENU_BUTTON_BORDER);
     } else {
-        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonNotSelected, 12);
+        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonNotSelected, MENU_BUTTON_BORDER);
     }
 
     SDL_RenderPresent(renderer);
@@ -431,11 +431,18 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer,
 
 void printDebugGrid(SDL_Renderer *renderer){
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-    for(int i = 0; i<=1080; i+=40){
+    for(int i = 0; i<=1080; i+=60){
         SDL_RenderDrawLine(renderer,0,i,1920,i);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawLine(renderer,0,540,1920,540);
+
+    SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
+    for(int i = 0; i<=1920; i+=60){
+        SDL_RenderDrawLine(renderer,i,0,i,1080);
+    }
+    SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawLine(renderer,960,0,960,1080);
     
     SDL_RenderPresent(renderer);
 }
