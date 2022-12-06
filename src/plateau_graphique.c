@@ -10,7 +10,7 @@
 void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file);
-void AfficheButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file);
+void AfficheButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file,Uint8 r, Uint8 g, Uint8 b, int px);
 void AfficheMenu(SDL_Renderer *renderer,const char* file);
 
 void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3);
@@ -210,21 +210,21 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 
 }
 
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file,Uint8 r, Uint8 g, Uint8 b){
+void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file,Uint8 r, Uint8 g, Uint8 b, int px){
 
-    rect_button.x -= 8;
-    rect_button.y -= 8;
-    rect_button.h += 16;
-    rect_button.w += 16;
+    rect_button.x -= px;
+    rect_button.y -= px;
+    rect_button.h += 2*px;
+    rect_button.w += 2*px;
 
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-    //SDL_SetRenderDrawColor(renderer, 229, 204, 178, 255);
+
     SDL_RenderFillRect(renderer,&rect_button);
 
-    rect_button.x += 8;
-    rect_button.y += 8;
-    rect_button.h -= 16;
-    rect_button.w -= 16;
+    rect_button.x += px;
+    rect_button.y += px;
+    rect_button.h -= 2*px;
+    rect_button.w -= 2*px;
 
     printButton(renderer, image, texture_button, rect_button, file);
 
@@ -237,7 +237,7 @@ void AfficheMenu(SDL_Renderer *renderer,const char* file){
     SDL_Rect rect_button = {(1920-805)/2, (1080-83)/2, 805, 83};
 
     ResetRender(renderer,255, 233, 210, 255);
-    AfficheButton(renderer, image, texture_button, rect_button, file);
+    AfficheButton(renderer, image, texture_button, rect_button, file, 229, 204, 178, 8);
    // AfficheButton(renderer,)
     SDL_RenderPresent(renderer);
 
