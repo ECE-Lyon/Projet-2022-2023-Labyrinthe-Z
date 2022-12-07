@@ -458,7 +458,26 @@ void printDebugGrid(SDL_Renderer *renderer){
 
 int checkDeplacement(int direction, int player){
     switch(direction){
-        case 0:
-            if (SDLplateau[playerData[player].posX][playerData[player].posY])
+        case 0: // le joueur va en haut
+        if (playerData[player].posY > 0){ // si le joueur n'est pas tout en haut
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
+            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY-1].tuile;
+            if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
+                if (tuileActuelle == 0 || tuileActuelle == 3 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile suivante a un passage en bas
+                    return 1;
+                }else return 0;
+            }else return 0;
+        }
+        case 1: // le joueur va à droite
+        if (playerData[player].posX < 6){ // si le joueur n'est pas tout à droite
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
+            int tuileSuivante = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile;
+            if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
+                if (tuileActuelle == 0 || tuileActuelle == 3 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile suivante a un passage en bas
+                    return 1;
+                }else return 0;
+            }else return 0;
+        }
+        
     }
 }
