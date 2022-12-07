@@ -21,8 +21,8 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, int colorButton[3], int px);
 void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, int etatSelection);
 
+void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
-void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
 void RandomTuileItem(SDL_Renderer *renderer, int i, int j);
 void AfficheTuileItem( SDL_Renderer *renderer);
 void AffichePlateauTuileItem(SDL_Renderer *renderer);
@@ -58,7 +58,7 @@ Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
 };
 
-Case tuileRestante;
+Case tuileRestante = {0,0};
 
 PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
                     x = event.motion.x;
                     y = event.motion.y;
 
-                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
+                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){                          
                         AffichePlateauTuileItem(jeu);
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
@@ -263,14 +263,16 @@ void SearchTuile(){
             case 2: // TUILE L vide
                 tuileRestante.tuile = 1;
                 tuileRestante.item = 0;
-
+            break;
             case 3: // TUILE I VIDE
                 tuileRestante.tuile = 9;
                 tuileRestante.item = 0;
+            break;
             }
             break;
         }
     }
+    //printf("%d %d\n", tuileRestante.tuile, tuileRestante.item);
 
 }
 
@@ -355,7 +357,7 @@ void AffichePlateau(SDL_Renderer *renderer){
 
 }
 
-void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]){
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image){
     SDL_Surface *surface_image = NULL;
     SDL_Texture *texture_image = NULL;
 
@@ -440,6 +442,8 @@ void RandomTuileItem(SDL_Renderer *renderer, int i, int j){
         }
     }
 
+    SearchTuile();
+
 }
 
 void AfficheTuileItem(SDL_Renderer *renderer){
@@ -480,7 +484,10 @@ void AfficheTuileItem(SDL_Renderer *renderer){
 
 void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
+    SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
+
     ResetRender(renderer, 255, 233, 210, 255);
+    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
