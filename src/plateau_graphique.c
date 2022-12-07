@@ -473,7 +473,27 @@ int checkDeplacement(int direction, int player){
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
             int tuileSuivante = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile;
             if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
-                if (tuileActuelle == 0 || tuileActuelle == 3 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile suivante a un passage en bas
+                if (tuileSuivante == 0 || tuileSuivante == 3 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
+                    return 1;
+                }else return 0;
+            }else return 0;
+        }
+        case 2:
+        if (playerData[player].posY < 6){ // si le joueur n'est pas tout en bas
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY-1].tuile;
+            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
+            if (tuileActuelle == 0 || tuileActuelle == 3 || tuileActuelle == 5  || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
+                if (tuileSuivante == 1 || tuileSuivante == 2 || tuileSuivante == 4 || tuileSuivante == 5 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
+                    return 1;
+                }else return 0;
+            }else return 0;
+        }
+        case 3: //le joueur va à gauche
+        if (playerData[player].posX > 0){
+            int tuileActuelle = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile;
+            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
+            if ( tuileActuelle == 2 || tuileActuelle == 3 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 9){
+                if(tuileSuivante==0 || tuileSuivante == 1 || tuileSuivante == 4 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 9){
                     return 1;
                 }else return 0;
             }else return 0;
