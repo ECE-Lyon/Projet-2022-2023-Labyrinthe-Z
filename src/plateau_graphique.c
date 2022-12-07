@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 
             case SDL_MOUSEBUTTONDOWN:
 
-                if ( launched_game == SDL_FALSE){
+                if ( launched_game == SDL_FALSE ){
 
                     x = event.motion.x;
                     y = event.motion.y;
@@ -224,6 +224,44 @@ int main(int argc, char **argv)
     SDL_Quit();
 
     return EXIT_SUCCESS;
+}
+
+void SearchTuile(){
+
+    for( int i=0 ; i<3 ; i++ ){
+        if(nbTuileRestant[i]){
+            switch ( i ){
+
+            case 0: // TUILE T item
+                tuileRestante.tuile = 5; 
+                for( int j=12 ; j<24 ; j++ ){
+                    if( nbItemRestant[j] ){
+                        tuileRestante.item = i+1;
+                        break;
+                    }
+                }
+            break;
+            case 1: // TUILE L item
+                tuileRestante.tuile = 1;
+                for( int j=12 ; j<24 ; j++ ){
+                    if( nbItemRestant[j] ){
+                        tuileRestante.item = i+1;
+                        break;
+                    }
+                }
+            break;
+            case 2: // TUILE L vide
+                tuileRestante.tuile = 1;
+                tuileRestante.item = 0;
+
+            case 3: // TUILE I VIDE
+                tuileRestante.tuile = 9;
+                tuileRestante.item = 0;
+            }
+            break;
+        }
+    }
+
 }
 
 void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
