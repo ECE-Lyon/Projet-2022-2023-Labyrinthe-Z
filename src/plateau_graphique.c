@@ -1,4 +1,3 @@
-#include "library.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +9,8 @@
 #define MENU_BUTTON_W 820
 #define MENU_BUTTON_H 90
 #define MENU_BUTTON_BORDER 12
+
+int getRandomInt(int min, int max);
 
 void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
@@ -52,11 +53,15 @@ Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
 };
 
+Case tuileRestante;
+
 PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
 char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
+
+
 
 const char chemin_tuile[10][26] = {"images/tuiles/TuileL1.bmp",
                                    "images/tuiles/TuileL2.bmp",          
@@ -480,4 +485,9 @@ int checkDeplacement(int direction, int player){
         }
         
     }
+}
+
+int getRandomInt(int min, int max){
+  int i = (rand() % (max-min+1)) + min;
+  return i;
 }
