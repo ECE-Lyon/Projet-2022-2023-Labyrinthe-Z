@@ -27,6 +27,7 @@ void AfficheTuileItem( SDL_Renderer *renderer);
 void AffichePlateauTuileItem(SDL_Renderer *renderer);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     
@@ -164,6 +165,15 @@ int main(int argc, char **argv)
                     continue;
                 case SDLK_0:
                     AffichePlateauTuileItem(jeu);
+                    break;
+                case SDLK_DOWN:
+                    movePlayer(0, 2);
+                    AffichePlateauTuileItem(jeu);
+                    break;
+                case SDLK_RIGHT:
+                    movePlayer(0, 1);
+                    AffichePlateauTuileItem(jeu);
+                    break;
                 default:
                     continue;
                 }
@@ -307,29 +317,32 @@ void AffichePlateau(SDL_Renderer *renderer){
 
 }
 
-void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]){
+    SDL_Surface *surface_image = NULL;
+    SDL_Texture *texture_image = NULL;
 
-    SDL_Surface *image_tuile = NULL;
-    SDL_Surface *image_item = NULL;
+    surface_image = SDL_LoadBMP(chemin_image);
+    texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
+    SDL_FreeSurface(surface_image);
+    SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h);
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 
-    SDL_Texture *texture_tuile = NULL;
-    SDL_Texture *texture_item = NULL;
+    SDL_DestroyTexture(texture_image);
+}
 
-    image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-    texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
-    SDL_FreeSurface(image_tuile);
-    SDL_QueryTexture(texture_tuile, NULL, NULL, &rect_tuile.w, &rect_tuile.h);
-    SDL_RenderCopy(renderer, texture_tuile, NULL, &rect_tuile);
+void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player, int i, int j){
 
-    image_item = SDL_LoadBMP(chemin_item[(SDLplateau[i][j].item)-1]);
-    texture_item = SDL_CreateTextureFromSurface(renderer, image_item);
-    SDL_FreeSurface(image_item);
-    SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
-    SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
+    SDL_Surface *image_player = NULL;
 
-    SDL_DestroyTexture(texture_tuile);
-    SDL_DestroyTexture(texture_item);
+    SDL_Texture *texture_player = NULL;
 
+    image_player = SDL_LoadBMP("images/items16px/player_1.bmp"); 
+    texture_player = SDL_CreateTextureFromSurface(renderer, image_player);
+    SDL_FreeSurface(image_player);
+    SDL_QueryTexture(texture_player, NULL, NULL, &rect_player.w, &rect_player.h);
+    SDL_RenderCopy(renderer, texture_player, NULL, &rect_player);
+
+    SDL_DestroyTexture(texture_player);
 }
 
 void RandomTuileItem(SDL_Renderer *renderer, int i, int j){
@@ -403,7 +416,22 @@ void AfficheTuileItem(SDL_Renderer *renderer){
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
             RandomTuileItem(renderer,i, j);
-            printTuileItem(renderer,rect_tuile, rect_item,i, j);
+            if (playerData[0].posX == i && playerData[0].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
+            } else if (playerData[1].posX == i && playerData[1].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_2.bmp");
+            } else if (playerData[2].posX == i && playerData[2].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_3.bmp");
+            } else if (playerData[3].posX == i && playerData[3].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_4.bmp");
+            } else {
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, chemin_item[(SDLplateau[i][j].item)-1]);
+            }
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
         }
