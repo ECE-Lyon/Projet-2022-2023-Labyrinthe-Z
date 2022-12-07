@@ -5,6 +5,7 @@
 #include <time.h>
 #include <SDL.h>
 #include "SDL_ttf.h"
+#include <SDL_mixer.h>
 
 // gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
 
@@ -241,7 +242,6 @@ void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
     SDL_RenderClear(renderer);
 
 }
-
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file){
 
