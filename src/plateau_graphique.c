@@ -36,8 +36,12 @@ void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
 }
 
 typedef struct{ 
-  char  tuile, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
+  char tuile, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
 }Case;
+
+typedef struct{
+    int posX, posY, itemFound;
+}PlayerDATA;
 
 Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
@@ -47,6 +51,8 @@ Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
                           2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
 };
+
+PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
@@ -152,12 +158,12 @@ int main(int argc, char **argv)
     AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 0);
 
     SDL_bool launched = SDL_TRUE;
-    SDL_bool lauched_game = SDL_FALSE;
+    SDL_bool launched_game = SDL_FALSE;
 
     int x,y;
 
     while( launched ){
-        printDebugGrid(jeu);
+        //printDebugGrid(jeu);
 
         SDL_Event event;
 
@@ -169,22 +175,25 @@ int main(int argc, char **argv)
                 
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
-                    launched = SDL_FALSE;
+                    if(launched_game == SDL_FALSE) launched = SDL_FALSE; //ferme la fenêtre
+                    else {
+                        ResetRender(jeu,255, 233, 210, 255);
+                        AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 0);
+                        launched_game = SDL_FALSE;
+                    }
                     continue;
-
                 case SDLK_0:
                     AffichePlateauTuileItem(jeu, 
                         image_tuile, image_item, 
                         texture_tuile, texture_item, 
                         rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
-
                 default:
                     continue;
                 }
 
             case SDL_MOUSEMOTION:
 
-                if( lauched_game == SDL_TRUE ){
+                if( launched_game == SDL_TRUE ){
                     continue;
                 }else{
                     x = event.motion.x;
@@ -204,7 +213,7 @@ int main(int argc, char **argv)
 
             case SDL_MOUSEBUTTONDOWN:
 
-                if ( lauched_game == SDL_FALSE){
+                if ( launched_game == SDL_FALSE){
 
                     x = event.motion.x;
                     y = event.motion.y;
@@ -214,7 +223,7 @@ int main(int argc, char **argv)
                                 image_tuile, image_item, 
                                 texture_tuile, texture_item, 
                                 rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
-                        lauched_game = SDL_TRUE;
+                        launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         launched = SDL_FALSE; // ferme la fenêtre
                     }
@@ -445,4 +454,11 @@ void printDebugGrid(SDL_Renderer *renderer){
     SDL_RenderDrawLine(renderer,960,0,960,1080);
     
     SDL_RenderPresent(renderer);
+}
+
+int checkDeplacement(int direction, int player){
+    switch(direction){
+        case 0:
+            if (SDLplateau[playerData[player].posX][playerData[player].posY])
+    }
 }
