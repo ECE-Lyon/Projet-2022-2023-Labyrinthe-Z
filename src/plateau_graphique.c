@@ -163,17 +163,7 @@ int main(int argc, char **argv)
                     }
                     continue;
                 case SDLK_0:
-<<<<<<< HEAD
                     AffichePlateauTuileItem(jeu);
-=======
-                    AffichePlateauTuileItem(jeu, 
-                        image_tuile, image_item, 
-                        texture_tuile, texture_item, 
-                        rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
-                    break;
-                case SDLK_DOWN:
-                    movePlayer(1, 2);
->>>>>>> d0c46c90d2bf2e7528d3743f163263d9362a0a6a
                 default:
                     continue;
                 }
@@ -206,14 +196,7 @@ int main(int argc, char **argv)
                     y = event.motion.y;
 
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
-<<<<<<< HEAD
                         AffichePlateauTuileItem(jeu);
-=======
-                        AffichePlateauTuileItem(jeu, 
-                                image_tuile, image_item, 
-                                texture_tuile, texture_item, 
-                                rect_tuile, rect_item, rect_plateau, rect_plateau2, rect_plateau3);
->>>>>>> d0c46c90d2bf2e7528d3743f163263d9362a0a6a
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         launched = SDL_FALSE; // ferme la fenêtre
@@ -343,20 +326,10 @@ void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_i
     SDL_FreeSurface(image_item);
     SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
     SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
-}
 
-<<<<<<< HEAD
     SDL_DestroyTexture(texture_tuile);
     SDL_DestroyTexture(texture_item);
 
-=======
-void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player){
-    SDL_Texture *image_player = SDL_LoadBMP("images/items16px/player_1.bmp");
-    SDL_Texture *texture_player = SDL_CreateTextureFromSurface(renderer, image_player);
-    SDL_FreeSurface(image_player);
-    SDL_QueryTexture(texture_player, NULL, NULL, &rect_player.w, &rect_player.h);
-    SDL_RenderCopy(renderer, texture_player, NULL, &rect_player);
->>>>>>> d0c46c90d2bf2e7528d3743f163263d9362a0a6a
 }
 
 void RandomTuileItem(SDL_Renderer *renderer, int i, int j){
@@ -503,11 +476,7 @@ int checkDeplacement(int player, int direction){
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
             int tuileSuivante = SDLplateau[playerData[player].posX-1][playerData[player].posY].tuile;
             if ( tuileActuelle == 2 || tuileActuelle == 3 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 9){
-<<<<<<< HEAD
-                if(tuileSuivante==0 || tuileSuivante == 1 || tuileSuivante == 4 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 9){
-=======
                 if(tuileSuivante ==  0 || tuileSuivante == 1 || tuileSuivante == 4 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 9){
->>>>>>> d0c46c90d2bf2e7528d3743f163263d9362a0a6a
                     return 1;
                 }else return 0;
             }else return 0;
