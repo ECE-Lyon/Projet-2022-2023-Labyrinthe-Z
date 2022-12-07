@@ -1,4 +1,5 @@
 #include <math.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -18,11 +19,11 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, int colorButton[3], int px);
 void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, int etatSelection);
 
-void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3);
-void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
-void RandomTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
-void AfficheTuileItem( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3);
+void AffichePlateau(SDL_Renderer *renderer);
+void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
+void RandomTuileItem(SDL_Renderer *renderer, int i, int j);
+void AfficheTuileItem( SDL_Renderer *renderer);
+void AffichePlateauTuileItem(SDL_Renderer *renderer);
 void printDebugGrid(SDL_Renderer *renderer);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
@@ -109,35 +110,7 @@ int main(int argc, char **argv)
 {
     
     SDL_Window *window = NULL;
-
     SDL_Renderer *jeu = NULL;
-
-//------------------------------------------------//
-
-    SDL_Surface *image_tuile = NULL;
-    SDL_Surface *image_item = NULL;
-
-    SDL_Surface *image_exit = NULL;
-
-//------------------------------------------------//
-
-    SDL_Texture *texture_exit = NULL;
-
-    SDL_Texture *texture_tuile = NULL;
-    SDL_Texture *texture_item = NULL;
-
-//------------------------------------------------//
-
-    //SDL_Rect rect_exit = {(1920-300)/2, (1080-100)/2+125, 300, 100};
-
-    SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
-    SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
-    SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
-
-    SDL_Rect rect_tuile = {717, 297, 54, 54};
-    SDL_Rect rect_item = {736, 316, 16 , 16};
-
-//------------------------------------------------//
 
     if(SDL_Init(SDL_INIT_VIDEO)){
         SDL_Log("Erreur init > %s\n",SDL_GetError());
@@ -168,7 +141,7 @@ int main(int argc, char **argv)
     int x,y;
 
     while( launched ){
-        //printDebugGrid(jeu);
+        
 
         SDL_Event event;
 
@@ -188,10 +161,7 @@ int main(int argc, char **argv)
                     }
                     continue;
                 case SDLK_0:
-                    AffichePlateauTuileItem(jeu, 
-                        image_tuile, image_item, 
-                        texture_tuile, texture_item, 
-                        rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
+                    AffichePlateauTuileItem(jeu);
                 default:
                     continue;
                 }
@@ -224,10 +194,7 @@ int main(int argc, char **argv)
                     y = event.motion.y;
 
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
-                        AffichePlateauTuileItem(jeu, 
-                                image_tuile, image_item, 
-                                texture_tuile, texture_item, 
-                                rect_tuile, rect_item,rect_plateau, rect_plateau2, rect_plateau3);
+                        AffichePlateauTuileItem(jeu);
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         launched = SDL_FALSE; // ferme la fenêtre
@@ -244,11 +211,8 @@ int main(int argc, char **argv)
             }
 
         }
-
+    
     }
-
-    SDL_DestroyTexture(texture_tuile);
-    SDL_DestroyTexture(texture_item);
     
     SDL_DestroyRenderer(jeu);
 
@@ -314,7 +278,11 @@ void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, in
 
 }
 
-void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+void AffichePlateau(SDL_Renderer *renderer){
+
+    SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
+    SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
+    SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
 
     SDL_SetRenderDrawColor(renderer, 229, 204, 178, 255);
     for( int i=0 ; i<18 ; i++){
@@ -337,7 +305,13 @@ void AffichePlateau(SDL_Renderer *renderer,  SDL_Rect rect_plateau, SDL_Rect rec
 
 }
 
-void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+
+    SDL_Surface *image_tuile = NULL;
+    SDL_Surface *image_item = NULL;
+
+    SDL_Texture *texture_tuile = NULL;
+    SDL_Texture *texture_item = NULL;
 
     image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
     texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
@@ -351,9 +325,12 @@ void printTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surfac
     SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
     SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
 
+    SDL_DestroyTexture(texture_tuile);
+    SDL_DestroyTexture(texture_item);
+
 }
 
-void RandomTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+void RandomTuileItem(SDL_Renderer *renderer, int i, int j){
     
     if ( (SDLplateau[i][j].tuile) == 0 ){
     
@@ -409,12 +386,13 @@ void RandomTuileItem(SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surfa
         
         }
     }
-        
-    printTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
 
 }
 
-void AfficheTuileItem( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Surface *image_item, SDL_Texture *texture_tuile, SDL_Texture *texture_item, SDL_Rect rect_tuile, SDL_Rect rect_item){
+void AfficheTuileItem(SDL_Renderer *renderer){
+
+    SDL_Rect rect_tuile = {717, 297, 54, 54};
+    SDL_Rect rect_item = {736, 316, 16 , 16};
 
     srand(time(NULL));
 
@@ -422,7 +400,8 @@ void AfficheTuileItem( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Sur
         rect_tuile.x = 717;
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
-            RandomTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item,i, j);
+            RandomTuileItem(renderer,i, j);
+            printTuileItem(renderer,rect_tuile, rect_item,i, j);
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
         }
@@ -431,14 +410,11 @@ void AfficheTuileItem( SDL_Renderer *renderer, SDL_Surface *image_tuile, SDL_Sur
     }
 }
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, 
-                             SDL_Surface *image_tuile, SDL_Surface *image_item, 
-                             SDL_Texture *texture_tuile, SDL_Texture *texture_item, 
-                             SDL_Rect rect_tuile, SDL_Rect rect_item, SDL_Rect rect_plateau, SDL_Rect rect_plateau2, SDL_Rect rect_plateau3){
+void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
     ResetRender(renderer, 255, 233, 210, 255);
-    AffichePlateau(renderer, rect_plateau, rect_plateau2, rect_plateau3);
-    AfficheTuileItem(renderer, image_tuile, image_item, texture_tuile, texture_item, rect_tuile, rect_item);  
+    AffichePlateau(renderer);
+    AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
 
 }
@@ -477,7 +453,6 @@ int checkDeplacement(int direction, int player){
         if (playerData[player].posX < 6){ // si le joueur n'est pas tout à droite
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
             int tuileSuivante = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile;
-<<<<<<< HEAD
             if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
                 if (tuileSuivante == 0 || tuileSuivante == 3 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
                     return 1;
@@ -500,10 +475,6 @@ int checkDeplacement(int direction, int player){
             int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
             if ( tuileActuelle == 2 || tuileActuelle == 3 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 9){
                 if(tuileSuivante==0 || tuileSuivante == 1 || tuileSuivante == 4 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 9){
-=======
-            if (tuileActuelle == 0 || tuileActuelle == 1 || tuileActuelle == 4 || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 9){ // si la tuile à un passage en haut
-                if (tuileSuivante == 2 || tuileSuivante == 3 || tuileSuivante == 4 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 9){ // si la tuile suivante a un passage en bas
->>>>>>> 23d437b121ca58a255594fa61d3cab2255a9c363
                     return 1;
                 }else return 0;
             }else return 0;
