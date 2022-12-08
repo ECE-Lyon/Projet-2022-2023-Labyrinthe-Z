@@ -465,7 +465,8 @@ void AfficheTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
         for( int j=0 ; j<7 ; j++){
             if( launched_game == SDL_FALSE ){
                 RandomTuileItem(renderer,i, j);
-            } else if (playerData[0].posX == i && playerData[0].posY == j){
+            }
+            if (playerData[0].posX == i && playerData[0].posY == j){
                 printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
                 printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
             } else if (playerData[1].posX == i && playerData[1].posY == j){
@@ -500,7 +501,6 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
     AffichePlateau(renderer);
     AfficheTuileItem(renderer, launched_game);  
     SDL_RenderPresent(renderer);  
-
 }
 
 void printDebugGrid(SDL_Renderer *renderer){
