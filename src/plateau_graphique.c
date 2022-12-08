@@ -142,6 +142,15 @@ int main(int argc, char **argv)
     SDL_bool windowOpen = SDL_TRUE;
     SDL_bool launched_game = SDL_FALSE;
 
+    Mix_OpenAudio(96000, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+
+    Mix_Music *sonbouton = Mix_LoadMUS("Sound/ButtonPlate Click (Minecraft Sound) - Sound Effect for editing.mp3");
+    Mix_Music *musiqueaccueil = Mix_LoadMUS("Sound/Sweden.mp3");
+    Mix_Music *musiquejeu = Mix_LoadMUS("Sound/Minecraft.mp3");
+
+    Mix_PlayMusic(musiqueaccueil, -1);
+    Mix_PlayMusic(musiquejeu,-1);
+
     int x,y;
 
     while( windowOpen ){
@@ -214,11 +223,21 @@ int main(int argc, char **argv)
                     x = event.motion.x;
                     y = event.motion.y;
 
+<<<<<<< HEAD
+                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
+                        Mix_PlayMusic(sonbouton, 0);
+                        AffichePlateauTuileItem(jeu);
+                        launched_game = SDL_TRUE;
+                    } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
+                        Mix_PlayMusic(sonbouton, 0);
+                        launched = SDL_FALSE; // ferme la fenêtre
+=======
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){                          
                         AffichePlateauTuileItem(jeu,launched_game);
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         windowOpen = SDL_FALSE; // ferme la fenêtre
+>>>>>>> 78e1520be19f5723d205f32a386cac945031a371
                     }
 
                 }break;  
