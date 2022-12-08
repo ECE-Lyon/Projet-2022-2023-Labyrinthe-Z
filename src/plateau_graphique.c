@@ -413,8 +413,30 @@ void AfficheTuileItem(SDL_Renderer *renderer){
         rect_tuile.x = 717;
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
+<<<<<<< HEAD
             RandomTuileItem(renderer,i, j);
             printTuileItem(renderer,rect_tuile, rect_item,i, j);
+=======
+            if( launched_game == SDL_FALSE ){
+                RandomTuileItem(renderer,i, j);
+            }
+            if (playerData[0].posX == i && playerData[0].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
+            } else if (playerData[1].posX == i && playerData[1].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_2.bmp");
+            } else if (playerData[2].posX == i && playerData[2].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_3.bmp");
+            } else if (playerData[3].posX == i && playerData[3].posY == j){
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, "images/skin16px/player_4.bmp");
+            } else {
+                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
+                printImage(renderer,rect_item, chemin_item[(SDLplateau[i][j].item)-1]);
+            }
+>>>>>>> d0b7774e3149722cc3307fbe93739d3ee71a5f38
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
         }
@@ -429,7 +451,6 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer){
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
-
 }
 
 void printDebugGrid(SDL_Renderer *renderer){
