@@ -13,22 +13,24 @@
 #define MENU_BUTTON_H 90
 #define MENU_BUTTON_BORDER 12
 
+typedef struct{
+    Uint8 r, g, b, a;
+}Color;
+
 int getRandomInt(int min, int max);
 
-void ResetRender(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file);
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, int colorButton[3], int px);
-void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, int etatSelection);
-
+void ResetRender(SDL_Renderer *renderer, Color color);
+void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Color color, int px);
+void fenetreMenu(SDL_Renderer *renderer);
 void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
-void RandomTuileItem(SDL_Renderer *renderer, int i, int j);
-void AfficheTuileItem( SDL_Renderer *renderer, SDL_bool launched_game);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_bool launched_game);
+void RandomPlateau();
+void AfficheTuileItem( SDL_Renderer *renderer);
+void AffichePlateauTuileItem(SDL_Renderer *renderer);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]);
+void afficherPlateau(SDL_Renderer *renderer);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     
@@ -104,7 +106,10 @@ const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
                                   "images/items16px/item23.bmp", // BOUSSOLE
                                   "images/items16px/item24.bmp"};// POULET
 
-int colorButtonSelected[3] = {216, 192, 168};
+Color Background = {255, 233, 210, 255};
+Color ButtonSelected = {216, 192, 168, 255};
+Color ButtonNotSelected = {229, 204, 178, 255};
+
 int colorButtonNotSelected[3] = {229, 204, 178};
 
 SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
@@ -136,30 +141,18 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);        
     }
 
-    ResetRender(jeu,255, 233, 210, 255);
-    AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 0);
+    fenetreMenu(jeu);
 
-    SDL_bool windowOpen = SDL_TRUE;
+    /*SDL_bool windowOpen = SDL_TRUE;
     SDL_bool launched_game = SDL_FALSE;
-
-    Mix_OpenAudio(96000, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-
-    Mix_Music *sonbouton = Mix_LoadMUS("Sound/ButtonPlate Click (Minecraft Sound) - Sound Effect for editing.mp3");
-    Mix_Music *musiqueaccueil = Mix_LoadMUS("Sound/Sweden.mp3");
-    Mix_Music *musiquejeu = Mix_LoadMUS("Sound/Minecraft.mp3");
-
-    Mix_PlayMusic(musiqueaccueil, -1);
-    Mix_PlayMusic(musiquejeu,-1);
 
     int x,y;
 
     while( windowOpen ){
         
-
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
-
 
             switch( event.type ){
             case SDL_KEYDOWN:
@@ -168,8 +161,8 @@ int main(int argc, char **argv)
                 case SDLK_ESCAPE:
                     if(launched_game == SDL_FALSE) windowOpen = SDL_FALSE; //ferme la fenêtre
                     else {
-                        ResetRender(jeu,255, 233, 210, 255);
-                        AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 0);
+                        ResetRender(jeu, Background);
+                        AfficheMenu(jeu, 0);
                         launched_game = SDL_FALSE;
                     }
                     continue;
@@ -204,14 +197,14 @@ int main(int argc, char **argv)
                     x = event.motion.x;
                     y = event.motion.y;
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){
-                        ResetRender(jeu,255, 233, 210, 255);
-                        AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 1);
+                        ResetRender(jeu, Background);
+                        AfficheMenu(jeu, 1);
                     } else if (x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){
-                        ResetRender(jeu,255, 233, 210, 255);
-                        AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 2);
+                        ResetRender(jeu, Background);
+                        AfficheMenu(jeu, 2);
                     } else{
-                        ResetRender(jeu,255, 233, 210, 255);
-                        AfficheMenu(jeu, "images/button/newgame.bmp", "images/button/exitgame.bmp", 0);
+                        ResetRender(jeu, Background);
+                        AfficheMenu(jeu, 0);
                     }
                     continue;
                 }
@@ -223,21 +216,11 @@ int main(int argc, char **argv)
                     x = event.motion.x;
                     y = event.motion.y;
 
-<<<<<<< HEAD
-                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
-                        Mix_PlayMusic(sonbouton, 0);
-                        AffichePlateauTuileItem(jeu);
-                        launched_game = SDL_TRUE;
-                    } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
-                        Mix_PlayMusic(sonbouton, 0);
-                        launched = SDL_FALSE; // ferme la fenêtre
-=======
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){                          
                         AffichePlateauTuileItem(jeu,launched_game);
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         windowOpen = SDL_FALSE; // ferme la fenêtre
->>>>>>> 78e1520be19f5723d205f32a386cac945031a371
                     }
 
                 }break;  
@@ -252,7 +235,7 @@ int main(int argc, char **argv)
 
         }
     
-    }
+    }*/
     
     SDL_DestroyRenderer(jeu);
 
@@ -261,6 +244,125 @@ int main(int argc, char **argv)
     SDL_Quit();
 
     return EXIT_SUCCESS;
+}
+
+void fenetreMenu(SDL_Renderer *renderer){
+
+    SDL_Surface *image = NULL;
+    SDL_Texture *texture_button = NULL;
+
+    SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
+
+    SDL_bool windowOpen = SDL_TRUE;
+
+    int cursorX, cursorY;
+
+    uint8_t cursorInButton = 0;
+
+    ResetRender(renderer, Background);
+    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    SDL_RenderPresent(renderer); 
+
+    while( windowOpen ){
+        
+        SDL_Event event;
+
+        while( SDL_PollEvent(&event) ){
+
+            switch( event.type ){
+            case SDL_KEYDOWN:               
+                switch ( event.key.keysym.sym ){
+                case SDLK_ESCAPE:
+                    windowOpen = SDL_FALSE; //ferme la fenêtre
+                    break;
+                case SDLK_0:
+                    break;
+                default:
+                    continue;
+                }
+            case SDL_MOUSEMOTION:
+                cursorX = event.motion.x;
+                cursorY = event.motion.y;
+                if(cursorX >= rect_button_1.x && cursorX <= rect_button_1.x + rect_button_1.w && cursorY >= rect_button_1.y && cursorY <= rect_button_1.y + rect_button_1.h){
+                    ResetRender(renderer, Background);
+                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    cursorInButton = 1;
+                } else if (cursorX >= rect_button_2.x && cursorX <= rect_button_2.x + rect_button_2.w && cursorY >= rect_button_2.y && cursorY <= rect_button_2.y + rect_button_2.h){
+                    ResetRender(renderer, Background);
+                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    cursorInButton = 2;
+                } else{
+                    ResetRender(renderer, Background);
+                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    cursorInButton = 0;
+                }
+                SDL_RenderPresent(renderer);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                if(cursorInButton == 1){                       
+                    RandomPlateau();
+                    afficherPlateau(renderer);
+                } else if(cursorInButton == 2){      
+                    windowOpen = SDL_FALSE; // ferme la fenêtre
+                }
+                break;  
+            case SDL_QUIT:
+                windowOpen = SDL_FALSE;
+                break;
+            default:
+                continue;
+            } 
+        }   
+    }
+}
+
+void afficherPlateau(SDL_Renderer *renderer){
+    SDL_bool windowOpen = SDL_TRUE;
+
+    AffichePlateauTuileItem(renderer);
+
+    while( windowOpen ){
+        
+        SDL_Event event;
+
+        while( SDL_PollEvent(&event) ){
+
+            switch( event.type ){
+            case SDL_KEYDOWN:
+                switch ( event.key.keysym.sym ){
+                case SDLK_UP:
+                    printf("haut");
+                    movePlayer(0, 0);
+                    AffichePlateauTuileItem(renderer);
+                    break;
+                case SDLK_RIGHT:
+                    movePlayer(0, 1);
+                    AffichePlateauTuileItem(renderer);
+                    break;
+                case SDLK_DOWN:
+                    movePlayer(0, 2);
+                    AffichePlateauTuileItem(renderer);
+                    break;
+                case SDLK_LEFT:
+                    movePlayer(0, 3);
+                    AffichePlateauTuileItem(renderer);
+                    break;
+                default:
+                    continue;
+                }
+            case SDL_QUIT:
+                windowOpen = SDL_FALSE;
+                break;
+            default:
+                continue;
+            }
+        }
+    }
 }
 
 void SearchTuile(){
@@ -303,11 +405,9 @@ void SearchTuile(){
 
 }
 
-void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
-
-    SDL_SetRenderDrawColor(renderer, 255, 233, 210, 255);
+void ResetRender(SDL_Renderer * renderer, Color color){
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderClear(renderer);
-
 }
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file){
@@ -321,9 +421,9 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 
 }
 
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, int colorButton[3], int px){
+void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Color color, int px){
 
-    SDL_SetRenderDrawColor(renderer, colorButton[0], colorButton[1], colorButton[2], 255);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
     SDL_RenderFillRect(renderer,&rect_button);
 
@@ -332,29 +432,7 @@ void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *textu
     rect_button.h -= 2*px;
     rect_button.w -= 2*px;
 
-    printButton(renderer, image, texture_button, rect_button, file);
-
-}
-
-void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, int etatSelection){
-
-    SDL_Surface *image = NULL;
-    SDL_Texture *texture_button = NULL;
-
-    if (etatSelection == 1){
-        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonSelected, MENU_BUTTON_BORDER);
-    } else {
-        AfficheButton(renderer, image, texture_button, rect_button_1, file1, colorButtonNotSelected, MENU_BUTTON_BORDER);
-    }
-
-    if (etatSelection == 2){
-        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonSelected, MENU_BUTTON_BORDER);
-    } else {
-        AfficheButton(renderer, image, texture_button, rect_button_2, file2, colorButtonNotSelected, MENU_BUTTON_BORDER);
-    }
-
-    SDL_RenderPresent(renderer);
-
+    printImage(renderer, rect_button, file);
 }
 
 void AffichePlateau(SDL_Renderer *renderer){
@@ -412,68 +490,73 @@ void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player, int i, int j){
     SDL_DestroyTexture(texture_player);
 }
 
-void RandomTuileItem(SDL_Renderer *renderer, int i, int j){
-    
-    if ( (SDLplateau[i][j].tuile) == 0 ){
-    
-        while(1){
-            
-            int rand = getRandomInt(0,3);
-            if(nbTuileRestant[rand]){
+void RandomPlateau(){
 
-                switch ( rand )
-                {
-                case 0:
-
-                    SDLplateau[i][j].tuile = getRandomInt(5,8);
-                    while(1){
-
-                        int rand_item = getRandomInt(1,24);
-                        if(nbItemRestant[rand_item-1]){
-                            SDLplateau[i][j].item = rand_item;
-                            nbItemRestant[rand_item-1] = 0;
-                        break;
-                        }
-                    }
+    for(int i = 0; i < 7; i++){
+        for(int j = 0; j < 7; j++){
+            if ( (SDLplateau[i][j].tuile) == 0 ){
+                while(1){
                     
-                    nbTuileRestant[0] -= 1;
-                    break;
-                case 1:
+                    int rand = getRandomInt(0,3);
+                    if(nbTuileRestant[rand]){
 
-                    SDLplateau[i][j].tuile = getRandomInt(1,4);
-                    while(1){
+                        switch ( rand )
+                        {
+                        case 0:
 
-                        int rand_item = getRandomInt(1,24);
-                        if(nbItemRestant[rand_item-1]){
-                            SDLplateau[i][j].item = rand_item;
-                            nbItemRestant[rand_item-1] = 0;
-                        break;
+                            SDLplateau[i][j].tuile = getRandomInt(5,8);
+                            while(1){
+
+                                int rand_item = getRandomInt(1,24);
+                                if(nbItemRestant[rand_item-1]){
+                                    SDLplateau[i][j].item = rand_item;
+                                    nbItemRestant[rand_item-1] = 0;
+                                break;
+                                }
+                            }
+                            
+                            nbTuileRestant[0] -= 1;
+                            break;
+                        case 1:
+
+                            SDLplateau[i][j].tuile = getRandomInt(1,4);
+                            while(1){
+
+                                int rand_item = getRandomInt(1,24);
+                                if(nbItemRestant[rand_item-1]){
+                                    SDLplateau[i][j].item = rand_item;
+                                    nbItemRestant[rand_item-1] = 0;
+                                break;
+                                }
+                            }
+                            nbTuileRestant[1] -= 1;
+                            break;
+
+                        case 2:
+                            SDLplateau[i][j].tuile = getRandomInt(1,4);
+                            nbTuileRestant[2] -= 1;
+                            break;
+
+                        case 3:
+                            SDLplateau[i][j].tuile = getRandomInt(9,10);
+                            nbTuileRestant[3] -= 1;
+                            break;
                         }
+                    break;
                     }
-                    nbTuileRestant[1] -= 1;
-                    break;
-
-                case 2:
-                    SDLplateau[i][j].tuile = getRandomInt(1,4);
-                    nbTuileRestant[2] -= 1;
-                    break;
-
-                case 3:
-                    SDLplateau[i][j].tuile = getRandomInt(9,10);
-                    nbTuileRestant[3] -= 1;
-                    break;
+                
                 }
-            break;
             }
-        
         }
     }
+    
+    
 
     SearchTuile();
 
 }
 
-void AfficheTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
+void AfficheTuileItem(SDL_Renderer *renderer){
 
     SDL_Rect rect_tuile = {717, 297, 54, 54};
     SDL_Rect rect_item = {736, 316, 16 , 16};
@@ -482,9 +565,6 @@ void AfficheTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
         rect_tuile.x = 717;
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
-            if( launched_game == SDL_FALSE ){
-                RandomTuileItem(renderer,i, j);
-            }
             if (playerData[0].posX == i && playerData[0].posY == j){
                 printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
                 printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
@@ -509,16 +589,16 @@ void AfficheTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
     }
 }
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_bool launched_game){
+void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
     SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
     SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
 
-    ResetRender(renderer, 255, 233, 210, 255);
+    ResetRender(renderer, Background);
     printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
     if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item]);
     AffichePlateau(renderer);
-    AfficheTuileItem(renderer, launched_game);  
+    AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
 }
 
