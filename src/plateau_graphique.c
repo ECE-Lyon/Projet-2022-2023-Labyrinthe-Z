@@ -7,7 +7,7 @@
 #include "SDL_ttf.h"
 #include <SDL_mixer.h>
 
-// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer
+// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
 
 #define MENU_BUTTON_W 820
 #define MENU_BUTTON_H 90
@@ -19,33 +19,18 @@ typedef struct{
 
 int getRandomInt(int min, int max);
 
-<<<<<<< HEAD
 void ResetRender(SDL_Renderer *renderer, Color color);
 void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Color color, int px);
 void fenetreMenu(SDL_Renderer *renderer);
 void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
-=======
-void ResetRender(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file);
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, int colorButton[3], int px);
-void AfficheMenu(SDL_Renderer *renderer,const char* file1, const char* file2, int etatSelection);
-
-void AffichePlateau(SDL_Renderer *renderer);
-void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j);
-void RandomTuileItem(SDL_Renderer *renderer, int i, int j);
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
 void AfficheTuileItem( SDL_Renderer *renderer);
 void AffichePlateauTuileItem(SDL_Renderer *renderer);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
-<<<<<<< HEAD
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]);
 void afficherPlateau(SDL_Renderer *renderer);
-=======
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     
@@ -75,7 +60,7 @@ Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
 };
 
-Case tuileRestante;
+Case tuileRestante = {0,0};
 
 PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
@@ -158,16 +143,12 @@ int main(int argc, char **argv)
 
     fenetreMenu(jeu);
 
-<<<<<<< HEAD
     /*SDL_bool windowOpen = SDL_TRUE;
-=======
-    SDL_bool launched = SDL_TRUE;
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
     SDL_bool launched_game = SDL_FALSE;
 
     int x,y;
 
-    while( launched ){
+    while( windowOpen ){
         
         SDL_Event event;
 
@@ -178,7 +159,7 @@ int main(int argc, char **argv)
                 
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
-                    if(launched_game == SDL_FALSE) launched = SDL_FALSE; //ferme la fenêtre
+                    if(launched_game == SDL_FALSE) windowOpen = SDL_FALSE; //ferme la fenêtre
                     else {
                         ResetRender(jeu, Background);
                         AfficheMenu(jeu, 0);
@@ -186,7 +167,24 @@ int main(int argc, char **argv)
                     }
                     continue;
                 case SDLK_0:
-                    AffichePlateauTuileItem(jeu);
+                    AffichePlateauTuileItem(jeu,launched_game);
+                    break;
+                case SDLK_UP:
+                    movePlayer(0, 0);
+                    AffichePlateauTuileItem(jeu,launched_game);
+                    break;
+                case SDLK_RIGHT:
+                    movePlayer(0, 1);
+                    AffichePlateauTuileItem(jeu,launched_game);
+                    break;
+                case SDLK_DOWN:
+                    movePlayer(0, 2);
+                    AffichePlateauTuileItem(jeu,launched_game);
+                    break;
+                case SDLK_LEFT:
+                    movePlayer(0, 3);
+                    AffichePlateauTuileItem(jeu,launched_game);
+                    break;
                 default:
                     continue;
                 }
@@ -213,32 +211,22 @@ int main(int argc, char **argv)
 
             case SDL_MOUSEBUTTONDOWN:
 
-                if ( launched_game == SDL_FALSE){
+                if ( launched_game == SDL_FALSE ){
 
                     x = event.motion.x;
                     y = event.motion.y;
 
-<<<<<<< HEAD
                     if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){                          
                         AffichePlateauTuileItem(jeu,launched_game);
                         launched_game = SDL_TRUE;
                     } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
                         windowOpen = SDL_FALSE; // ferme la fenêtre
-=======
-                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){      
-                        Mix_PlayMusic(sonbouton, 0);
-                        AffichePlateauTuileItem(jeu);
-                        launched_game = SDL_TRUE;
-                    } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
-                        Mix_PlayMusic(sonbouton, 0);
-                        launched = SDL_FALSE; // ferme la fenêtre
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
                     }
 
                 }break;  
 
             case SDL_QUIT:
-                launched = SDL_FALSE;
+                windowOpen = SDL_FALSE;
                 break;
 
             default:
@@ -258,7 +246,6 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-<<<<<<< HEAD
 void fenetreMenu(SDL_Renderer *renderer){
 
     SDL_Surface *image = NULL;
@@ -420,11 +407,6 @@ void SearchTuile(){
 
 void ResetRender(SDL_Renderer * renderer, Color color){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-=======
-void ResetRender(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
-
-    SDL_SetRenderDrawColor(renderer, 255, 233, 210, 255);
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
     SDL_RenderClear(renderer);
 }
 
@@ -480,29 +462,32 @@ void AffichePlateau(SDL_Renderer *renderer){
 
 }
 
-void printTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuile, SDL_Rect rect_item, int i, int j){
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image){
 
-    SDL_Surface *image_tuile = NULL;
-    SDL_Surface *image_item = NULL;
+    SDL_Surface *surface_image = NULL;
+    SDL_Texture *texture_image = NULL;
 
-    SDL_Texture *texture_tuile = NULL;
-    SDL_Texture *texture_item = NULL;
+    surface_image = SDL_LoadBMP(chemin_image);
+    texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
+    SDL_FreeSurface(surface_image);
+    SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h);
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 
-    image_tuile = SDL_LoadBMP(chemin_tuile[(SDLplateau[i][j].tuile)-1]); 
-    texture_tuile = SDL_CreateTextureFromSurface(renderer, image_tuile);
-    SDL_FreeSurface(image_tuile);
-    SDL_QueryTexture(texture_tuile, NULL, NULL, &rect_tuile.w, &rect_tuile.h);
-    SDL_RenderCopy(renderer, texture_tuile, NULL, &rect_tuile);
+    SDL_DestroyTexture(texture_image);
+}
 
-    image_item = SDL_LoadBMP(chemin_item[(SDLplateau[i][j].item)-1]);
-    texture_item = SDL_CreateTextureFromSurface(renderer, image_item);
-    SDL_FreeSurface(image_item);
-    SDL_QueryTexture(texture_item, NULL, NULL, &rect_item.w, &rect_item.h);
-    SDL_RenderCopy(renderer, texture_item, NULL, &rect_item);
+void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player, int i, int j){
 
-    SDL_DestroyTexture(texture_tuile);
-    SDL_DestroyTexture(texture_item);
+    SDL_Surface *image_player = NULL;
+    SDL_Texture *texture_player = NULL;
 
+    image_player = SDL_LoadBMP("images/items16px/player_1.bmp"); 
+    texture_player = SDL_CreateTextureFromSurface(renderer, image_player);
+    SDL_FreeSurface(image_player);
+    SDL_QueryTexture(texture_player, NULL, NULL, &rect_player.w, &rect_player.h);
+    SDL_RenderCopy(renderer, texture_player, NULL, &rect_player);
+
+    SDL_DestroyTexture(texture_player);
 }
 
 void RandomPlateau(){
@@ -567,6 +552,8 @@ void RandomPlateau(){
     
     
 
+    SearchTuile();
+
 }
 
 void AfficheTuileItem(SDL_Renderer *renderer){
@@ -574,22 +561,10 @@ void AfficheTuileItem(SDL_Renderer *renderer){
     SDL_Rect rect_tuile = {717, 297, 54, 54};
     SDL_Rect rect_item = {736, 316, 16 , 16};
 
-    srand(time(NULL));
-
     for( int i=0 ; i<7 ; i++ ){
         rect_tuile.x = 717;
         rect_item.x = 736;
         for( int j=0 ; j<7 ; j++){
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-            RandomTuileItem(renderer,i, j);
-            printTuileItem(renderer,rect_tuile, rect_item,i, j);
-=======
-            if( launched_game == SDL_FALSE ){
-                RandomTuileItem(renderer,i, j);
-            }
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
             if (playerData[0].posX == i && playerData[0].posY == j){
                 printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
                 printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
@@ -606,7 +581,6 @@ void AfficheTuileItem(SDL_Renderer *renderer){
                 printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
                 printImage(renderer,rect_item, chemin_item[(SDLplateau[i][j].item)-1]);
             }
->>>>>>> d0b7774e3149722cc3307fbe93739d3ee71a5f38
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
         }
@@ -616,7 +590,6 @@ void AfficheTuileItem(SDL_Renderer *renderer){
 }
 
 void AffichePlateauTuileItem(SDL_Renderer *renderer){
-<<<<<<< HEAD
 
     SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
     SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
@@ -624,10 +597,6 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer){
     ResetRender(renderer, Background);
     printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
     if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item]);
-=======
-
-    ResetRender(renderer, 255, 233, 210, 255);
->>>>>>> 57f6d7cc34c04f542c6c4f805965841f4aa65f97
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
@@ -663,6 +632,7 @@ int checkDeplacement(int player, int direction){
                 }else return 0;
             }else return 0;
         }
+        break;
         case 1: // le joueur va à droite
         if (playerData[player].posX < 6){ // si le joueur n'est pas tout à droite
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
@@ -673,6 +643,7 @@ int checkDeplacement(int player, int direction){
                 }else return 0;
             }else return 0;
         }
+        break;
         case 2:
         if (playerData[player].posY < 6){ // si le joueur n'est pas tout en bas
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
@@ -683,6 +654,7 @@ int checkDeplacement(int player, int direction){
                 }else return 0;
             }else return 0;
         }
+        break;
         case 3: //le joueur va à gauche
         if (playerData[player].posX > 0){
             int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
@@ -693,12 +665,12 @@ int checkDeplacement(int player, int direction){
                 }else return 0;
             }else return 0;
         }
-        
+        break;       
     }
 }
 
 int movePlayer(int player, int direction){
-  if(checkDeplacement(player, direction)){
+  if(checkDeplacement(player, direction) == 1){
     switch (direction) {
       case 0: playerData[player].posX -= 1; break;
       case 1: playerData[player].posY += 1; break;
