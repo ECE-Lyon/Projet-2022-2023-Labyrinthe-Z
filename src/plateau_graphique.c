@@ -29,7 +29,7 @@ void AfficheTuileItem( SDL_Renderer *renderer);
 void AffichePlateauTuileItem(SDL_Renderer *renderer);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
-void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char chemin_image[28]);
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
 void afficherPlateau(SDL_Renderer *renderer);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
@@ -159,7 +159,8 @@ int main(int argc, char **argv)
                 
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
-                    if(launched_game == SDL_FALSE) windowOpen = SDL_FALSE; //ferme la fenêtre
+                    if(launched_game == SDL_FALSE) 
+                        windowOpen = SDL_FALSE; //ferme la fenêtre
                     else {
                         ResetRender(jeu, Background);
                         AfficheMenu(jeu, 0);
@@ -335,6 +336,9 @@ void afficherPlateau(SDL_Renderer *renderer){
             switch( event.type ){
             case SDL_KEYDOWN:
                 switch ( event.key.keysym.sym ){
+                case SDLK_ESCAPE:
+                    fenetreMenu(renderer);
+                    break;
                 case SDLK_UP:
                     printf("haut");
                     movePlayer(0, 0);
