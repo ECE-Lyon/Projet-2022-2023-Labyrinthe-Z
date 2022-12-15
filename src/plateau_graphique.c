@@ -115,6 +115,9 @@ int colorButtonNotSelected[3] = {229, 204, 178};
 SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
 SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
 
+SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
+SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
+
 int main(int argc, char **argv)
 {
     
@@ -278,8 +281,6 @@ void fenetreMenu(SDL_Renderer *renderer){
                 case SDLK_ESCAPE:
                     windowOpen = SDL_FALSE; //ferme la fenêtre
                     break;
-                case SDLK_0:
-                    break;
                 default:
                     continue;
                 }
@@ -323,6 +324,8 @@ void fenetreMenu(SDL_Renderer *renderer){
 }
 
 void afficherPlateau(SDL_Renderer *renderer){
+    
+    int cursorX, cursorY;
     SDL_bool windowOpen = SDL_TRUE;
 
     AffichePlateauTuileItem(renderer);
@@ -330,6 +333,7 @@ void afficherPlateau(SDL_Renderer *renderer){
     while( windowOpen ){
         
         SDL_Event event;
+        SDL_bool mouseState;
 
         while( SDL_PollEvent(&event) ){
 
@@ -338,6 +342,9 @@ void afficherPlateau(SDL_Renderer *renderer){
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
                     fenetreMenu(renderer);
+                    break;
+                case SDLK_0:
+                    printf("prout");
                     break;
                 case SDLK_UP:
                     printf("haut");
@@ -359,6 +366,29 @@ void afficherPlateau(SDL_Renderer *renderer){
                 default:
                     continue;
                 }
+
+            case SDL_MOUSEBUTTONDOWN:
+
+                while(event.button.button == SDL_BUTTON_LEFT)
+                {
+
+                    cursorX = event.motion.x;
+                    cursorY = event.motion.y;
+
+                    if(cursorX >= rect_tuileRestante.x &&
+                    cursorX <= rect_tuileRestante.x + rect_tuileRestante.w &&
+                    cursorY >= rect_tuileRestante.y &&
+                    cursorY <= rect_tuileRestante.y + rect_tuileRestante.h){
+                        rect_tuileRestante.x = cursorX-27; rect_tuileRestante.y = cursorY-27; rect_tuileRestante.w = 54; rect_tuileRestante.h = 54;
+                        rect_itemRestant.x = cursorX-19-27 ; rect_itemRestant.y = cursorY-17-27 ; rect_itemRestant.w = 16; rect_itemRestant.h = 16;
+                        AffichePlateauTuileItem(renderer);
+                    }
+                                          
+                }             
+
+                break;
+
+
             case SDL_QUIT:
                 windowOpen = SDL_FALSE;
                 break;
@@ -367,6 +397,13 @@ void afficherPlateau(SDL_Renderer *renderer){
             }
         }
     }
+}
+
+void DeplaceTuile(SDL_Renderer *renderer){
+
+    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
+    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item]);
+
 }
 
 void SearchTuile(){
@@ -599,11 +636,11 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer){
     SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
 
     ResetRender(renderer, Background);
-    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
-    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item]);
+    DeplaceTuile(renderer);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);  
     SDL_RenderPresent(renderer);  
+
 }
 
 void printDebugGrid(SDL_Renderer *renderer){
