@@ -116,7 +116,7 @@ SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3
 SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
 
 SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
-SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
+SDL_Rect rect_itemRestant = {(1920-16)/2, 100+17, 16, 16};
 
 int main(int argc, char **argv)
 {
@@ -309,6 +309,10 @@ void fenetreMenu(SDL_Renderer *renderer){
                 if(cursorInButton == 1){                       
                     RandomPlateau();
                     afficherPlateau(renderer);
+                    ResetRender(renderer, Background);
+                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    SDL_RenderPresent(renderer);
                 } else if(cursorInButton == 2){      
                     windowOpen = SDL_FALSE; // ferme la fenêtre
                 }
@@ -341,13 +345,9 @@ void afficherPlateau(SDL_Renderer *renderer){
             case SDL_KEYDOWN:
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
-                    fenetreMenu(renderer);
-                    break;
-                case SDLK_0:
-                    printf("prout");
+                    return;
                     break;
                 case SDLK_UP:
-                    printf("haut");
                     movePlayer(0, 0);
                     AffichePlateauTuileItem(renderer);
                     break;
@@ -368,29 +368,34 @@ void afficherPlateau(SDL_Renderer *renderer){
                 }
 
             case SDL_MOUSEBUTTONDOWN:
-
-                while(event.button.button == SDL_BUTTON_LEFT)
-                {
+                if(event.button.button == SDL_BUTTON_LEFT) {
 
                     cursorX = event.motion.x;
                     cursorY = event.motion.y;
 
-                    if(cursorX >= rect_tuileRestante.x &&
-                    cursorX <= rect_tuileRestante.x + rect_tuileRestante.w &&
-                    cursorY >= rect_tuileRestante.y &&
-                    cursorY <= rect_tuileRestante.y + rect_tuileRestante.h){
-                        rect_tuileRestante.x = cursorX-27; rect_tuileRestante.y = cursorY-27; rect_tuileRestante.w = 54; rect_tuileRestante.h = 54;
-                        rect_itemRestant.x = cursorX-19-27 ; rect_itemRestant.y = cursorY-17-27 ; rect_itemRestant.w = 16; rect_itemRestant.h = 16;
-                        AffichePlateauTuileItem(renderer);
+                    if( cursorX >= rect_tuileRestante.x &&
+                        cursorX <= rect_tuileRestante.x + rect_tuileRestante.w &&
+                        cursorY >= rect_tuileRestante.y &&
+                        cursorY <= rect_tuileRestante.y + rect_tuileRestante.h)
+                    {
+
+                        SDL_PollEvent(&event);
+
+                        while(event.type != SDL_MOUSEBUTTONUP){
+
+                            if(SDL_PollEvent(&event)){
+                                cursorX = event.motion.x;
+                                cursorY = event.motion.y;
+
+                                rect_tuileRestante.x = cursorX-27; rect_tuileRestante.y = cursorY-27;
+                                rect_itemRestant.x = cursorX+17-27 ; rect_itemRestant.y = cursorY+17-27 ;
+                                AffichePlateauTuileItem(renderer);
+                            }
+                        }        
+                    
                     }
-                                          
+                                                         
                 }             
-
-                break;
-
-
-            case SDL_QUIT:
-                windowOpen = SDL_FALSE;
                 break;
             default:
                 continue;
@@ -664,9 +669,9 @@ void printDebugGrid(SDL_Renderer *renderer){
 int checkDeplacement(int player, int direction){
     switch(direction){
         case 0: // le joueur va en haut
-        if (playerData[player].posY > 0){ // si le joueur n'est pas tout en haut
-            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
-            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY-1].tuile;
+        if (playerData[player].posX > 0){ // si le joueur n'est pas tout en haut
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile-1;
+            int tuileSuivante = SDLplateau[playerData[player].posX-1][playerData[player].posY].tuile-1;
             if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
                 if (tuileSuivante == 0 || tuileSuivante == 3 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
                     return 1;
@@ -675,20 +680,20 @@ int checkDeplacement(int player, int direction){
         }
         break;
         case 1: // le joueur va à droite
-        if (playerData[player].posX < 6){ // si le joueur n'est pas tout à droite
-            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
-            int tuileSuivante = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile;
-            if (tuileActuelle == 1 || tuileActuelle == 2 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
-                if (tuileSuivante == 0 || tuileSuivante == 3 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
+        if (playerData[player].posY < 6){ // si le joueur n'est pas tout à droite
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile-1;
+            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY+1].tuile-1;
+            if (tuileActuelle == 0 || tuileActuelle == 1 || tuileActuelle == 4 || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 9){ // si la tuile à un passage en haut
+                if (tuileSuivante == 2 || tuileSuivante == 3 || tuileSuivante == 4 || tuileSuivante == 5 || tuileSuivante == 6 || tuileSuivante == 9){ // si la tuile suivante a un passage en bas
                     return 1;
                 }else return 0;
             }else return 0;
         }
         break;
         case 2:
-        if (playerData[player].posY < 6){ // si le joueur n'est pas tout en bas
-            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
-            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY+1].tuile;
+        if (playerData[player].posX < 6){ // si le joueur n'est pas tout en bas
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile-1;
+            int tuileSuivante = SDLplateau[playerData[player].posX+1][playerData[player].posY].tuile-1;
             if (tuileActuelle == 0 || tuileActuelle == 3 || tuileActuelle == 5  || tuileActuelle == 6 || tuileActuelle == 7 || tuileActuelle == 8){ // si la tuile à un passage en haut
                 if (tuileSuivante == 1 || tuileSuivante == 2 || tuileSuivante == 4 || tuileSuivante == 5 || tuileSuivante == 7 || tuileSuivante == 8){ // si la tuile suivante a un passage en bas
                     return 1;
@@ -697,9 +702,9 @@ int checkDeplacement(int player, int direction){
         }
         break;
         case 3: //le joueur va à gauche
-        if (playerData[player].posX > 0){
-            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile;
-            int tuileSuivante = SDLplateau[playerData[player].posX-1][playerData[player].posY].tuile;
+        if (playerData[player].posY > 0){
+            int tuileActuelle = SDLplateau[playerData[player].posX][playerData[player].posY].tuile-1;
+            int tuileSuivante = SDLplateau[playerData[player].posX][playerData[player].posY-1].tuile-1;
             if ( tuileActuelle == 2 || tuileActuelle == 3 || tuileActuelle == 4 || tuileActuelle == 5 || tuileActuelle == 6 || tuileActuelle == 9){
                 if(tuileSuivante ==  0 || tuileSuivante == 1 || tuileSuivante == 4 || tuileSuivante == 6 || tuileSuivante == 7 || tuileSuivante == 9){
                     return 1;
