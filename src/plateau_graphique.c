@@ -580,8 +580,11 @@ void resetPlateau(){
     SDL_Rect tempRectTuileRestante = {(1920-54)/2, 100, 54, 54};
     SDL_Rect tempRectItemRestant = {(1920-16)/2, 100+19, 16, 16};
 
+    PlayerDATA tempPlayerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
+
     char tempArray[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
     char tempArray2[4] = {6,6,10,12};
+
     for(int i = 1; i<6; i+=2){
         for(int j = 1; j<6; j+=2){
             SDLplateau[i][j].tuile = 0;
@@ -592,6 +595,7 @@ void resetPlateau(){
     }
     SDL_memcpy(&rect_tuileRestante, &tempRectTuileRestante, sizeof(SDL_Rect));
     SDL_memcpy(&rect_itemRestant, &tempRectItemRestant, sizeof(SDL_Rect));
+    SDL_memcpy(&playerData, &tempPlayerData, sizeof(PlayerDATA)*4);
     SDL_memcpy(&nbItemRestant, &tempArray, sizeof(char)*24);
     SDL_memcpy(&nbTuileRestant, &tempArray2, sizeof(char)*4);
 }
