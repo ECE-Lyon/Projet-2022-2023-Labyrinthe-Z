@@ -1,3 +1,5 @@
+// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
+
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -7,11 +9,12 @@
 #include "SDL_ttf.h"
 #include <SDL_mixer.h>
 
-// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
-
-#define MENU_BUTTON_W 820
+#define MENU_BUTTON_W 820 // taille des images des boutons du menu
 #define MENU_BUTTON_H 90
 #define MENU_BUTTON_BORDER 12
+
+#define SCREEN_W 1920
+#define SCREEN_H 1080
 
 typedef struct{
     Uint8 r, g, b, a;
@@ -31,9 +34,10 @@ void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
 void afficherPlateau(SDL_Renderer *renderer);
+void resetPlateau();
+void melangerTab(int* tab, size_t tailleTab);
 
-void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
-    
+void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
         SDL_DestroyTexture(t);
     if(r)
@@ -44,11 +48,11 @@ void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
 }
 
 typedef struct{ 
-  char tuile, item; // on utilise des char pour économiser la mémoire (1 char = 1 octet alors que 1 int = 4 octets)
+    uint8_t tuile, item; // uint8 suffit car on a seulement 10 types de tuiles différentes et 24 items
 }Case;
 
 typedef struct{
-    int posX, posY, itemFound;
+    uint8_t posX, posY, itemFound; //pareil pour le uint8 (la position va de 0 à 7 et le nombre d'item jusqu'a 6)
 }PlayerDATA;
 
 Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
@@ -57,8 +61,7 @@ Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
                           8,7,   0,0,   5,8,   0,0,   6,9,   0,0,   6,10,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
-                          2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0
-};
+                          2,0,   0,0,   5,11,  0,0,   5,12,  0,0,   3,0};
 
 Case tuileRestante = {0,0};
 
@@ -67,8 +70,6 @@ PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
 char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
-
-
 
 const char chemin_tuile[10][26] = {"images/tuiles/TuileL1.bmp",
                                    "images/tuiles/TuileL2.bmp",          
@@ -116,7 +117,7 @@ SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3
 SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
 
 SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
-SDL_Rect rect_itemRestant = {(1920-16)/2, 100+17, 16, 16};
+SDL_Rect rect_itemRestant = {(1920-16)/2, 100+19, 16, 16};
 
 int main(int argc, char **argv)
 {
@@ -145,101 +146,6 @@ int main(int argc, char **argv)
     }
 
     fenetreMenu(jeu);
-
-    /*SDL_bool windowOpen = SDL_TRUE;
-    SDL_bool launched_game = SDL_FALSE;
-
-    int x,y;
-
-    while( windowOpen ){
-        
-        SDL_Event event;
-
-        while( SDL_PollEvent(&event) ){
-
-            switch( event.type ){
-            case SDL_KEYDOWN:
-                
-                switch ( event.key.keysym.sym ){
-                case SDLK_ESCAPE:
-                    if(launched_game == SDL_FALSE) 
-                        windowOpen = SDL_FALSE; //ferme la fenêtre
-                    else {
-                        ResetRender(jeu, Background);
-                        AfficheMenu(jeu, 0);
-                        launched_game = SDL_FALSE;
-                    }
-                    continue;
-                case SDLK_0:
-                    AffichePlateauTuileItem(jeu,launched_game);
-                    break;
-                case SDLK_UP:
-                    movePlayer(0, 0);
-                    AffichePlateauTuileItem(jeu,launched_game);
-                    break;
-                case SDLK_RIGHT:
-                    movePlayer(0, 1);
-                    AffichePlateauTuileItem(jeu,launched_game);
-                    break;
-                case SDLK_DOWN:
-                    movePlayer(0, 2);
-                    AffichePlateauTuileItem(jeu,launched_game);
-                    break;
-                case SDLK_LEFT:
-                    movePlayer(0, 3);
-                    AffichePlateauTuileItem(jeu,launched_game);
-                    break;
-                default:
-                    continue;
-                }
-
-            case SDL_MOUSEMOTION:
-
-                if( launched_game == SDL_TRUE ){
-                    continue;
-                }else{
-                    x = event.motion.x;
-                    y = event.motion.y;
-                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){
-                        ResetRender(jeu, Background);
-                        AfficheMenu(jeu, 1);
-                    } else if (x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){
-                        ResetRender(jeu, Background);
-                        AfficheMenu(jeu, 2);
-                    } else{
-                        ResetRender(jeu, Background);
-                        AfficheMenu(jeu, 0);
-                    }
-                    continue;
-                }
-
-            case SDL_MOUSEBUTTONDOWN:
-
-                if ( launched_game == SDL_FALSE ){
-
-                    x = event.motion.x;
-                    y = event.motion.y;
-
-                    if(x >= rect_button_1.x && x <= rect_button_1.x + rect_button_1.w && y >= rect_button_1.y && y <= rect_button_1.y + rect_button_1.h){                          
-                        AffichePlateauTuileItem(jeu,launched_game);
-                        launched_game = SDL_TRUE;
-                    } else if(x >= rect_button_2.x && x <= rect_button_2.x + rect_button_2.w && y >= rect_button_2.y && y <= rect_button_2.y + rect_button_2.h){      
-                        windowOpen = SDL_FALSE; // ferme la fenêtre
-                    }
-
-                }break;  
-
-            case SDL_QUIT:
-                windowOpen = SDL_FALSE;
-                break;
-
-            default:
-                break;
-            }
-
-        }
-    
-    }*/
     
     SDL_DestroyRenderer(jeu);
 
@@ -306,7 +212,8 @@ void fenetreMenu(SDL_Renderer *renderer){
                 SDL_RenderPresent(renderer);
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                if(cursorInButton == 1){                       
+                if(cursorInButton == 1){
+                    resetPlateau();                   
                     RandomPlateau();
                     afficherPlateau(renderer);
                     ResetRender(renderer, Background);
@@ -388,7 +295,7 @@ void afficherPlateau(SDL_Renderer *renderer){
                                 cursorY = event.motion.y;
 
                                 rect_tuileRestante.x = cursorX-27; rect_tuileRestante.y = cursorY-27;
-                                rect_itemRestant.x = cursorX+17-27 ; rect_itemRestant.y = cursorY+17-27 ;
+                                rect_itemRestant.x = cursorX+19-27 ; rect_itemRestant.y = cursorY+19-27 ;
                                 AffichePlateauTuileItem(renderer);
                             }
                         }        
@@ -406,48 +313,8 @@ void afficherPlateau(SDL_Renderer *renderer){
 
 void DeplaceTuile(SDL_Renderer *renderer){
 
-    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile]);
-    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item]);
-
-}
-
-void SearchTuile(){
-
-    for( int i=0 ; i<3 ; i++ ){
-        if(nbTuileRestant[i]){
-            switch ( i ){
-
-            case 0: // TUILE T item
-                tuileRestante.tuile = 5; 
-                for( int j=12 ; j<24 ; j++ ){
-                    if( nbItemRestant[j] ){
-                        tuileRestante.item = j+1;
-                        break;
-                    }
-                }
-            break;
-            case 1: // TUILE L item
-                tuileRestante.tuile = 1;
-                for( int j=12 ; j<24 ; j++ ){
-                    if( nbItemRestant[j] ){
-                        tuileRestante.item = j+1;
-                        break;
-                    }
-                }
-            break;
-            case 2: // TUILE L vide
-                tuileRestante.tuile = 1;
-                tuileRestante.item = 0;
-            break;
-            case 3: // TUILE I VIDE
-                tuileRestante.tuile = 9;
-                tuileRestante.item = 0;
-            break;
-            }
-            break;
-        }
-    }
-    //printf("%d %d\n", tuileRestante.tuile, tuileRestante.item);
+    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile-1]);
+    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item-1]);
 
 }
 
@@ -538,68 +405,46 @@ void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player, int i, int j){
 
 void RandomPlateau(){
 
-    for(int i = 0; i < 7; i++){
-        for(int j = 0; j < 7; j++){
-            if ( (SDLplateau[i][j].tuile) == 0 ){
-                while(1){
-                    
-                    int rand = getRandomInt(0,3);
-                    if(nbTuileRestant[rand]){
+    srand(time(NULL));
 
-                        switch ( rand )
-                        {
-                        case 0:
+    int arrayTypeTuile[34] = {0,0,0,0,0,0, 1,1,1,1,1,1, 2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,3,3,3,3};
+    int arrayItem[12] = {13,14,15,16,17,18,19,20,21,22,23,24};
 
-                            SDLplateau[i][j].tuile = getRandomInt(5,8);
-                            while(1){
+    melangerTab(arrayTypeTuile, 34);
+    melangerTab(arrayItem, 12);
 
-                                int rand_item = getRandomInt(1,24);
-                                if(nbItemRestant[rand_item-1]){
-                                    SDLplateau[i][j].item = rand_item;
-                                    nbItemRestant[rand_item-1] = 0;
-                                break;
-                                }
-                            }
-                            
-                            nbTuileRestant[0] -= 1;
-                            break;
-                        case 1:
+    int indiceRemplissageTuile = 0;
+    int indiceRemplissageItem = 0;
 
-                            SDLplateau[i][j].tuile = getRandomInt(1,4);
-                            while(1){
-
-                                int rand_item = getRandomInt(1,24);
-                                if(nbItemRestant[rand_item-1]){
-                                    SDLplateau[i][j].item = rand_item;
-                                    nbItemRestant[rand_item-1] = 0;
-                                break;
-                                }
-                            }
-                            nbTuileRestant[1] -= 1;
-                            break;
-
-                        case 2:
-                            SDLplateau[i][j].tuile = getRandomInt(1,4);
-                            nbTuileRestant[2] -= 1;
-                            break;
-
-                        case 3:
-                            SDLplateau[i][j].tuile = getRandomInt(9,10);
-                            nbTuileRestant[3] -= 1;
-                            break;
-                        }
-                    break;
-                    }
-                
-                }
+    for(int i = 0; i < 7; i++){ 
+    for(int j = 0; j < 7; j++){
+        if(i%2 == 1 || j%2 == 1){
+            if(arrayTypeTuile[indiceRemplissageTuile] < 2){
+                SDLplateau[i][j].item = arrayItem[indiceRemplissageItem];
+                indiceRemplissageItem++;
+            }else SDLplateau[i][j].item = 0;
+            switch(arrayTypeTuile[indiceRemplissageTuile]){
+                case 0:
+                    SDLplateau[i][j].tuile = getRandomInt(5,8); break;
+                case 1:
+                case 2:
+                    SDLplateau[i][j].tuile = getRandomInt(1,4); break;
+                case 3:
+                    SDLplateau[i][j].tuile = getRandomInt(9,10); break;
             }
+            indiceRemplissageTuile++;
         }
+    }}
+    if(arrayTypeTuile[33] < 2) tuileRestante.item = arrayItem[11];
+    switch(arrayTypeTuile[33]){
+        case 0:
+            tuileRestante.tuile = getRandomInt(5,8); break;
+        case 1:
+        case 2:
+            tuileRestante.tuile = getRandomInt(1,4); break;
+        case 3:
+            tuileRestante.tuile = getRandomInt(9,10); break;
     }
-    
-    
-
-    SearchTuile();
-
 }
 
 void AfficheTuileItem(SDL_Renderer *renderer){
@@ -637,13 +482,10 @@ void AfficheTuileItem(SDL_Renderer *renderer){
 
 void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
-    SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
-    SDL_Rect rect_itemRestant = {(1920-16)/2, 100-17, 16, 16};
-
     ResetRender(renderer, Background);
-    DeplaceTuile(renderer);
     AffichePlateau(renderer);
-    AfficheTuileItem(renderer);  
+    AfficheTuileItem(renderer);
+    DeplaceTuile(renderer); 
     SDL_RenderPresent(renderer);  
 
 }
@@ -731,4 +573,36 @@ int movePlayer(int player, int direction){
 int getRandomInt(int min, int max){
   int i = (rand() % (max-min+1)) + min;
   return i;
+}
+
+void resetPlateau(){
+
+    SDL_Rect tempRectTuileRestante = {(1920-54)/2, 100, 54, 54};
+    SDL_Rect tempRectItemRestant = {(1920-16)/2, 100+19, 16, 16};
+
+    char tempArray[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
+    char tempArray2[4] = {6,6,10,12};
+    for(int i = 1; i<6; i+=2){
+        for(int j = 1; j<6; j+=2){
+            SDLplateau[i][j].tuile = 0;
+            SDLplateau[i][j].item = 0;
+        }
+        tuileRestante.tuile = 0;
+        tuileRestante.item = 0;
+    }
+    SDL_memcpy(&rect_tuileRestante, &tempRectTuileRestante, sizeof(SDL_Rect));
+    SDL_memcpy(&rect_itemRestant, &tempRectItemRestant, sizeof(SDL_Rect));
+    SDL_memcpy(&nbItemRestant, &tempArray, sizeof(char)*24);
+    SDL_memcpy(&nbTuileRestant, &tempArray2, sizeof(char)*4);
+}
+
+void melangerTab(int* tab, size_t tailleTab){
+    int j; //position avec laquelle notre valeur va être échangée
+    uint8_t buffer;
+    for(int i = 0; i < tailleTab; i++){ //on parcours le tableau pour échanger la valeur d'une case avec une autre
+        j = getRandomInt(0,tailleTab-1); //on génère l'indice de la case avec laquelle notre valeur est échangée
+        buffer = tab[j]; //on mémorise la valeur pour ne pas la perdre
+        tab[j] = tab[i]; //on met i dans j
+        tab[i] = buffer; //on met j dans i
+    }
 }
