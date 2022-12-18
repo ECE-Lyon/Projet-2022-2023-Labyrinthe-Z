@@ -23,7 +23,7 @@ typedef struct{
 int getRandomInt(int min, int max);
 
 void ResetRender(SDL_Renderer *renderer, Color color);
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Color color, int px);
+void AfficheButton(SDL_Renderer *renderer,SDL_Rect rect_button, const char* file, Color color, int px);
 void fenetreMenu(SDL_Renderer *renderer);
 void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
@@ -71,57 +71,17 @@ char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L a
 
 char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
 
-const char chemin_tuile[10][26] = {"images/tuiles/TuileL1.bmp",
-                                   "images/tuiles/TuileL2.bmp",          
-                                   "images/tuiles/TuileL3.bmp",                   
-                                   "images/tuiles/TuileL4.bmp",                   
-                                   "images/tuiles/TuileT1.bmp",                   
-                                   "images/tuiles/TuileT2.bmp",
-                                   "images/tuiles/TuileT3.bmp",                   
-                                   "images/tuiles/TuileT4.bmp",
-                                   "images/tuiles/TuileI1.bmp",
-                                   "images/tuiles/TuileI2.bmp"};
-
-const char chemin_item[24][28] = {"images/items16px/iitem1.bmp", // MAGMA
-                                  "images/items16px/iitem2.bmp", // COOKIE
-                                  "images/items16px/iitem3.bmp", // EMERAUDE
-                                  "images/items16px/iitem4.bmp", // PASTEQUE
-                                  "images/items16px/iitem5.bmp", // LIVRE
-                                  "images/items16px/iitem6.bmp", // POMME
-                                  "images/items16px/iitem7.bmp", // CAROTTE
-                                  "images/items16px/iitem8.bmp", // DIAMANT
-                                  "images/items16px/iitem9.bmp", // PEARL
-                                  "images/items16px/item10.bmp", // NEMO
-                                  "images/items16px/item11.bmp", // NETHERSTAR            
-                                  "images/items16px/item12.bmp", // DISQUE
-                                  "images/items16px/item13.bmp", // FEUILLE
-                                  "images/items16px/item14.bmp", // LASSO
-                                  "images/items16px/item15.bmp", // BERRIES
-                                  "images/items16px/item16.bmp", // POTION
-                                  "images/items16px/item17.bmp", // XP BOTTLE
-                                  "images/items16px/item18.bmp", // PAPIER
-                                  "images/items16px/item19.bmp", // POISSON BOULE
-                                  "images/items16px/item20.bmp", // OEUF
-                                  "images/items16px/item21.bmp", // FLECHE
-                                  "images/items16px/item22.bmp", // TARTE
-                                  "images/items16px/item23.bmp", // BOUSSOLE
-                                  "images/items16px/item24.bmp"};// POULET
-
 Color Background = {255, 233, 210, 255};
 Color ButtonSelected = {216, 192, 168, 255};
 Color ButtonNotSelected = {229, 204, 178, 255};
 
 int colorButtonNotSelected[3] = {229, 204, 178};
 
-SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
-SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
+SDL_Rect rect_tuileRestante = {(SCREEN_W-54)/2, 100, 54, 54};
+SDL_Rect rect_itemRestant = {(SCREEN_W-16)/2, 100+19, 16, 16};
 
-SDL_Rect rect_tuileRestante = {(1920-54)/2, 100, 54, 54};
-SDL_Rect rect_itemRestant = {(1920-16)/2, 100+19, 16, 16};
+int main(int argc, char **argv){
 
-int main(int argc, char **argv)
-{
-    
     SDL_Window *window = NULL;
     SDL_Renderer *jeu = NULL;
 
@@ -131,7 +91,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, 1980, 1080, SDL_WINDOW_FULLSCREEN);
+    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, SCREEN_W, SCREEN_H, SDL_WINDOW_FULLSCREEN);
     if( window == NULL ){
         SDL_Log("Erreur create_window > %s\n",SDL_GetError());
         clean(NULL,NULL,NULL);
@@ -161,8 +121,8 @@ void fenetreMenu(SDL_Renderer *renderer){
     SDL_Surface *image = NULL;
     SDL_Texture *texture_button = NULL;
 
-    SDL_Rect rect_button_1 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
-    SDL_Rect rect_button_2 = {(1920-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (1080/2)+MENU_BUTTON_BORDER, 820+MENU_BUTTON_BORDER*2, 90+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_1 = {(SCREEN_W-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (SCREEN_H/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_2 = {(SCREEN_W-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (SCREEN_H/2)+MENU_BUTTON_BORDER, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
 
     SDL_bool windowOpen = SDL_TRUE;
 
@@ -171,8 +131,8 @@ void fenetreMenu(SDL_Renderer *renderer){
     uint8_t cursorInButton = 0;
 
     ResetRender(renderer, Background);
-    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
     SDL_RenderPresent(renderer); 
 
     while( windowOpen ){
@@ -195,18 +155,18 @@ void fenetreMenu(SDL_Renderer *renderer){
                 cursorY = event.motion.y;
                 if(cursorX >= rect_button_1.x && cursorX <= rect_button_1.x + rect_button_1.w && cursorY >= rect_button_1.y && cursorY <= rect_button_1.y + rect_button_1.h){
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 1;
                 } else if (cursorX >= rect_button_2.x && cursorX <= rect_button_2.x + rect_button_2.w && cursorY >= rect_button_2.y && cursorY <= rect_button_2.y + rect_button_2.h){
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 2;
                 } else{
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 0;
                 }
                 SDL_RenderPresent(renderer);
@@ -217,8 +177,8 @@ void fenetreMenu(SDL_Renderer *renderer){
                     RandomPlateau();
                     afficherPlateau(renderer);
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, image, texture_button, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, image, texture_button, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     SDL_RenderPresent(renderer);
                 } else if(cursorInButton == 2){      
                     windowOpen = SDL_FALSE; // ferme la fenêtre
@@ -313,8 +273,12 @@ void afficherPlateau(SDL_Renderer *renderer){
 
 void DeplaceTuile(SDL_Renderer *renderer){
 
-    printImage(renderer,rect_tuileRestante,chemin_tuile[tuileRestante.tuile-1]);
-    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,chemin_item[tuileRestante.item-1]);
+    char cheminItem[28];
+    char cheminTuile[26];
+    sprintf(cheminItem, "images/items16px/item%d.bmp", tuileRestante.item-1);
+    sprintf(cheminTuile, "images/tuiles/Tuile%d.bmp", tuileRestante.tuile);
+    printImage(renderer,rect_tuileRestante, cheminTuile);
+    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,cheminItem);
 
 }
 
@@ -334,7 +298,7 @@ void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *textur
 
 }
 
-void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *texture_button,SDL_Rect rect_button, const char* file, Color color, int px){
+void AfficheButton(SDL_Renderer *renderer, SDL_Rect rect_button, const char* file, Color color, int px){
 
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
@@ -350,7 +314,7 @@ void AfficheButton(SDL_Renderer *renderer,SDL_Surface *image, SDL_Texture *textu
 
 void AffichePlateau(SDL_Renderer *renderer){
 
-    SDL_Rect rect_plateau = {(1920-522)/2, (1080-522)/2, 522, 522};
+    SDL_Rect rect_plateau = {(SCREEN_W-522)/2, (SCREEN_H-522)/2, 522, 522};
     SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
     SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
 
@@ -359,8 +323,8 @@ void AffichePlateau(SDL_Renderer *renderer){
         SDL_RenderDrawRect(renderer,&rect_plateau);
         rect_plateau.h -= 2;
         rect_plateau.w -= 2;
-        rect_plateau.x = (1920-(rect_plateau.w))/2;
-        rect_plateau.y = (1080-(rect_plateau.h))/2;
+        rect_plateau.x = (SCREEN_W-(rect_plateau.w))/2;
+        rect_plateau.y = (SCREEN_H-(rect_plateau.h))/2;
     }
 
     for( int i=0 ; i<6 ; i++){
@@ -387,20 +351,6 @@ void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_
     SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 
     SDL_DestroyTexture(texture_image);
-}
-
-void printPlayer(SDL_Renderer *renderer, SDL_Rect rect_player, int i, int j){
-
-    SDL_Surface *image_player = NULL;
-    SDL_Texture *texture_player = NULL;
-
-    image_player = SDL_LoadBMP("images/items16px/player_1.bmp"); 
-    texture_player = SDL_CreateTextureFromSurface(renderer, image_player);
-    SDL_FreeSurface(image_player);
-    SDL_QueryTexture(texture_player, NULL, NULL, &rect_player.w, &rect_player.h);
-    SDL_RenderCopy(renderer, texture_player, NULL, &rect_player);
-
-    SDL_DestroyTexture(texture_player);
 }
 
 void RandomPlateau(){
@@ -455,22 +405,23 @@ void AfficheTuileItem(SDL_Renderer *renderer){
     for( int i=0 ; i<7 ; i++ ){
         rect_tuile.x = 717;
         rect_item.x = 736;
+        char cheminSkinPlayer[30];
+        char cheminItem[28];
+        char cheminTuile[26];
         for( int j=0 ; j<7 ; j++){
-            if (playerData[0].posX == i && playerData[0].posY == j){
-                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
-                printImage(renderer,rect_item, "images/skin16px/player_1.bmp");
-            } else if (playerData[1].posX == i && playerData[1].posY == j){
-                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
-                printImage(renderer,rect_item, "images/skin16px/player_2.bmp");
-            } else if (playerData[2].posX == i && playerData[2].posY == j){
-                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
-                printImage(renderer,rect_item, "images/skin16px/player_3.bmp");
-            } else if (playerData[3].posX == i && playerData[3].posY == j){
-                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
-                printImage(renderer,rect_item, "images/skin16px/player_4.bmp");
-            } else {
-                printImage(renderer,rect_tuile, chemin_tuile[(SDLplateau[i][j].tuile)-1]);
-                printImage(renderer,rect_item, chemin_item[(SDLplateau[i][j].item)-1]);
+            for(int k = 0; k < 5; k++){
+                sprintf(cheminTuile, "images/tuiles/Tuile%d.bmp", SDLplateau[i][j].tuile);
+                if(k == 4){
+                    sprintf(cheminItem, "images/items16px/item%d.bmp", SDLplateau[i][j].item-1);
+                    printImage(renderer,rect_tuile, cheminTuile);
+                    printImage(renderer,rect_item, cheminItem);
+                }
+                else if(playerData[k].posX == i && playerData[k].posY == j){
+                    sprintf(cheminSkinPlayer, "images/skin16px/player_%d.bmp", k+1);
+                    printImage(renderer,rect_tuile, cheminTuile);
+                    printImage(renderer,rect_item, cheminSkinPlayer);
+                    break;
+                }
             }
             rect_tuile.x += 4*18;
             rect_item.x += 4*18;
@@ -492,18 +443,18 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
 void printDebugGrid(SDL_Renderer *renderer){
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-    for(int i = 0; i<=1080; i+=60){
-        SDL_RenderDrawLine(renderer,0,i,1920,i);
+    for(int i = 0; i<=SCREEN_H; i+=60){
+        SDL_RenderDrawLine(renderer,0,i,SCREEN_W,i);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,0,540,1920,540);
+    SDL_RenderDrawLine(renderer,0,540,SCREEN_W,540);
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-    for(int i = 0; i<=1920; i+=60){
-        SDL_RenderDrawLine(renderer,i,0,i,1080);
+    for(int i = 0; i<=SCREEN_W; i+=60){
+        SDL_RenderDrawLine(renderer,i,0,i,SCREEN_H);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,960,0,960,1080);
+    SDL_RenderDrawLine(renderer,960,0,960,SCREEN_H);
     
     SDL_RenderPresent(renderer);
 }
@@ -577,8 +528,8 @@ int getRandomInt(int min, int max){
 
 void resetPlateau(){
 
-    SDL_Rect tempRectTuileRestante = {(1920-54)/2, 100, 54, 54};
-    SDL_Rect tempRectItemRestant = {(1920-16)/2, 100+19, 16, 16};
+    SDL_Rect tempRectTuileRestante = {(SCREEN_W-54)/2, 100, 54, 54};
+    SDL_Rect tempRectItemRestant = {(SCREEN_W-16)/2, 100+19, 16, 16};
 
     PlayerDATA tempPlayerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
