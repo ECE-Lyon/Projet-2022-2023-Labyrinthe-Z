@@ -77,8 +77,8 @@ Color ButtonNotSelected = {229, 204, 178, 255};
 
 int colorButtonNotSelected[3] = {229, 204, 178};
 
-SDL_Rect rect_tuileRestante = {(SCREEN_W-54)/2, 100, 54, 54};
-SDL_Rect rect_itemRestant = {(SCREEN_W-16)/2, 100+19, 16, 16};
+SDL_Rect rect_tuileRestante = {(SCREEN_W-54)/2, ((SCREEN_H-522)/2-54)/2, 54, 54};
+SDL_Rect rect_itemRestant = {(SCREEN_W-16)/2, (((SCREEN_H-522)/2-54)/2)+19, 16, 16};
 
 int main(int argc, char **argv){
 
@@ -184,9 +184,6 @@ void fenetreMenu(SDL_Renderer *renderer){
                     windowOpen = SDL_FALSE; // ferme la fenêtre
                 }
                 break;  
-            case SDL_QUIT:
-                windowOpen = SDL_FALSE;
-                break;
             default:
                 continue;
             } 
@@ -246,10 +243,7 @@ void afficherPlateau(SDL_Renderer *renderer){
                         cursorY <= rect_tuileRestante.y + rect_tuileRestante.h)
                     {
 
-                        SDL_PollEvent(&event);
-
-                        while(event.type != SDL_MOUSEBUTTONUP){
-
+                        do {
                             if(SDL_PollEvent(&event)){
                                 cursorX = event.motion.x;
                                 cursorY = event.motion.y;
@@ -258,10 +252,8 @@ void afficherPlateau(SDL_Renderer *renderer){
                                 rect_itemRestant.x = cursorX+19-27 ; rect_itemRestant.y = cursorY+19-27 ;
                                 AffichePlateauTuileItem(renderer);
                             }
-                        }        
-                    
-                    }
-                                                         
+                        }while(event.type != SDL_MOUSEBUTTONUP);
+                    }                               
                 }             
                 break;
             default:
@@ -315,8 +307,8 @@ void AfficheButton(SDL_Renderer *renderer, SDL_Rect rect_button, const char* fil
 void AffichePlateau(SDL_Renderer *renderer){
 
     SDL_Rect rect_plateau = {(SCREEN_W-522)/2, (SCREEN_H-522)/2, 522, 522};
-    SDL_Rect rect_plateau2 = {771, 297 , 18, 486};
-    SDL_Rect rect_plateau3 = {717, 351 , 486, 18};
+    SDL_Rect rect_plateau2 = {(SCREEN_W-522)/2+18+54, (SCREEN_H-522)/2+18 , 18, 486};
+    SDL_Rect rect_plateau3 = {(SCREEN_W-522)/2+18, (SCREEN_H-522)/2+18+54 , 486, 18};
 
     SDL_SetRenderDrawColor(renderer, 229, 204, 178, 255);
     for( int i=0 ; i<18 ; i++){
@@ -399,12 +391,12 @@ void RandomPlateau(){
 
 void AfficheTuileItem(SDL_Renderer *renderer){
 
-    SDL_Rect rect_tuile = {717, 297, 54, 54};
-    SDL_Rect rect_item = {736, 316, 16 , 16};
+    SDL_Rect rect_tuile = {(SCREEN_W-522)/2+18, (SCREEN_H-522)/2+18, 54, 54};
+    SDL_Rect rect_item = {(SCREEN_W-522)/2+18+19, (SCREEN_H-522)/2+18+19, 16 , 16};
 
     for( int i=0 ; i<7 ; i++ ){
-        rect_tuile.x = 717;
-        rect_item.x = 736;
+        rect_tuile.x = (SCREEN_W-522)/2+18;
+        rect_item.x = (SCREEN_W-522)/2+18+19;
         char cheminSkinPlayer[30];
         char cheminItem[28];
         char cheminTuile[26];
@@ -434,6 +426,7 @@ void AfficheTuileItem(SDL_Renderer *renderer){
 void AffichePlateauTuileItem(SDL_Renderer *renderer){
 
     ResetRender(renderer, Background);
+    printDebugGrid(renderer);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);
     DeplaceTuile(renderer); 
@@ -447,16 +440,14 @@ void printDebugGrid(SDL_Renderer *renderer){
         SDL_RenderDrawLine(renderer,0,i,SCREEN_W,i);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,0,540,SCREEN_W,540);
+    SDL_RenderDrawLine(renderer,0,SCREEN_H/2,SCREEN_W,SCREEN_H/2);
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
     for(int i = 0; i<=SCREEN_W; i+=60){
         SDL_RenderDrawLine(renderer,i,0,i,SCREEN_H);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,960,0,960,SCREEN_H);
-    
-    SDL_RenderPresent(renderer);
+    SDL_RenderDrawLine(renderer,SCREEN_W/2,0,SCREEN_W/2,SCREEN_H);
 }
 
 int checkDeplacement(int player, int direction){
@@ -528,8 +519,8 @@ int getRandomInt(int min, int max){
 
 void resetPlateau(){
 
-    SDL_Rect tempRectTuileRestante = {(SCREEN_W-54)/2, 100, 54, 54};
-    SDL_Rect tempRectItemRestant = {(SCREEN_W-16)/2, 100+19, 16, 16};
+    SDL_Rect tempRectTuileRestante = {(SCREEN_W-54)/2, ((SCREEN_H-522)/2-54)/2, 54, 54};
+    SDL_Rect tempRectItemRestant = {(SCREEN_W-16)/2, (((SCREEN_H-522)/2-54)/2)+19, 16, 16};
 
     PlayerDATA tempPlayerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
