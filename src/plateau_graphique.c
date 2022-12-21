@@ -113,7 +113,8 @@ int main(int argc, char **argv){
     else if(Screen.w < 1280 || Screen.h < 720) setGUIsize(1);
     else if (Screen.w < 1920 || Screen.h < 1080) setGUIsize(2);
     else if (Screen.w < 2560 || Screen.h < 1440) setGUIsize(3);
-    else  setGUIsize(4);
+    else if (Screen.w < 3840 || Screen.h < 2160) setGUIsize(4);
+    else  setGUIsize(5);
 
     window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, Screen.w, Screen.h, SDL_WINDOW_FULLSCREEN);
     if( window == NULL ){
@@ -617,7 +618,10 @@ void setGUIsize(uint8_t size){
             break;
         case 4:
             facteurResize = 2.0f;
-            break;                      
+            break;
+        case 5:
+            facteurResize = 3.0f;
+            break;                       
     }
 
     infoDisplay.itemSize = 16*facteurResize;
