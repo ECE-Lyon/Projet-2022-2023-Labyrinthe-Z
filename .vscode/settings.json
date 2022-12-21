@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "library.h": "c"
+        "library.h": "c",
+        "sdl.h": "c",
+        "bmp_manip.h": "c"
     }
 }

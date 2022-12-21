@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include "SDL_ttf.h"
 #include <SDL_mixer.h>
+#include "bmp_manip.h"
 
 #define MENU_BUTTON_W 820 // taille des images des boutons du menu
 #define MENU_BUTTON_H 90
@@ -20,6 +21,18 @@ typedef struct{
     Uint8 r, g, b, a;
 }Color;
 
+typedef struct{ 
+    uint8_t tuile, item; // uint8 suffit car on a seulement 10 types de tuiles différentes et 24 items
+}Case;
+
+typedef struct{
+    uint8_t posX, posY, itemFound; //pareil pour le uint8 (la position va de 0 à 7 et le nombre d'item jusqu'a 6)
+}PlayerDATA;
+
+typedef struct{
+    size_t itemSize, tuileSize, borderSize;
+}InfoDisplay;
+
 int getRandomInt(int min, int max);
 
 void ResetRender(SDL_Renderer *renderer, Color color);
@@ -29,13 +42,15 @@ void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
 void AfficheTuileItem( SDL_Renderer *renderer);
-void AffichePlateauTuileItem(SDL_Renderer *renderer);
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
 void afficherPlateau(SDL_Renderer *renderer);
 void resetPlateau();
 void melangerTab(int* tab, size_t tailleTab);
+void setGUIsize(uint8_t size);
+void removeTempImages(void);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -45,15 +60,11 @@ void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     if(w)
         SDL_DestroyWindow(w);
     SDL_Quit();
+
+    removeTempImages();
 }
 
-typedef struct{ 
-    uint8_t tuile, item; // uint8 suffit car on a seulement 10 types de tuiles différentes et 24 items
-}Case;
-
-typedef struct{
-    uint8_t posX, posY, itemFound; //pareil pour le uint8 (la position va de 0 à 7 et le nombre d'item jusqu'a 6)
-}PlayerDATA;
+InfoDisplay infoDisplay;
 
 Case SDLplateau[7][7] = { 1,0,   0,0,   7,1,   0,0,   7,2,   0,0,   4,0,
                           0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,
@@ -77,9 +88,6 @@ Color ButtonNotSelected = {229, 204, 178, 255};
 
 int colorButtonNotSelected[3] = {229, 204, 178};
 
-SDL_Rect rect_tuileRestante = {(SCREEN_W-54)/2, ((SCREEN_H-522)/2-54)/2, 54, 54};
-SDL_Rect rect_itemRestant = {(SCREEN_W-16)/2, (((SCREEN_H-522)/2-54)/2)+19, 16, 16};
-
 int main(int argc, char **argv){
 
     SDL_Window *window = NULL;
@@ -91,7 +99,23 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
-    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, SCREEN_W, SCREEN_H, SDL_WINDOW_FULLSCREEN);
+    SDL_DisplayMode Screen;
+    if(SDL_GetDesktopDisplayMode(0, &Screen)){
+        SDL_Log("Erreur init > %s\n",SDL_GetError());
+        clean(NULL,NULL,NULL);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("%dx%d", Screen.w, Screen.h);
+
+    // ajustement de la taille des images pour correspondre au mieux à la taille de l'écran
+    if (Screen.w < 720 || Screen.h < 480) setGUIsize(0);
+    else if(Screen.w < 1280 || Screen.h < 720) setGUIsize(1);
+    else if (Screen.w < 1920 || Screen.h < 1080) setGUIsize(2);
+    else if (Screen.w < 2560 || Screen.h < 1440) setGUIsize(3);
+    else  setGUIsize(4);
+
+    window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, Screen.w, Screen.h, SDL_WINDOW_FULLSCREEN);
     if( window == NULL ){
         SDL_Log("Erreur create_window > %s\n",SDL_GetError());
         clean(NULL,NULL,NULL);
@@ -106,23 +130,22 @@ int main(int argc, char **argv){
     }
 
     fenetreMenu(jeu);
-    
-    SDL_DestroyRenderer(jeu);
 
-    SDL_DestroyWindow(window);
-
-    SDL_Quit();
+    clean(window, jeu, NULL);
 
     return EXIT_SUCCESS;
 }
 
 void fenetreMenu(SDL_Renderer *renderer){
 
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
     SDL_Surface *image = NULL;
     SDL_Texture *texture_button = NULL;
 
-    SDL_Rect rect_button_1 = {(SCREEN_W-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (SCREEN_H/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
-    SDL_Rect rect_button_2 = {(SCREEN_W-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (SCREEN_H/2)+MENU_BUTTON_BORDER, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_1 = {(Screen.w-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (Screen.h/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_2 = {(Screen.w-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (Screen.h/2)+MENU_BUTTON_BORDER, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
 
     SDL_bool windowOpen = SDL_TRUE;
 
@@ -192,11 +215,20 @@ void fenetreMenu(SDL_Renderer *renderer){
 }
 
 void afficherPlateau(SDL_Renderer *renderer){
+
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
     
     int cursorX, cursorY;
     SDL_bool windowOpen = SDL_TRUE;
 
-    AffichePlateauTuileItem(renderer);
+    size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
+    size_t posItem = (infoDisplay.tuileSize-infoDisplay.itemSize)/2;
+
+    SDL_Rect rect_tuileRestante = {(Screen.w-infoDisplay.tuileSize)/2, ((Screen.h-sizePlateau)/2-infoDisplay.tuileSize)/2, infoDisplay.tuileSize, infoDisplay.tuileSize};
+    SDL_Rect rect_itemRestant = {(Screen.w-infoDisplay.itemSize)/2, (((Screen.h-sizePlateau)/2-infoDisplay.itemSize)/2)+posItem, infoDisplay.itemSize, infoDisplay.itemSize};
+
+    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
 
     while( windowOpen ){
         
@@ -213,19 +245,19 @@ void afficherPlateau(SDL_Renderer *renderer){
                     break;
                 case SDLK_UP:
                     movePlayer(0, 0);
-                    AffichePlateauTuileItem(renderer);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
                     break;
                 case SDLK_RIGHT:
                     movePlayer(0, 1);
-                    AffichePlateauTuileItem(renderer);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
                     break;
                 case SDLK_DOWN:
                     movePlayer(0, 2);
-                    AffichePlateauTuileItem(renderer);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
                     break;
                 case SDLK_LEFT:
                     movePlayer(0, 3);
-                    AffichePlateauTuileItem(renderer);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
                     break;
                 default:
                     continue;
@@ -248,9 +280,9 @@ void afficherPlateau(SDL_Renderer *renderer){
                                 cursorX = event.motion.x;
                                 cursorY = event.motion.y;
 
-                                rect_tuileRestante.x = cursorX-27; rect_tuileRestante.y = cursorY-27;
-                                rect_itemRestant.x = cursorX+19-27 ; rect_itemRestant.y = cursorY+19-27 ;
-                                AffichePlateauTuileItem(renderer);
+                                rect_tuileRestante.x = cursorX-infoDisplay.tuileSize/2; rect_tuileRestante.y = cursorY-infoDisplay.tuileSize/2;
+                                rect_itemRestant.x = cursorX+posItem-infoDisplay.itemSize/2 ; rect_itemRestant.y = cursorY+posItem-infoDisplay.tuileSize/2 ;
+                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
                             }
                         }while(event.type != SDL_MOUSEBUTTONUP);
                     }                               
@@ -263,12 +295,12 @@ void afficherPlateau(SDL_Renderer *renderer){
     }
 }
 
-void DeplaceTuile(SDL_Renderer *renderer){
+void DeplaceTuile(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant){
 
-    char cheminItem[28];
-    char cheminTuile[26];
-    sprintf(cheminItem, "images/items16px/item%d.bmp", tuileRestante.item-1);
-    sprintf(cheminTuile, "images/tuiles/Tuile%d.bmp", tuileRestante.tuile);
+    char cheminItem[33];
+    char cheminTuile[35];
+    sprintf(cheminItem, "images/formated/items/item%d.bmp", tuileRestante.item-1);
+    sprintf(cheminTuile, "images/formated/tuiles/Tuile%d.bmp", tuileRestante.tuile);
     printImage(renderer,rect_tuileRestante, cheminTuile);
     if( tuileRestante.item ) printImage(renderer,rect_itemRestant,cheminItem);
 
@@ -306,27 +338,32 @@ void AfficheButton(SDL_Renderer *renderer, SDL_Rect rect_button, const char* fil
 
 void AffichePlateau(SDL_Renderer *renderer){
 
-    SDL_Rect rect_plateau = {(SCREEN_W-522)/2, (SCREEN_H-522)/2, 522, 522};
-    SDL_Rect rect_plateau2 = {(SCREEN_W-522)/2+18+54, (SCREEN_H-522)/2+18 , 18, 486};
-    SDL_Rect rect_plateau3 = {(SCREEN_W-522)/2+18, (SCREEN_H-522)/2+18+54 , 486, 18};
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
+    size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
+
+    SDL_Rect rect_plateau = {(Screen.w-sizePlateau)/2, (Screen.h-sizePlateau)/2, sizePlateau, sizePlateau};
+    SDL_Rect rect_plateau2 = {(Screen.w-sizePlateau)/2+infoDisplay.borderSize+infoDisplay.tuileSize, (Screen.h-sizePlateau)/2+infoDisplay.borderSize , infoDisplay.borderSize, sizePlateau-2*infoDisplay.borderSize};
+    SDL_Rect rect_plateau3 = {(Screen.w-sizePlateau)/2+infoDisplay.borderSize, (Screen.h-sizePlateau)/2+infoDisplay.borderSize+infoDisplay.tuileSize , sizePlateau-2*infoDisplay.borderSize, infoDisplay.borderSize};
 
     SDL_SetRenderDrawColor(renderer, 229, 204, 178, 255);
-    for( int i=0 ; i<18 ; i++){
+    for( int i=0 ; i<infoDisplay.borderSize ; i++){
         SDL_RenderDrawRect(renderer,&rect_plateau);
         rect_plateau.h -= 2;
         rect_plateau.w -= 2;
-        rect_plateau.x = (SCREEN_W-(rect_plateau.w))/2;
-        rect_plateau.y = (SCREEN_H-(rect_plateau.h))/2;
+        rect_plateau.x = (Screen.w-(rect_plateau.w))/2;
+        rect_plateau.y = (Screen.h-(rect_plateau.h))/2;
     }
 
     for( int i=0 ; i<6 ; i++){
         SDL_RenderFillRect(renderer,&rect_plateau2);
-        rect_plateau2.x += 4*18;
+        rect_plateau2.x += infoDisplay.tuileSize+infoDisplay.borderSize;
     }
 
     for( int i=0 ; i<6 ; i++){
         SDL_RenderFillRect(renderer,&rect_plateau3);
-        rect_plateau3.y += 4*18;
+        rect_plateau3.y += infoDisplay.tuileSize+infoDisplay.borderSize;
     }    
 
 }
@@ -391,63 +428,73 @@ void RandomPlateau(){
 
 void AfficheTuileItem(SDL_Renderer *renderer){
 
-    SDL_Rect rect_tuile = {(SCREEN_W-522)/2+18, (SCREEN_H-522)/2+18, 54, 54};
-    SDL_Rect rect_item = {(SCREEN_W-522)/2+18+19, (SCREEN_H-522)/2+18+19, 16 , 16};
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
+    size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
+    size_t posItem = (infoDisplay.tuileSize-infoDisplay.itemSize)/2;
+
+    SDL_Rect rect_tuile = {(Screen.w-sizePlateau)/2+infoDisplay.borderSize, (Screen.h-sizePlateau)/2+infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize};
+    SDL_Rect rect_item = {(Screen.w-sizePlateau)/2+infoDisplay.borderSize+posItem, (Screen.h-sizePlateau)/2+infoDisplay.borderSize+posItem, infoDisplay.itemSize , infoDisplay.itemSize};
 
     for( int i=0 ; i<7 ; i++ ){
-        rect_tuile.x = (SCREEN_W-522)/2+18;
-        rect_item.x = (SCREEN_W-522)/2+18+19;
-        char cheminSkinPlayer[30];
-        char cheminItem[28];
-        char cheminTuile[26];
+        rect_tuile.x = (Screen.w-sizePlateau)/2+infoDisplay.borderSize;
+        rect_item.x = (Screen.w-sizePlateau)/2+infoDisplay.borderSize+posItem;
+        char cheminSkinPlayer[35];
+        char cheminItem[32];
+        char cheminTuile[35];
         for( int j=0 ; j<7 ; j++){
             for(int k = 0; k < 5; k++){
-                sprintf(cheminTuile, "images/tuiles/Tuile%d.bmp", SDLplateau[i][j].tuile);
+                sprintf(cheminTuile, "images/formated/tuiles/Tuile%d.bmp", SDLplateau[i][j].tuile);
                 if(k == 4){
-                    sprintf(cheminItem, "images/items16px/item%d.bmp", SDLplateau[i][j].item-1);
+                    sprintf(cheminItem, "images/formated/item/item%d.bmp", SDLplateau[i][j].item-1);
                     printImage(renderer,rect_tuile, cheminTuile);
                     printImage(renderer,rect_item, cheminItem);
                 }
                 else if(playerData[k].posX == i && playerData[k].posY == j){
-                    sprintf(cheminSkinPlayer, "images/skin16px/player_%d.bmp", k+1);
+                    sprintf(cheminSkinPlayer, "images/formated/skin/player_%d.bmp", k+1);
                     printImage(renderer,rect_tuile, cheminTuile);
                     printImage(renderer,rect_item, cheminSkinPlayer);
                     break;
                 }
             }
-            rect_tuile.x += 4*18;
-            rect_item.x += 4*18;
+            rect_tuile.x += infoDisplay.tuileSize+infoDisplay.borderSize;
+            rect_item.x += infoDisplay.tuileSize+infoDisplay.borderSize;
         }
-        rect_tuile.y += 4*18;
-        rect_item.y += 4*18;
+        rect_tuile.y += infoDisplay.tuileSize+infoDisplay.borderSize;
+        rect_item.y += infoDisplay.tuileSize+infoDisplay.borderSize;
     }
 }
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer){
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant){
 
     ResetRender(renderer, Background);
     printDebugGrid(renderer);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);
-    DeplaceTuile(renderer); 
+    DeplaceTuile(renderer, rect_tuileRestante, rect_itemRestant); 
     SDL_RenderPresent(renderer);  
 
 }
 
 void printDebugGrid(SDL_Renderer *renderer){
-    SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-    for(int i = 0; i<=SCREEN_H; i+=60){
-        SDL_RenderDrawLine(renderer,0,i,SCREEN_W,i);
-    }
-    SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,0,SCREEN_H/2,SCREEN_W,SCREEN_H/2);
+
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-    for(int i = 0; i<=SCREEN_W; i+=60){
-        SDL_RenderDrawLine(renderer,i,0,i,SCREEN_H);
+    for(int i = 0; i<=Screen.h; i+=60){
+        SDL_RenderDrawLine(renderer,0,i,Screen.w,i);
     }
     SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer,SCREEN_W/2,0,SCREEN_W/2,SCREEN_H);
+    SDL_RenderDrawLine(renderer,0,Screen.h/2,Screen.w,Screen.h/2);
+
+    SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
+    for(int i = 0; i<=Screen.w; i+=60){
+        SDL_RenderDrawLine(renderer,i,0,i,Screen.h);
+    }
+    SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawLine(renderer,Screen.w/2,0,Screen.w/2,Screen.h);
 }
 
 int checkDeplacement(int player, int direction){
@@ -519,8 +566,8 @@ int getRandomInt(int min, int max){
 
 void resetPlateau(){
 
-    SDL_Rect tempRectTuileRestante = {(SCREEN_W-54)/2, ((SCREEN_H-522)/2-54)/2, 54, 54};
-    SDL_Rect tempRectItemRestant = {(SCREEN_W-16)/2, (((SCREEN_H-522)/2-54)/2)+19, 16, 16};
+    //SDL_Rect tempRectTuileRestante = {(Screen.w-54)/2, ((Screen.h-522)/2-54)/2, 54, 54};
+    //SDL_Rect tempRectItemRestant = {(Screen.w-16)/2, (((Screen.h-522)/2-54)/2)+19, 16, 16};
 
     PlayerDATA tempPlayerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
@@ -535,8 +582,8 @@ void resetPlateau(){
         tuileRestante.tuile = 0;
         tuileRestante.item = 0;
     }
-    SDL_memcpy(&rect_tuileRestante, &tempRectTuileRestante, sizeof(SDL_Rect));
-    SDL_memcpy(&rect_itemRestant, &tempRectItemRestant, sizeof(SDL_Rect));
+    //SDL_memcpy(&rect_tuileRestante, &tempRectTuileRestante, sizeof(SDL_Rect));
+    //SDL_memcpy(&rect_itemRestant, &tempRectItemRestant, sizeof(SDL_Rect));
     SDL_memcpy(&playerData, &tempPlayerData, sizeof(PlayerDATA)*4);
     SDL_memcpy(&nbItemRestant, &tempArray, sizeof(char)*24);
     SDL_memcpy(&nbTuileRestant, &tempArray2, sizeof(char)*4);
@@ -550,5 +597,121 @@ void melangerTab(int* tab, size_t tailleTab){
         buffer = tab[j]; //on mémorise la valeur pour ne pas la perdre
         tab[j] = tab[i]; //on met i dans j
         tab[i] = buffer; //on met j dans i
+    }
+}
+
+void setGUIsize(uint8_t size){
+    float facteurResize;
+    switch(size){
+        case 0:
+            facteurResize = 0.5f;
+            break;
+        case 1:
+            facteurResize = 0.75f;
+            break;
+        case 2:
+            facteurResize = 1.0f;
+            break;
+        case 3:
+            facteurResize = 1.5f;
+            break;
+        case 4:
+            facteurResize = 2.0f;
+            break;                      
+    }
+
+    infoDisplay.itemSize = 16*facteurResize;
+    infoDisplay.tuileSize = 54*facteurResize;
+    infoDisplay.borderSize = 18*facteurResize;
+
+    char cheminImage[100];
+    char cheminImageRedim[100];
+
+    // redimentionnement des items
+    for(int i = 1; i <= 24; i++){
+        sprintf(cheminImage, "images/default/item/item%d.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        if (image == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        SDL_Surface *image_redim = redimImage(image, facteurResize);
+        if (image_redim == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        sprintf(cheminImageRedim, "images/formated/item/item%d.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+    }
+
+    // redimentionnement des joueurs 
+    for(int i = 1; i <= 4; i++){
+        sprintf(cheminImage, "images/default/skin/player_%d.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        if (image == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        SDL_Surface *image_redim = redimImage(image, facteurResize);
+        if (image_redim == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        sprintf(cheminImageRedim, "images/formated/skin/player_%d.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+    }
+
+    // redimentionnement des tuiles 
+    for(int i = 1; i <= 10; i++){
+        sprintf(cheminImage, "images/default/tuiles/Tuile%d.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        if (image == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        SDL_Surface *image_redim = redimImage(image, facteurResize);
+        if (image_redim == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        sprintf(cheminImageRedim, "images/formated/tuiles/Tuile%d.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+    }
+}
+
+void removeTempImages(void){
+    char cheminImage[100];
+    for(int i = 1; i <= 24; i++){
+        sprintf(cheminImage, "images/formated/item/item%d.bmp", i);
+        remove(cheminImage);
+    }
+    for(int i = 1; i <= 4; i++){
+        sprintf(cheminImage, "images/formated/skin/player_%d.bmp", i);
+        remove(cheminImage);
+    }
+    for(int i = 1; i <= 10; i++){
+        sprintf(cheminImage, "images/formated/tuiles/Tuile%d.bmp", i);
+        remove(cheminImage);
     }
 }
