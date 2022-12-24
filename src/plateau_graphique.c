@@ -14,9 +14,6 @@
 #define MENU_BUTTON_H 90
 #define MENU_BUTTON_BORDER 12
 
-#define SCREEN_W 1920
-#define SCREEN_H 1080
-
 typedef struct{
     Uint8 r, g, b, a;
 }Color;
@@ -42,7 +39,7 @@ void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
 void AfficheTuileItem( SDL_Renderer *renderer);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant);
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12]);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
@@ -51,6 +48,7 @@ void resetPlateau();
 void melangerTab(int* tab, size_t tailleTab);
 void setGUIsize(uint8_t size);
 void removeTempImages(void);
+void printMagnetLockRect(SDL_Renderer *renderer ,SDL_Rect magnet_lock[12]);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -106,8 +104,6 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
-    printf("%dx%d", Screen.w, Screen.h);
-
     // ajustement de la taille des images pour correspondre au mieux à la taille de l'écran
     if (Screen.w < 720 || Screen.h < 480) setGUIsize(0);
     else if(Screen.w < 1280 || Screen.h < 720) setGUIsize(1);
@@ -155,8 +151,8 @@ void fenetreMenu(SDL_Renderer *renderer){
     uint8_t cursorInButton = 0;
 
     ResetRender(renderer, Background);
-    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
     SDL_RenderPresent(renderer); 
 
     while( windowOpen ){
@@ -179,18 +175,18 @@ void fenetreMenu(SDL_Renderer *renderer){
                 cursorY = event.motion.y;
                 if(cursorX >= rect_button_1.x && cursorX <= rect_button_1.x + rect_button_1.w && cursorY >= rect_button_1.y && cursorY <= rect_button_1.y + rect_button_1.h){
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 1;
                 } else if (cursorX >= rect_button_2.x && cursorX <= rect_button_2.x + rect_button_2.w && cursorY >= rect_button_2.y && cursorY <= rect_button_2.y + rect_button_2.h){
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 2;
                 } else{
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 0;
                 }
                 SDL_RenderPresent(renderer);
@@ -201,8 +197,8 @@ void fenetreMenu(SDL_Renderer *renderer){
                     RandomPlateau();
                     afficherPlateau(renderer);
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, rect_button_1, "images/button/newgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, rect_button_2, "images/button/exitgame.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     SDL_RenderPresent(renderer);
                 } else if(cursorInButton == 2){      
                     windowOpen = SDL_FALSE; // ferme la fenêtre
@@ -226,10 +222,28 @@ void afficherPlateau(SDL_Renderer *renderer){
     size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
     size_t posItem = (infoDisplay.tuileSize-infoDisplay.itemSize)/2;
 
-    SDL_Rect rect_tuileRestante = {(Screen.w-infoDisplay.tuileSize)/2, ((Screen.h-sizePlateau)/2-infoDisplay.tuileSize)/2, infoDisplay.tuileSize, infoDisplay.tuileSize};
-    SDL_Rect rect_itemRestant = {(Screen.w-infoDisplay.itemSize)/2, (((Screen.h-sizePlateau)/2-infoDisplay.itemSize)/2)+posItem, infoDisplay.itemSize, infoDisplay.itemSize};
+    double plateauX = (Screen.w-sizePlateau)/2;
+    double plateauY = (Screen.h-sizePlateau)/2;
 
-    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+    SDL_Rect rect_tuileRestante = {plateauX+4*infoDisplay.borderSize+3*infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize};
+    SDL_Rect rect_itemRestant = {rect_tuileRestante.x+posItem, rect_tuileRestante.y+posItem, infoDisplay.itemSize, infoDisplay.itemSize};
+
+    SDL_Rect magnet_lock[12] = {plateauX+2*infoDisplay.borderSize+infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+4*infoDisplay.borderSize+3*infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+6*infoDisplay.borderSize+5*infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+sizePlateau+infoDisplay.borderSize, plateauY+infoDisplay.tuileSize+2*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+sizePlateau+infoDisplay.borderSize, plateauY+3*infoDisplay.tuileSize+4*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+sizePlateau+infoDisplay.borderSize, plateauY+5*infoDisplay.tuileSize+6*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+6*infoDisplay.borderSize+5*infoDisplay.tuileSize, plateauY+sizePlateau+infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+4*infoDisplay.borderSize+3*infoDisplay.tuileSize, plateauY+sizePlateau+infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX+2*infoDisplay.borderSize+infoDisplay.tuileSize, plateauY+sizePlateau+infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+5*infoDisplay.tuileSize+6*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+3*infoDisplay.tuileSize+4*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
+                                plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+infoDisplay.tuileSize+2*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize};
+
+    int posTuileRestante = 1;
+
+    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
 
     while( windowOpen ){
         
@@ -246,19 +260,19 @@ void afficherPlateau(SDL_Renderer *renderer){
                     break;
                 case SDLK_UP:
                     movePlayer(0, 0);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_RIGHT:
                     movePlayer(0, 1);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_DOWN:
                     movePlayer(0, 2);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_LEFT:
                     movePlayer(0, 3);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 default:
                     continue;
@@ -282,10 +296,32 @@ void afficherPlateau(SDL_Renderer *renderer){
                                 cursorY = event.motion.y;
 
                                 rect_tuileRestante.x = cursorX-infoDisplay.tuileSize/2; rect_tuileRestante.y = cursorY-infoDisplay.tuileSize/2;
-                                rect_itemRestant.x = cursorX+posItem-infoDisplay.itemSize/2 ; rect_itemRestant.y = cursorY+posItem-infoDisplay.tuileSize/2 ;
-                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant);
+                                rect_itemRestant.x = rect_tuileRestante.x+posItem ; rect_itemRestant.y = rect_tuileRestante.y+posItem;
+                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
+
                             }
                         }while(event.type != SDL_MOUSEBUTTONUP);
+
+                        //on quitte le while donc le bouton est relaché
+
+                        for(int i = 0; i < 12; i++){
+                            if( cursorX >= (magnet_lock[i].x - infoDisplay.tuileSize/2) &&
+                                cursorX <= (magnet_lock[i].x + magnet_lock[i].w + infoDisplay.tuileSize/2) &&
+                                cursorY >= (magnet_lock[i].y - infoDisplay.tuileSize/2) &&
+                                cursorY <= (magnet_lock[i].y + magnet_lock[i].h + infoDisplay.tuileSize/2))
+                            {
+                                rect_tuileRestante.x = magnet_lock[i].x; rect_tuileRestante.y = magnet_lock[i].y;
+                                rect_itemRestant.x = magnet_lock[i].x+posItem; rect_itemRestant.y = magnet_lock[i].y+posItem;
+                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
+                                posTuileRestante = i;
+                                break;
+                            }
+                            else if(i == 11){
+                                rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
+                                rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
+                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
+                            }
+                        }
                     }                               
                 }             
                 break;
@@ -300,10 +336,10 @@ void DeplaceTuile(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect 
 
     char cheminItem[33];
     char cheminTuile[35];
-    sprintf(cheminItem, "images/formated/items/item%d.bmp", tuileRestante.item-1);
+    sprintf(cheminItem, "images/formated/item/item%d.bmp", tuileRestante.item);
     sprintf(cheminTuile, "images/formated/tuiles/Tuile%d.bmp", tuileRestante.tuile);
     printImage(renderer,rect_tuileRestante, cheminTuile);
-    if( tuileRestante.item ) printImage(renderer,rect_itemRestant,cheminItem);
+    if( tuileRestante.item != 0) printImage(renderer,rect_itemRestant,cheminItem);
 
 }
 
@@ -448,7 +484,7 @@ void AfficheTuileItem(SDL_Renderer *renderer){
             for(int k = 0; k < 5; k++){
                 sprintf(cheminTuile, "images/formated/tuiles/Tuile%d.bmp", SDLplateau[i][j].tuile);
                 if(k == 4){
-                    sprintf(cheminItem, "images/formated/item/item%d.bmp", SDLplateau[i][j].item-1);
+                    sprintf(cheminItem, "images/formated/item/item%d.bmp", SDLplateau[i][j].item);
                     printImage(renderer,rect_tuile, cheminTuile);
                     printImage(renderer,rect_item, cheminItem);
                 }
@@ -467,15 +503,23 @@ void AfficheTuileItem(SDL_Renderer *renderer){
     }
 }
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant){
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12]){
 
     ResetRender(renderer, Background);
-    printDebugGrid(renderer);
+    //printDebugGrid(renderer);
+    printMagnetLockRect(renderer, magnet_lock);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);
     DeplaceTuile(renderer, rect_tuileRestante, rect_itemRestant); 
     SDL_RenderPresent(renderer);  
 
+}
+
+void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12]){
+    SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
+    for(int i = 0; i < 12; i++){
+        SDL_RenderDrawRect(renderer, &magnet_lock[i]);
+    }
 }
 
 void printDebugGrid(SDL_Renderer *renderer){
@@ -566,9 +610,6 @@ int getRandomInt(int min, int max){
 }
 
 void resetPlateau(){
-
-    //SDL_Rect tempRectTuileRestante = {(Screen.w-54)/2, ((Screen.h-522)/2-54)/2, 54, 54};
-    //SDL_Rect tempRectItemRestant = {(Screen.w-16)/2, (((Screen.h-522)/2-54)/2)+19, 16, 16};
 
     PlayerDATA tempPlayerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
@@ -702,6 +743,23 @@ void setGUIsize(uint8_t size){
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image_redim, cheminImageRedim);
     }
+
+    // redimentionnement des boutons 
+    for(int i = 1; i <= 2; i++){
+        sprintf(cheminImage, "images/default/button/button%d.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        if (image == NULL) {
+            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+            SDL_Quit();
+            return;
+        }
+
+        sprintf(cheminImageRedim, "images/formated/button/button%d.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image, cheminImageRedim);
+    }
 }
 
 void removeTempImages(void){
@@ -716,6 +774,10 @@ void removeTempImages(void){
     }
     for(int i = 1; i <= 10; i++){
         sprintf(cheminImage, "images/formated/tuiles/Tuile%d.bmp", i);
+        remove(cheminImage);
+    }
+    for(int i = 1; i <= 2; i++){
+        sprintf(cheminImage, "images/formated/button/button%d.bmp", i);
         remove(cheminImage);
     }
 }

@@ -26,18 +26,18 @@ SDL_Surface* redimImage(SDL_Surface *image, float facteur){
 
 SDL_Surface* upscaleImage(SDL_Surface *image, int facteurScaling){
 
-    if(facteurScaling == 1) return image;
-
   int new_w = image->w * facteurScaling;
   int new_h = image->h * facteurScaling;
 
-  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0, 0, 0, 0);
+  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
   if (image_redim == NULL) {
     printf("Erreur lors de la création de la surface redimensionnée 1 : %s\n", SDL_GetError());
     
     SDL_FreeSurface(image);
     SDL_Quit();
   }
+
+  if(facteurScaling == 1) return image_redim;
 
   for(int x = 0; x < image->w; x++){
     for(int s1 = 0; s1 < facteurScaling; s1++){
@@ -56,17 +56,18 @@ SDL_Surface* upscaleImage(SDL_Surface *image, int facteurScaling){
 
 SDL_Surface* downscaleImage(SDL_Surface *image, int facteurScaling){
 
-    if(facteurScaling == 1) return image;
-
   int new_w = image->w / facteurScaling;
   int new_h = image->h / facteurScaling;
 
-  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0, 0, 0, 0);
+  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
   if (image_redim == NULL) {
     printf("Erreur lors de la création de la surface redimensionnée 2 : %s\n", SDL_GetError());
     SDL_FreeSurface(image);
     SDL_Quit();
   }
+  SDL_SetSurfaceBlendMode(image_redim, SDL_BLENDMODE_BLEND);
+
+  if(facteurScaling == 1) return image_redim;
 
   for(int x = 0; x < image_redim->w; x++){
       for(int y = 0; y < image_redim->h; y ++){
