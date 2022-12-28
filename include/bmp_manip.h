@@ -10,74 +10,72 @@ typedef struct {
     int denominateur;
 } fraction;
 
-SDL_Surface* upscaleImage(SDL_Surface *image, int facteurGrossissement);
-SDL_Surface* downscaleImage(SDL_Surface *image, int facteurScaling);
-SDL_Surface* redimImage(SDL_Surface *image, float facteur);
+void upscaleImage(SDL_Surface *image, SDL_Surface *image_redim, int facteurX, int facteurY);
+void downscaleImage(SDL_Surface *image, SDL_Surface *image_redim, int facteurX, int facteurY);
+void redimImage(SDL_Surface *image, SDL_Surface *image_redim);
 fraction floatToFraction(float n);
 int pgcd(int a, int b);
 
-SDL_Surface* redimImage(SDL_Surface *image, float facteur){
-  fraction ratio = floatToFraction(facteur);
-  SDL_Surface *image_up = upscaleImage(image, ratio.numerateur);
-  SDL_Surface *image_down = downscaleImage(image_up, ratio.denominateur);
+void handleSurfaceError(SDL_Surface* surface){
+	if (surface == NULL) {
+		printf("Erreur lors de la création de la surface redimensionnée 1 : %s\n", SDL_GetError());
+		
+		SDL_FreeSurface(surface);
+		SDL_Quit();
+  	}
+}
+
+void redimImage(SDL_Surface *image, SDL_Surface *image_redim){
+
+	float facteurX_ = (float)image_redim->w / (float)image->w;
+	float facteurY_ = (float)image_redim->h / (float)image->h;
+	fraction facteurX = floatToFraction(facteurX_);
+	fraction facteurY = floatToFraction(facteurY_);
+
+	SDL_Surface *image_up = SDL_CreateRGBSurface(0, image->w*facteurX.numerateur, image->h*facteurY.numerateur, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+    handleSurfaceError(image_up);
+	
+	upscaleImage(image, image_up, facteurX.numerateur, facteurY.numerateur);
+	downscaleImage(image_up, image_redim, facteurX.denominateur, facteurY.denominateur);
   
-  return image_down;
 }
 
-SDL_Surface* upscaleImage(SDL_Surface *image, int facteurScaling){
+void upscaleImage(SDL_Surface *image, SDL_Surface *image_redim, int facteurX, int facteurY){
 
-  int new_w = image->w * facteurScaling;
-  int new_h = image->h * facteurScaling;
+	if(facteurX == 1 && facteurY == 1) {
+		SDL_Rect src = { 0, 0, image->w, image->h };
+		SDL_BlitSurface(image, &src, image_redim, &src);
+		return;
+	}
 
-  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  if (image_redim == NULL) {
-    printf("Erreur lors de la création de la surface redimensionnée 1 : %s\n", SDL_GetError());
-    
-    SDL_FreeSurface(image);
-    SDL_Quit();
-  }
-
-  if(facteurScaling == 1) return image_redim;
-
-  for(int x = 0; x < image->w; x++){
-    for(int s1 = 0; s1 < facteurScaling; s1++){
-      for(int y = 0; y < image->h; y ++){
-        for(int s2 = 0; s2 < facteurScaling; s2++){
-          SDL_Rect src = { x, y, 1, 1 };
-          SDL_Rect dst = { facteurScaling*x+s1, facteurScaling*y+s2, 1, 1 };
-          SDL_BlitSurface(image, &src, image_redim, &dst);
-        }
-      }
-    }
-  }
-
-  return image_redim;
+	for(int x = 0; x < image->w; x++){
+		for(int sX = 0; sX < facteurX; sX++){
+			for(int y = 0; y < image->h; y ++){
+				for(int sY = 0; sY < facteurY; sY++){
+					SDL_Rect src = { x, y, 1, 1 };
+					SDL_Rect dst = { facteurX*x+sX, facteurY*y+sY, 1, 1 };
+					SDL_BlitSurface(image, &src, image_redim, &dst);
+				}
+			}
+		}
+	}
 }
 
-SDL_Surface* downscaleImage(SDL_Surface *image, int facteurScaling){
+void downscaleImage(SDL_Surface *image, SDL_Surface *image_redim, int facteurX, int facteurY){
 
-  int new_w = image->w / facteurScaling;
-  int new_h = image->h / facteurScaling;
-
-  SDL_Surface *image_redim = SDL_CreateRGBSurface(0, new_w, new_h, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  if (image_redim == NULL) {
-    printf("Erreur lors de la création de la surface redimensionnée 2 : %s\n", SDL_GetError());
-    SDL_FreeSurface(image);
-    SDL_Quit();
+  if(facteurX == 1 && facteurY == 1){
+	SDL_Rect src = { 0, 0, image->w, image->h };
+	SDL_BlitSurface(image, &src, image_redim, &src);
+	return;
   }
-  SDL_SetSurfaceBlendMode(image_redim, SDL_BLENDMODE_BLEND);
-
-  if(facteurScaling == 1) return image_redim;
 
   for(int x = 0; x < image_redim->w; x++){
       for(int y = 0; y < image_redim->h; y ++){
-          SDL_Rect src = { facteurScaling*x, facteurScaling*y, 1, 1 };
+          SDL_Rect src = { facteurX*x, facteurY*y, 1, 1 };
           SDL_Rect dst = { x, y, 1, 1 };
           SDL_BlitSurface(image, &src, image_redim, &dst);
       }
   }
-
-  return image_redim;
 }
 
 fraction floatToFraction(float n) {
@@ -111,6 +109,18 @@ fraction floatToFraction(float n) {
 int pgcd(int a, int b){
   if (b == 0) return a;
   else return pgcd(b, a % b);
+}
+
+void shiftImage(SDL_Surface *image, SDL_Surface *image_shifted, SDL_bool direction, int deplacement){
+
+	SDL_Rect src = { deplacement, 0, image_shifted->w-deplacement, image_shifted->h };
+	SDL_Rect dst = { 0, 0, image_shifted->w-deplacement, image_shifted->h };
+	SDL_BlitSurface(image, &src, image_shifted, &dst);
+
+	SDL_Rect src2 = { 0, 0, deplacement, image_shifted->h };
+	SDL_Rect dst2 = { image_shifted->w-deplacement, 0, image_shifted->w, image_shifted->h };
+	SDL_BlitSurface(image, &src2, image_shifted, &dst2);
+	
 }
 
 #endif

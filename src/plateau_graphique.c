@@ -27,7 +27,7 @@ typedef struct{
 }PlayerDATA;
 
 typedef struct{
-    size_t itemSize, tuileSize, borderSize;
+    size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY;
 }InfoDisplay;
 
 int getRandomInt(int min, int max);
@@ -39,7 +39,7 @@ void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
 void AfficheTuileItem( SDL_Renderer *renderer);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12]);
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12], SDL_Surface *BG_surface);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
@@ -49,6 +49,10 @@ void melangerTab(int* tab, size_t tailleTab);
 void setGUIsize(uint8_t size);
 void removeTempImages(void);
 void printMagnetLockRect(SDL_Renderer *renderer ,SDL_Rect magnet_lock[12]);
+int pushTuile(int emplacement);
+void afficherHUD(SDL_Renderer *renderer);
+void printBG(SDL_Renderer *renderer, SDL_Surface *BG_surface);
+void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -85,6 +89,8 @@ Color ButtonSelected = {216, 192, 168, 255};
 Color ButtonNotSelected = {229, 204, 178, 255};
 
 int colorButtonNotSelected[3] = {229, 204, 178};
+
+int current_frame = 0;
 
 int main(int argc, char **argv){
 
@@ -243,7 +249,10 @@ void afficherPlateau(SDL_Renderer *renderer){
 
     int posTuileRestante = 1;
 
-    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
+    SDL_Surface *BG_surface = SDL_LoadBMP("images/formated/HUD/BG.bmp");
+    handleSurfaceError(BG_surface);
+
+    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, BG_surface);
 
     while( windowOpen ){
         
@@ -260,19 +269,15 @@ void afficherPlateau(SDL_Renderer *renderer){
                     break;
                 case SDLK_UP:
                     movePlayer(0, 0);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_RIGHT:
                     movePlayer(0, 1);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_DOWN:
                     movePlayer(0, 2);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 case SDLK_LEFT:
                     movePlayer(0, 3);
-                    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                     break;
                 default:
                     continue;
@@ -297,9 +302,8 @@ void afficherPlateau(SDL_Renderer *renderer){
 
                                 rect_tuileRestante.x = cursorX-infoDisplay.tuileSize/2; rect_tuileRestante.y = cursorY-infoDisplay.tuileSize/2;
                                 rect_itemRestant.x = rect_tuileRestante.x+posItem ; rect_itemRestant.y = rect_tuileRestante.y+posItem;
-                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
-
                             }
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, BG_surface);
                         }while(event.type != SDL_MOUSEBUTTONUP);
 
                         //on quitte le while donc le bouton est relaché
@@ -312,15 +316,22 @@ void afficherPlateau(SDL_Renderer *renderer){
                             {
                                 rect_tuileRestante.x = magnet_lock[i].x; rect_tuileRestante.y = magnet_lock[i].y;
                                 rect_itemRestant.x = magnet_lock[i].x+posItem; rect_itemRestant.y = magnet_lock[i].y+posItem;
-                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
+                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, BG_surface);
                                 posTuileRestante = i;
+                                SDL_Delay(1000);
+                                posTuileRestante = pushTuile(posTuileRestante);
+                                if(posTuileRestante >= 0){
+                                    rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
+                                    rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
+                                } else printf("déplacement impossible"); // A REMPLACER PAR LE MESSAGE SUR LE PLATEAU
+                                
                                 break;
                             }
                             else if(i == 11){
                                 rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
                                 rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
-                                AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock);
                             }
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, BG_surface);
                         }
                     }                               
                 }             
@@ -329,6 +340,7 @@ void afficherPlateau(SDL_Renderer *renderer){
                 continue;
             }
         }
+        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, BG_surface);
     }
 }
 
@@ -346,6 +358,71 @@ void DeplaceTuile(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect 
 void ResetRender(SDL_Renderer * renderer, Color color){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderClear(renderer);
+}
+
+void afficherHUD(SDL_Renderer *renderer){
+
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
+    size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
+
+    size_t spaceForHUD = (Screen.w-sizePlateau)/2-infoDisplay.borderSize/2-infoDisplay.tuileSize; 
+
+    SDL_Rect rect_cadre1 = {spaceForHUD/2-infoDisplay.borderSize-infoDisplay.cadreSizeX, Screen.h/2-infoDisplay.cadreSizeY-infoDisplay.borderSize/2, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+    printImage(renderer, rect_cadre1, "images/formated/HUD/cadre.bmp");
+
+    SDL_Rect rect_cadre2 = {spaceForHUD/2+infoDisplay.borderSize/2, Screen.h/2-infoDisplay.cadreSizeY-infoDisplay.borderSize/2, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+    printImage(renderer, rect_cadre2, "images/formated/HUD/cadre.bmp");
+
+    SDL_Rect rect_cadre3 = {spaceForHUD/2-infoDisplay.borderSize-infoDisplay.cadreSizeX, Screen.h/2+infoDisplay.borderSize/2, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+    printImage(renderer, rect_cadre3, "images/formated/HUD/cadre.bmp");
+
+    SDL_Rect rect_cadre4 = {spaceForHUD/2+infoDisplay.borderSize/2, Screen.h/2+infoDisplay.borderSize/2, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+    printImage(renderer, rect_cadre4, "images/formated/HUD/cadre.bmp");
+
+    SDL_Rect rect_player4 = rect_cadre1;
+    rect_player4.x += 48;
+    rect_player4.y += 48;
+    printImage(renderer, rect_player4, "images/default/skin/skin_4.bmp");
+
+    // PLAYER 1
+
+    SDL_Surface *image = SDL_LoadBMP("images/default/skin/player_1.bmp");
+    handleSurfaceError(image);
+
+    SDL_Surface *image_redim = SDL_CreateRGBSurface(0, 64, 64, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+    handleSurfaceError(image_redim);
+
+    redimImage(image, image_redim);
+
+    SDL_SaveBMP(image_redim, "images/formated/skin/skin_1.bmp");
+
+    SDL_FreeSurface(image);
+    SDL_FreeSurface(image_redim);
+
+    SDL_Rect rect_player2 = rect_cadre2;
+    rect_player2.x += 58;
+    rect_player2.y += 58;
+    printImage(renderer, rect_player2, "images/formated/skin/skin_1.bmp");
+
+}
+
+void printBG(SDL_Renderer *renderer, SDL_Surface *BG_surface){
+
+    SDL_Surface *image_shifted = SDL_CreateRGBSurface(0, BG_surface->w, BG_surface->h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+    handleSurfaceError(image_shifted);
+
+    shiftImage(BG_surface, image_shifted, 1, 10*current_frame);
+
+    SDL_Rect rect_BG = {0, 0, image_shifted->w, image_shifted->h};
+
+    printImageFromSurface(renderer, image_shifted, rect_BG);
+
+    SDL_FreeSurface(image_shifted);
+
+    current_frame = (current_frame == 16*12-1)? 0 : ++current_frame;
+    printf("%d\n", current_frame);
 }
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file){
@@ -417,6 +494,21 @@ void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_
     SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 
     SDL_DestroyTexture(texture_image);
+}
+
+void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image){
+    SDL_Texture *texture_image = NULL;
+    texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
+
+    SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h);
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
+
+    SDL_DestroyTexture(texture_image);
+}
+
+void printImageFromTexture(SDL_Renderer *renderer, SDL_Texture *texture_image,SDL_Rect rect_image){
+    SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h);
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 }
 
 void RandomPlateau(){
@@ -503,16 +595,23 @@ void AfficheTuileItem(SDL_Renderer *renderer){
     }
 }
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12]){
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12], SDL_Surface *BG_surface){
 
-    ResetRender(renderer, Background);
+    //time_t frameTime = time(NULL);
+
+    //ResetRender(renderer, Background);
     //printDebugGrid(renderer);
+    printBG(renderer, BG_surface);
+    afficherHUD(renderer);
     printMagnetLockRect(renderer, magnet_lock);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer);
     DeplaceTuile(renderer, rect_tuileRestante, rect_itemRestant); 
-    SDL_RenderPresent(renderer);  
+    SDL_RenderPresent(renderer);
 
+    /*frameTime = time(NULL)-frameTime;
+    int fps = 1000/(frameTime+1);
+    printf("%d\n", fps);*/
 }
 
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12]){
@@ -642,6 +741,79 @@ void melangerTab(int* tab, size_t tailleTab){
     }
 }
 
+int pushTuile(int emplacement){
+    Case bufferTuile = tuileRestante;
+    if(emplacement < 3){
+        int pos = (emplacement % 3)*2 + 1;
+
+        for(int i = 0; i < 4; i++){
+            if(playerData[i].posY == pos){
+                if(playerData[i].posX != 6)playerData[i].posX += 1;
+                else return -1;
+            }
+        }
+
+        tuileRestante = SDLplateau[6][pos]; // définition de la nouvelle tuile restante
+        for(int i = 6; i > 0; i-=1){
+            SDLplateau[i][pos] = SDLplateau[i-1][pos];
+        }
+        SDLplateau[0][pos] = bufferTuile; // tuile restante précédente
+    }
+    else if(emplacement >= 3 && emplacement < 6){
+        int pos = (emplacement % 3)*2 + 1;
+        
+        for(int i = 0; i < 4; i++){
+            if(playerData[i].posX == pos){
+                if(playerData[i].posY != 0)playerData[i].posY -= 1;
+                else return -1;
+            }
+        }
+
+        tuileRestante = SDLplateau[pos][0]; // définition de la nouvelle tuile restante
+        for(int i = 0; i < 6; i+=1){
+            SDLplateau[pos][i] = SDLplateau[pos][i+1];
+        }
+        SDLplateau[pos][6] = bufferTuile; // tuile restante précédente
+    }
+    else if(emplacement >= 6 && emplacement < 9){
+        int pos = (emplacement % 3)*2 + 1;
+        pos = (pos == 1) ? 5 : (pos == 5) ? 1 : 3; // part de 1 3 5 pour avoir 5 3 1
+
+        for(int i = 0; i < 4; i++){
+            if(playerData[i].posY == pos){
+                if(playerData[i].posX != 0)playerData[i].posX -= 1;
+                else return -1;
+            }
+        }
+        tuileRestante = SDLplateau[0][pos]; // définition de la nouvelle tuile restante
+        for(int i = 0; i < 6; i+=1){
+            SDLplateau[i][pos] = SDLplateau[i+1][pos];
+        }
+        SDLplateau[6][pos] = bufferTuile; // tuile restante précédente
+    }
+    else if(emplacement >= 9 && emplacement < 12){
+        int pos = (emplacement % 3)*2 + 1;
+        pos = (pos == 1) ? 5 : (pos == 5) ? 1 : 3; // part de 1 3 5 pour avoir 5 3 1
+
+        for(int i = 0; i < 4; i++){
+            if(playerData[i].posX == pos){
+                if(playerData[i].posY != 6)playerData[i].posY += 1;
+                else return -1;
+            }
+        }
+
+        tuileRestante = SDLplateau[pos][6]; // définition de la nouvelle tuile restante
+        for(int i = 6; i > 0; i-=1){
+            SDLplateau[pos][i] = SDLplateau[pos][i-1];
+        }
+        SDLplateau[pos][0] = bufferTuile; // tuile restante précédente
+    }
+    return (emplacement == 0)? 8: (emplacement == 1)? 7: (emplacement == 2)? 6: 
+           (emplacement == 3)? 11: (emplacement == 4)? 10: (emplacement == 5)? 9:
+           (emplacement == 6)? 2: (emplacement == 7)? 1: (emplacement == 8)? 0:
+           (emplacement == 9)? 5: (emplacement == 10)? 4: (emplacement == 11)? 3: -1;
+}
+
 void setGUIsize(uint8_t size){
     float facteurResize;
     switch(size){
@@ -667,7 +839,9 @@ void setGUIsize(uint8_t size){
 
     infoDisplay.itemSize = 16*facteurResize;
     infoDisplay.tuileSize = 54*facteurResize;
-    infoDisplay.borderSize = 18*facteurResize;
+    infoDisplay.borderSize = 2*facteurResize;
+    infoDisplay.cadreSizeX = 24*facteurResize*5;
+    infoDisplay.cadreSizeY = 48*facteurResize*5;
 
     char cheminImage[100];
     char cheminImageRedim[100];
@@ -677,23 +851,20 @@ void setGUIsize(uint8_t size){
         sprintf(cheminImage, "images/default/item/item%d.bmp", i);
 
         SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        if (image == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        handleSurfaceError(image);
 
-        SDL_Surface *image_redim = redimImage(image, facteurResize);
-        if (image_redim == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
-
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+        
+        redimImage(image, image_redim);
+        
         sprintf(cheminImageRedim, "images/formated/item/item%d.bmp", i);
 
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image_redim, cheminImageRedim);
+
+        SDL_FreeSurface(image);
+        SDL_FreeSurface(image_redim);
     }
 
     // redimentionnement des joueurs 
@@ -701,23 +872,19 @@ void setGUIsize(uint8_t size){
         sprintf(cheminImage, "images/default/skin/player_%d.bmp", i);
 
         SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        if (image == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        handleSurfaceError(image);
 
-        SDL_Surface *image_redim = redimImage(image, facteurResize);
-        if (image_redim == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+        
+        redimImage(image, image_redim);
 
         sprintf(cheminImageRedim, "images/formated/skin/player_%d.bmp", i);
 
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image_redim, cheminImageRedim);
+        SDL_FreeSurface(image);
+        SDL_FreeSurface(image_redim);
     }
 
     // redimentionnement des tuiles 
@@ -725,23 +892,19 @@ void setGUIsize(uint8_t size){
         sprintf(cheminImage, "images/default/tuiles/Tuile%d.bmp", i);
 
         SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        if (image == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        handleSurfaceError(image);
 
-        SDL_Surface *image_redim = redimImage(image, facteurResize);
-        if (image_redim == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+        
+        redimImage(image, image_redim);
 
         sprintf(cheminImageRedim, "images/formated/tuiles/Tuile%d.bmp", i);
 
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image_redim, cheminImageRedim);
+        SDL_FreeSurface(image);
+        SDL_FreeSurface(image_redim);
     }
 
     // redimentionnement des boutons 
@@ -759,6 +922,46 @@ void setGUIsize(uint8_t size){
 
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image, cheminImageRedim);
+    }
+
+    // redimentionnement des cadres
+    for(int i = 1; i <= 1; i++){
+        sprintf(cheminImage, "images/default/HUD/cadre.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(image);
+
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize*5, image->h*facteurResize*5, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+        
+        redimImage(image, image_redim);
+
+        sprintf(cheminImageRedim, "images/formated/HUD/cadre.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+        SDL_FreeSurface(image);
+        SDL_FreeSurface(image_redim);
+    }
+
+    // redimentionnement du BG
+    for(int i = 1; i <= 1; i++){
+        sprintf(cheminImage, "images/default/HUD/BG.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(image);
+
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, 1920, 1080, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+        
+        redimImage(image, image_redim);
+
+        sprintf(cheminImageRedim, "images/formated/HUD/BG.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+        SDL_FreeSurface(image);
+        SDL_FreeSurface(image_redim);
     }
 }
 
