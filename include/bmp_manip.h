@@ -18,19 +18,77 @@ int pgcd(int a, int b);
 
 void handleSurfaceError(SDL_Surface* surface){
 	if (surface == NULL) {
-		printf("Erreur lors de la création de la surface redimensionnée 1 : %s\n", SDL_GetError());
+		printf("Erreur lors de la création de la Surface : %s\n", SDL_GetError());
 		
 		SDL_FreeSurface(surface);
 		SDL_Quit();
   	}
 }
 
+void handleTextureError(SDL_Texture* texture){
+	if (texture == NULL) {
+		printf("Erreur lors de la création de la Texture: %s\n", SDL_GetError());
+		
+		SDL_DestroyTexture(texture);
+		SDL_Quit();
+  	}
+}
+
+void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image){
+
+    SDL_Surface *surface_image = NULL;
+    SDL_Texture *texture_image = NULL;
+
+    surface_image = SDL_LoadBMP(chemin_image);
+	//handleSurfaceError(surface_image);
+
+    texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
+	//handleTextureError(texture_image);
+
+    SDL_FreeSurface(surface_image);
+    SDL_QueryTexture(texture_image, NULL, NULL, &rect_image.w, &rect_image.h);
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
+
+    SDL_DestroyTexture(texture_image);
+}
+
+void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image){
+    SDL_Texture *texture_image = NULL;
+
+    clock_t start_t, end_t;
+    double total_t;
+
+    start_t = clock();
+    texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
+    end_t = clock();
+
+    SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
+
+    SDL_DestroyTexture(texture_image);
+
+    total_t = (double)(end_t - start_t) / (CLOCKS_PER_SEC/1000);
+    printf("Texture from surface : %f ms, ", total_t  );
+}
+
+void printImageFromTexture(SDL_Renderer *renderer, SDL_Texture *texture_image,SDL_Rect rect_image){
+    if(SDL_RenderCopy(renderer, texture_image, NULL, &rect_image)) printf("erreur d'affichage de texture");
+}
+
+void reduceFraction(fraction *f){
+
+    //simplifier la fraction avec l'algorithme d'Euclide
+    int pgcd_value = pgcd(f->denominateur, f->numerateur);
+    f->denominateur /= pgcd_value;
+    f->numerateur /= pgcd_value;
+
+}
+
 void redimImage(SDL_Surface *image, SDL_Surface *image_redim){
 
-	float facteurX_ = (float)image_redim->w / (float)image->w;
-	float facteurY_ = (float)image_redim->h / (float)image->h;
-	fraction facteurX = floatToFraction(facteurX_);
-	fraction facteurY = floatToFraction(facteurY_);
+	fraction facteurX = {image_redim->w, image->w};
+	fraction facteurY = {image_redim->h, image->h};
+    reduceFraction(&facteurX);
+    reduceFraction(&facteurY);
 
 	SDL_Surface *image_up = SDL_CreateRGBSurface(0, image->w*facteurX.numerateur, image->h*facteurY.numerateur, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
     handleSurfaceError(image_up);
@@ -118,7 +176,7 @@ void shiftImage(SDL_Surface *image, SDL_Surface *image_shifted, SDL_bool directi
 	SDL_BlitSurface(image, &src, image_shifted, &dst);
 
 	SDL_Rect src2 = { 0, 0, deplacement, image_shifted->h };
-	SDL_Rect dst2 = { image_shifted->w-deplacement, 0, image_shifted->w, image_shifted->h };
+	SDL_Rect dst2 = { image_shifted->w-deplacement, 0, deplacement, image_shifted->h };
 	SDL_BlitSurface(image, &src2, image_shifted, &dst2);
 	
 }
