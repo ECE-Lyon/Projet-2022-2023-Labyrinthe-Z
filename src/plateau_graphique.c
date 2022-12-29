@@ -313,12 +313,12 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 }
 
 void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture){
-    for(int i = 0; i < sizeof(TextureJeu); i += sizeof(SDL_Texture *)){
-        SDL_Texture* pSurTexture = (SDL_Texture *) ((int)gameTexture + i);
 
-        printf("%d %d %d\n", pSurTexture, &gameTexture->mouse, gameTexture);
+    for(int i = 0; i < sizeof(TextureJeu); i += sizeof(SDL_Texture *)){ // parcourt la struct de textures
 
+        SDL_Texture* pSurTexture = (SDL_Texture *) ((int)gameTexture + i); // calcule la valeur du pointeur de la texture actuelle
         SDL_DestroyTexture(pSurTexture);
+
     }
 }
 
