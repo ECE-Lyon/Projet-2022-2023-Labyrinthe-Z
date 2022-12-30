@@ -4,15 +4,13 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <sys/time.h>
 #include <SDL.h>
 #include "SDL_ttf.h"
 #include <SDL_mixer.h>
 #include "bmp_manip.h"
 
-#define MENU_BUTTON_W 820 // taille des images des boutons du menu
-#define MENU_BUTTON_H 90
-#define MENU_BUTTON_BORDER 12
+#define MENU_BUTTON_BORDER 4
 
 typedef struct{
     Uint8 r, g, b, a;
@@ -27,7 +25,7 @@ typedef struct{
 }PlayerDATA;
 
 typedef struct{
-    size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY, skinSizeX, skinSizeY;
+    size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY, skinSizeX, skinSizeY, menuButtonX, menuButtonY;
 }InfoDisplay;
 
 typedef struct{
@@ -35,14 +33,14 @@ typedef struct{
 }TextureJeu;
 
 typedef struct{
-    SDL_Texture *button[2], *buttonPressed[2];
+    SDL_Texture *button[2], *buttonPressed[2], *mouse;
 }TextureMenu;
 
 int getRandomInt(int min, int max);
 
 void ResetRender(SDL_Renderer *renderer, Color color);
 void AfficheButton(SDL_Renderer *renderer,SDL_Rect rect_button, const char* file, Color color, int px);
-void fenetreMenu(SDL_Renderer *renderer);
+void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture);
 void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
@@ -51,7 +49,7 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
-void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture);
+void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* cursorX, int* cursorY);
 void resetPlateau();
 void melangerTab(int* tab, size_t tailleTab);
 void setGUIsize(uint8_t size);
@@ -63,6 +61,7 @@ void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture);
 void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image);
 void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
 TextureJeu loadGameTexture(SDL_Renderer *renderer);
+TextureMenu loadMenuTexture(SDL_Renderer *renderer);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -142,14 +141,27 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);        
     }
 
-    fenetreMenu(jeu);
+    TextureMenu menuTexture = loadMenuTexture(jeu);
+    fenetreMenu(jeu, &menuTexture);
 
     clean(window, jeu, NULL);
 
     return EXIT_SUCCESS;
 }
 
-void fenetreMenu(SDL_Renderer *renderer){
+TextureMenu loadMenuTexture(SDL_Renderer *renderer){
+    TextureMenu menuTexture;
+
+    SDL_Surface *surface = SDL_LoadBMP("images/default/HUD/mouse.bmp");
+    handleSurfaceError(surface);
+    menuTexture.mouse = SDL_CreateTextureFromSurface(renderer, surface);
+    handleTextureError(menuTexture.mouse);
+    SDL_FreeSurface(surface);
+
+    return menuTexture;
+}
+
+void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
 
     SDL_DisplayMode Screen;
     SDL_GetCurrentDisplayMode(0, &Screen);
@@ -157,8 +169,8 @@ void fenetreMenu(SDL_Renderer *renderer){
     SDL_Surface *image = NULL;
     SDL_Texture *texture_button = NULL;
 
-    SDL_Rect rect_button_1 = {(Screen.w-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (Screen.h/2)-(3*MENU_BUTTON_BORDER)-MENU_BUTTON_H, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
-    SDL_Rect rect_button_2 = {(Screen.w-MENU_BUTTON_W)/2-MENU_BUTTON_BORDER, (Screen.h/2)+MENU_BUTTON_BORDER, MENU_BUTTON_W+MENU_BUTTON_BORDER*2, MENU_BUTTON_H+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_1 = {(Screen.w-infoDisplay.menuButtonX)/2-MENU_BUTTON_BORDER, (Screen.h/2)-(3*MENU_BUTTON_BORDER)-infoDisplay.menuButtonY, infoDisplay.menuButtonX+MENU_BUTTON_BORDER*2, infoDisplay.menuButtonY+MENU_BUTTON_BORDER*2};
+    SDL_Rect rect_button_2 = {(Screen.w-infoDisplay.menuButtonX)/2-MENU_BUTTON_BORDER, (Screen.h/2)+MENU_BUTTON_BORDER, infoDisplay.menuButtonX+MENU_BUTTON_BORDER*2, infoDisplay.menuButtonY+MENU_BUTTON_BORDER*2};
 
     SDL_bool windowOpen = SDL_TRUE;
 
@@ -166,17 +178,19 @@ void fenetreMenu(SDL_Renderer *renderer){
 
     uint8_t cursorInButton = 0;
 
+    SDL_ShowCursor(SDL_DISABLE);
+
     ResetRender(renderer, Background);
     AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
     AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-    SDL_RenderPresent(renderer); 
 
     while( windowOpen ){
         
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
-
+            cursorX = event.motion.x;
+            cursorY = event.motion.y;
             switch( event.type ){
             case SDL_KEYDOWN:               
                 switch ( event.key.keysym.sym ){
@@ -187,17 +201,15 @@ void fenetreMenu(SDL_Renderer *renderer){
                     continue;
                 }
             case SDL_MOUSEMOTION:
-                cursorX = event.motion.x;
-                cursorY = event.motion.y;
                 if(cursorX >= rect_button_1.x && cursorX <= rect_button_1.x + rect_button_1.w && cursorY >= rect_button_1.y && cursorY <= rect_button_1.y + rect_button_1.h){
                     ResetRender(renderer, Background);
-                    AfficheButton(renderer, rect_button_1, "images/default/button/button1_pressed.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_1, "images/formated/button/button1_pressed.bmp", ButtonSelected, MENU_BUTTON_BORDER);
                     AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 1;
                 } else if (cursorX >= rect_button_2.x && cursorX <= rect_button_2.x + rect_button_2.w && cursorY >= rect_button_2.y && cursorY <= rect_button_2.y + rect_button_2.h){
                     ResetRender(renderer, Background);
                     AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonSelected, MENU_BUTTON_BORDER);
+                    AfficheButton(renderer, rect_button_2, "images/formated/button/button2_pressed.bmp", ButtonSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 2;
                 } else{
                     ResetRender(renderer, Background);
@@ -205,20 +217,19 @@ void fenetreMenu(SDL_Renderer *renderer){
                     AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     cursorInButton = 0;
                 }
-                SDL_RenderPresent(renderer);
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if(cursorInButton == 1){
                     resetPlateau();                   
                     RandomPlateau();
                     TextureJeu gameTexture = loadGameTexture(renderer);
-                    afficherPlateau(renderer, &gameTexture);
+                    afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
 
                     unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
                     AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
-                    SDL_RenderPresent(renderer);
+                    //SDL_RenderPresent(renderer);
                 } else if(cursorInButton == 2){      
                     windowOpen = SDL_FALSE; // ferme la fenêtre
                 }
@@ -228,7 +239,10 @@ void fenetreMenu(SDL_Renderer *renderer){
                 break;
             default:
                 continue;
-            } 
+            }
+            SDL_Rect rect_mouse = {cursorX, cursorY, 32, 32};
+            printImageFromTexture(renderer, menuTexture->mouse, rect_mouse);
+            SDL_RenderPresent(renderer);
         }   
     }
 }
@@ -322,14 +336,14 @@ void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture){
     }
 }
 
-void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture){
+void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* cursorX_, int* cursorY_){
 
     SDL_DisplayMode Screen;
     SDL_GetCurrentDisplayMode(0, &Screen);
 
     SDL_ShowCursor(SDL_DISABLE);
     
-    int cursorX, cursorY;
+    int cursorX = *cursorX_, cursorY = *cursorY_;
     SDL_bool windowOpen = SDL_TRUE;
 
     size_t sizePlateau = (7*infoDisplay.tuileSize + 8*infoDisplay.borderSize);
@@ -363,12 +377,15 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture){
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
-        cursorX = event.motion.x;
-        cursorY = event.motion.y;
             switch( event.type ){
+            case SDL_MOUSEMOTION:
+                cursorX = event.motion.x;
+                cursorY = event.motion.y;
             case SDL_KEYDOWN:
                 switch ( event.key.keysym.sym ){
                 case SDLK_ESCAPE:
+                    *cursorX_ = cursorX;
+                    *cursorY_ = cursorY;
                     return;
                     break;
                 case SDLK_UP:
@@ -441,6 +458,8 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture){
                 break;
             case SDL_QUIT:
                 windowOpen = SDL_FALSE; // ferme la fenêtre
+                *cursorX_ = cursorX;
+                *cursorY_ = cursorY;
                 break;
             default:
                 continue;
@@ -481,15 +500,18 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture){
 }
 
 void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture){
-    double vitesseScroll = 0.2;
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
+    double vitesseScroll = (double)Screen.w/(double)1200; //pour que la vitesse reste la même peu importe la taille d'écran
     
-    SDL_Rect rect_BG1 = {(-1920+vitesseScroll*current_frame), 0, 1920, 1080};
-    SDL_Rect rect_BG2 = {(0+vitesseScroll*current_frame), 0, 1920, 1080};
+    SDL_Rect rect_BG1 = {(-Screen.w+vitesseScroll*current_frame), 0, Screen.w, Screen.h};
+    SDL_Rect rect_BG2 = {(0+vitesseScroll*current_frame), 0, Screen.w, Screen.h};
 
     printImageFromTexture(renderer, gameTexture->BG, rect_BG1);
     printImageFromTexture(renderer, gameTexture->BG, rect_BG2);
 
-    current_frame = (current_frame == (int)(1920/vitesseScroll-1))? 0 : ++current_frame;
+    current_frame = (current_frame == (int)(Screen.w/vitesseScroll-1))? 0 : ++current_frame;
 }
 
 void printButton(SDL_Renderer *renderer, SDL_Surface *image, SDL_Texture *texture_button, SDL_Rect rect_button, const char* file){
@@ -507,7 +529,7 @@ void AfficheButton(SDL_Renderer *renderer, SDL_Rect rect_button, const char* fil
 
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-    SDL_RenderFillRect(renderer,&rect_button);
+    //SDL_RenderFillRect(renderer,&rect_button);
 
     rect_button.x += px;
     rect_button.y += px;
@@ -630,11 +652,12 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture){
 
 void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12], TextureJeu *gameTexture, int cursorX, int cursorY){
 
-    clock_t start_t, end_t;
-    double total_t;
+    int total_t;
+
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
 
     ResetRender(renderer, Background);
-    start_t = clock();
     printBG(renderer, gameTexture);
     //printDebugGrid(renderer);
     afficherHUD(renderer, gameTexture);
@@ -646,15 +669,18 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
     SDL_Rect rect_mouse = {cursorX, cursorY, 32, 32};
     printImageFromTexture(renderer, gameTexture->mouse, rect_mouse);
 
-    SDL_RenderPresent(renderer);
-    
-    end_t = clock();
+    gettimeofday(&stop, NULL);
 
-    total_t = (double)(end_t - start_t) / (CLOCKS_PER_SEC/1000);
-    printf("Frame time: %f ms, ", total_t  );
+    total_t = (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec;
 
-    int fps = 1000.f / total_t;
+    SDL_Delay(10-total_t/1000);  // cap le frame rate a 100 fps
+
+    printf("Frame time: %d us, ", total_t  );
+
+    int fps = 1000000.f / (10000+((total_t>10000)? total_t-10000 : 0)); // 100 fps sauf si le frame time est supérieur à 10ms
     printf("FPS = %d\n", fps);
+
+    SDL_RenderPresent(renderer);
 
 }
 
@@ -958,16 +984,40 @@ void setGUIsize(uint8_t size){
         sprintf(cheminImage, "images/default/button/button%d.bmp", i);
 
         SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        if (image == NULL) {
-            printf("Erreur lors du chargement de l'image : %s\n", SDL_GetError());
-            SDL_Quit();
-            return;
-        }
+        handleSurfaceError(image);
+
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize*3, image->h*facteurResize*3, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+
+        infoDisplay.menuButtonX = image_redim->w;
+        infoDisplay.menuButtonY = image_redim->h;
+        
+        redimImage(image, image_redim);
 
         sprintf(cheminImageRedim, "images/formated/button/button%d.bmp", i);
 
         // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image, cheminImageRedim);
+        SDL_SaveBMP(image_redim, cheminImageRedim);
+    }
+
+    for(int i = 1; i <= 2; i++){
+        sprintf(cheminImage, "images/default/button/button%d_pressed.bmp", i);
+
+        SDL_Surface *image = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(image);
+
+        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize*3, image->h*facteurResize*3, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+        handleSurfaceError(image_redim);
+
+        infoDisplay.menuButtonX = image_redim->w;
+        infoDisplay.menuButtonY = image_redim->h;
+        
+        redimImage(image, image_redim);
+
+        sprintf(cheminImageRedim, "images/formated/button/button%d_pressed.bmp", i);
+
+        // Enregistrement de l'image redimensionnée
+        SDL_SaveBMP(image_redim, cheminImageRedim);
     }
 
     // redimentionnement des cadres

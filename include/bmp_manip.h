@@ -55,19 +55,11 @@ void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_
 void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image){
     SDL_Texture *texture_image = NULL;
 
-    clock_t start_t, end_t;
-    double total_t;
-
-    start_t = clock();
     texture_image = SDL_CreateTextureFromSurface(renderer, surface_image);
-    end_t = clock();
 
     SDL_RenderCopy(renderer, texture_image, NULL, &rect_image);
 
     SDL_DestroyTexture(texture_image);
-
-    total_t = (double)(end_t - start_t) / (CLOCKS_PER_SEC/1000);
-    printf("Texture from surface : %f ms, ", total_t  );
 }
 
 void printImageFromTexture(SDL_Renderer *renderer, SDL_Texture *texture_image,SDL_Rect rect_image){
