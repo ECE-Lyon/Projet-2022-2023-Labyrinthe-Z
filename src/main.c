@@ -28,6 +28,7 @@ void getTuileFormated(int tuileResultat[9], int posX, int posY);
 int checkDeplacement(int joueur, int direction);
 void pushTuile(int emplacement);
 void afficherEspace(int nombre);
+
 void getGUI(int nbLigne, char ligne[110]);
 void melangerTab(int* tab, size_t tailleTab);
 void printTab(int* tab, size_t tailleTab);
