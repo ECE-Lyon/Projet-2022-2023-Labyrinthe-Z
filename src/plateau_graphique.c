@@ -944,7 +944,10 @@ void setGUIsize(uint8_t size){
             break;
         case 5:
             facteurResize = 3.0f;
-            break;                       
+            break;   
+        default:
+            facteurResize = 1.0f;
+            break;                    
     }
 
     infoDisplay.itemSize = 16*facteurResize;
