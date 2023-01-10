@@ -29,7 +29,7 @@ typedef struct{
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[14];
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[18];
 }TextureJeu;
 
 typedef struct{
@@ -45,7 +45,7 @@ void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
 void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct timeval time);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2], SDL_Rect rect_Tick[2]);
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[4], SDL_Rect rect_Tick[2], int playerTurn);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
@@ -56,7 +56,7 @@ void setGUIsize(uint8_t size);
 void removeTempImages(void);
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], TextureJeu *gameTexture);
 int pushTuile(int emplacement);
-void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2]);
+void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2], int playerTurn);
 void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture);
 void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image);
 void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
@@ -258,7 +258,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 4; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/default/HUD/BG/4/%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/HUD/BG/1/%d.bmp", i+1);
         SDL_Surface *BG_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(BG_surface);
         gameTexture.BG[i] = SDL_CreateTextureFromSurface(renderer, BG_surface);
@@ -340,7 +340,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     // TICK YES ET NO
 
-    for(int i = 0; i < 14; i++){
+    for(int i = 0; i < 18; i++){
         char cheminTick[100];
         sprintf(cheminTick, "images/default/HUD/tick%d.bmp", i+1);
         SDL_Surface *tick_surface = SDL_LoadBMP(cheminTick);
@@ -381,7 +381,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     double plateauY = (Screen.h-sizePlateau)/2;
 
     //SDL_Rect rect_tuileRestante = {plateauX+4*infoDisplay.borderSize+3*infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize};
-    SDL_Rect rect_tuileRestante = {Screen.w-(Screen.w-sizePlateau)/4,(Screen.h-infoDisplay.tuileSize-infoDisplay.cadreTR-infoDisplay.borderSize*4)/2,infoDisplay.tuileSize, infoDisplay.tuileSize};
+    SDL_Rect rect_tuileRestante = {Screen.w-(Screen.w-sizePlateau)/4,(Screen.h-infoDisplay.tuileSize)/2,infoDisplay.tuileSize, infoDisplay.tuileSize};
     SDL_Rect rect_itemRestant = {rect_tuileRestante.x+posItem, rect_tuileRestante.y+posItem, infoDisplay.itemSize, infoDisplay.itemSize};
 
     SDL_Rect magnet_lock[13] = {plateauX+2*infoDisplay.borderSize+infoDisplay.tuileSize, plateauY-infoDisplay.tuileSize-infoDisplay.borderSize, infoDisplay.tuileSize, 0,
@@ -396,13 +396,14 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                                 plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+5*infoDisplay.tuileSize+6*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
                                 plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+3*infoDisplay.tuileSize+4*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
                                 plateauX-infoDisplay.tuileSize-infoDisplay.borderSize, plateauY+infoDisplay.tuileSize+2*infoDisplay.borderSize, infoDisplay.tuileSize, infoDisplay.tuileSize,
-                                Screen.w-(Screen.w-sizePlateau)/4,(Screen.h-infoDisplay.tuileSize-infoDisplay.cadreTR-infoDisplay.borderSize*4)/2,infoDisplay.tuileSize, infoDisplay.tuileSize};
+                                Screen.w-(Screen.w-sizePlateau)/4,(Screen.h-infoDisplay.tuileSize)/2,infoDisplay.tuileSize, infoDisplay.tuileSize};
 
-    SDL_Rect rect_TR  = {Screen.w-(spaceForHUD+infoDisplay.cadreTR)/2, (Screen.h)/2-infoDisplay.cadreTR-infoDisplay.borderSize, infoDisplay.cadreTR, infoDisplay.cadreTR};
+    SDL_Rect rect_TR  = {Screen.w-(spaceForHUD+infoDisplay.cadreTR)/2, (Screen.h-infoDisplay.cadreTR)/2, infoDisplay.cadreTR, infoDisplay.cadreTR};
 
-    SDL_Rect rect_button[3] = {rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y, infoDisplay.cadreTR, infoDisplay.cadreTR,
+    SDL_Rect rect_button[4] = {rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y, infoDisplay.cadreTR, infoDisplay.cadreTR,
                                rect_TR.x+infoDisplay.cadreTR+infoDisplay.borderSize*4, rect_TR.y, infoDisplay.cadreTR, infoDisplay.cadreTR,
-                               rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y+infoDisplay.cadreTR+infoDisplay.borderSize*2, infoDisplay.cadreTR*3+infoDisplay.borderSize*8, infoDisplay.cadreTR};
+                               rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y+infoDisplay.cadreTR+infoDisplay.borderSize*2, infoDisplay.cadreTR*3+infoDisplay.borderSize*8, infoDisplay.cadreTR,
+                               rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y-infoDisplay.cadreTR-infoDisplay.borderSize*2, infoDisplay.cadreTR*3+infoDisplay.borderSize*8, infoDisplay.cadreTR};
 
     SDL_Rect rect_Tick[2];
 
@@ -411,7 +412,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     uint8_t playerTurn = 0;
     uint8_t gameState = 0;
 
-    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
+    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
 
     while( windowOpen ){
         
@@ -430,15 +431,19 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                     return;
                     break;
                 case SDLK_UP:
+                case SDLK_z:
                     movePlayer(playerTurn, 0);
                     break;
                 case SDLK_RIGHT:
+                case SDLK_d:
                     movePlayer(playerTurn, 1);
                     break;
                 case SDLK_DOWN:
+                case SDLK_s:
                     movePlayer(playerTurn, 2);
                     break;
                 case SDLK_LEFT:
+                case SDLK_q:
                     movePlayer(playerTurn, 3);
                     break;
                 default:
@@ -467,7 +472,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                                 rect_itemRestant.x = rect_tuileRestante.x+posItem ; rect_itemRestant.y = rect_tuileRestante.y+posItem;
                                 rect_Tick[0].x = 0;
                             }
-                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
                         }while(event.type != SDL_MOUSEBUTTONUP);
 
                         //on quitte le while donc le bouton est relaché
@@ -500,7 +505,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
 
                             magnet_lock[0].h = 0; // desactive les cadres de magnet lock
 
-                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
                         }
                     }
 
@@ -522,7 +527,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                         if( cursorX >= rect_Tick[i].x &&
                             cursorX <= rect_Tick[i].x + rect_Tick[i].w &&
                             cursorY >= rect_Tick[i].y &&
-                            cursorY <= rect_Tick[i].y + rect_Tick[i].h)
+                            cursorY <= rect_Tick[i].y + rect_Tick[i].h && gameState == 0)
                         {
                             if (i == 0){ // bouton NO
                                 posTuileRestante = 12;
@@ -572,7 +577,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                 continue;
             }
         }
-        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
+        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
     }
 }
 
@@ -588,7 +593,7 @@ void ResetRender(SDL_Renderer * renderer, Color color){
     SDL_RenderClear(renderer);
 }
 
-void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2]){
+void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[4], SDL_Rect rect_TR, SDL_Rect rect_Tick[2], int playerTurn){
 
     SDL_DisplayMode Screen;
     SDL_GetCurrentDisplayMode(0, &Screen);
@@ -611,6 +616,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
             printImageFromTexture(renderer, gameTexture->tick[i*2+5], rect_button[i]);
         }else printImageFromTexture(renderer, gameTexture->tick[i*2+4], rect_button[i]);
     }
+    printImageFromTexture(renderer, gameTexture->tick[14+playerTurn], rect_button[3]);
 
     if(rect_Tick[0].x != 0){
         for(int i = 0; i < 2; i++){
@@ -766,7 +772,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
             }
             if(nbPlayerHere != 0){
                 printImageFromTexture(renderer, gameTexture->tuile[SDLplateau[i][j].tuile-1],rect_tuile);
-                printImageFromTexture(renderer, gameTexture->player[playerHere[time.tv_sec%nbPlayerHere]],rect_item);
+                printImageFromTexture(renderer, gameTexture->player[playerHere[time.tv_sec%nbPlayerHere]],rect_item); // magie noire pour faire clignotter les joueurs si ils sont plusieurs sur la même case
             }else{
                 printImageFromTexture(renderer, gameTexture->tuile[SDLplateau[i][j].tuile-1],rect_tuile);
                 if(SDLplateau[i][j].item!=0) printImageFromTexture(renderer, gameTexture->item[SDLplateau[i][j].item-1],rect_item);
@@ -781,7 +787,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
 }
 
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2], SDL_Rect rect_Tick[2]){
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[4], SDL_Rect rect_Tick[2], int playerTurn){
 
     int total_t;
 
@@ -796,7 +802,7 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
     ResetRender(renderer, Background);
     printBG(renderer, gameTexture);
     //printDebugGrid(renderer);
-    afficherHUD(renderer, gameTexture, cursorX, cursorY, rect_button, rect_TR, rect_Tick);
+    afficherHUD(renderer, gameTexture, cursorX, cursorY, rect_button, rect_TR, rect_Tick, playerTurn);
     printMagnetLockRect(renderer, magnet_lock, gameTexture);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer, gameTexture, start);
