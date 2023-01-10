@@ -45,7 +45,7 @@ void SearchTuile();
 void AffichePlateau(SDL_Renderer *renderer);
 void RandomPlateau();
 void AfficheTuileItem( SDL_Renderer *renderer, TextureJeu *gameTexture);
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2]);
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2], SDL_Rect rect_Tick[2]);
 void printDebugGrid(SDL_Renderer *renderer);
 int movePlayer(int player, int direction);
 void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_image);
@@ -56,7 +56,7 @@ void setGUIsize(uint8_t size);
 void removeTempImages(void);
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12]);
 int pushTuile(int emplacement);
-void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR);
+void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2]);
 void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture);
 void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image);
 void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
@@ -64,6 +64,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer);
 TextureMenu loadMenuTexture(SDL_Renderer *renderer);
 void delay(time_t pauseTime);
 void rotateTuile(uint8_t* tuileRestante, int direction);
+void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock[13]);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -402,9 +403,11 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     SDL_Rect rect_button[2] = {rect_TR.x-infoDisplay.cadreTR-infoDisplay.borderSize*4, rect_TR.y, infoDisplay.cadreTR, infoDisplay.cadreTR,
                                rect_TR.x+infoDisplay.cadreTR+infoDisplay.borderSize*4, rect_TR.y, infoDisplay.cadreTR, infoDisplay.cadreTR};
 
+    SDL_Rect rect_Tick[2];
+
     int posTuileRestante = 12;
 
-    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button);
+    AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
 
     while( windowOpen ){
         
@@ -458,7 +461,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                                 rect_tuileRestante.x = cursorX-infoDisplay.tuileSize/2; rect_tuileRestante.y = cursorY-infoDisplay.tuileSize/2;
                                 rect_itemRestant.x = rect_tuileRestante.x+posItem ; rect_itemRestant.y = rect_tuileRestante.y+posItem;
                             }
-                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button);
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
                         }while(event.type != SDL_MOUSEBUTTONUP);
 
                         //on quitte le while donc le bouton est relaché
@@ -471,13 +474,13 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             {
                                 rect_tuileRestante.x = magnet_lock[i].x; rect_tuileRestante.y = magnet_lock[i].y;
                                 rect_itemRestant.x = magnet_lock[i].x+posItem; rect_itemRestant.y = magnet_lock[i].y+posItem;
+                                createRectTick(rect_Tick, i, magnet_lock);
                                 posTuileRestante = i;
-                                if (posTuileRestante == 12) break;
-                                posTuileRestante = pushTuile(posTuileRestante);
-                                if(posTuileRestante >= 0){
-                                    rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
-                                    rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
-                                } else printf("déplacement impossible"); // A REMPLACER PAR LE MESSAGE SUR LE PLATEAU
+                                if (posTuileRestante == 12) {
+                                    rect_Tick[0].x = 0;
+                                    rect_Tick[1].x = 0;
+                                    break;
+                                }
                                 
                                 break;
                             }
@@ -485,11 +488,11 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                                 rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
                                 rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
                             }
-                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button);
+                            AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
                         }
                     }
 
-                    // LES BOUTONS VALIDER ET ANNULER
+                    // LES BOUTONS DE ROTATION
 
                     for(int i = 0; i < 2; i++){
                         if( cursorX >= rect_button[i].x &&
@@ -498,6 +501,30 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             cursorY <= rect_button[i].y + rect_button[i].h)
                         {
                             rotateTuile(&tuileRestante.tuile, i);
+                        }
+                    }
+
+                    // LES BOUTONS YES ET NO
+
+                    for(int i = 0; i < 2; i++){
+                        if( cursorX >= rect_Tick[i].x &&
+                            cursorX <= rect_Tick[i].x + rect_Tick[i].w &&
+                            cursorY >= rect_Tick[i].y &&
+                            cursorY <= rect_Tick[i].y + rect_Tick[i].h)
+                        {
+                            if (i == 0){
+                                posTuileRestante = 12;
+                                rect_tuileRestante.x = magnet_lock[12].x; rect_tuileRestante.y = magnet_lock[12].y;
+                                rect_itemRestant.x = magnet_lock[12].x+posItem; rect_itemRestant.y = magnet_lock[12].y+posItem;
+                                rect_Tick[0].x = 0; // cache les ticks
+                            }else{
+                                posTuileRestante = pushTuile(posTuileRestante);
+                                if(posTuileRestante >= 0){
+                                    rect_tuileRestante.x = magnet_lock[posTuileRestante].x; rect_tuileRestante.y = magnet_lock[posTuileRestante].y;
+                                    rect_itemRestant.x = magnet_lock[posTuileRestante].x+posItem; rect_itemRestant.y = magnet_lock[posTuileRestante].y+posItem;
+                                } else printf("déplacement impossible"); // A REMPLACER PAR LE MESSAGE SUR LE PLATEAU
+                                rect_Tick[0].x = 0; // cache les ticks
+                            }
                         }
                     }
 
@@ -512,7 +539,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                 continue;
             }
         }
-        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button);
+        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick);
     }
 }
 
@@ -528,7 +555,7 @@ void ResetRender(SDL_Renderer * renderer, Color color){
     SDL_RenderClear(renderer);
 }
 
-void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR){
+void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2]){
 
     SDL_DisplayMode Screen;
     SDL_GetCurrentDisplayMode(0, &Screen);
@@ -550,6 +577,14 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         if(cursorX >= rect_button[i].x && cursorX <= rect_button[i].x + rect_button[i].w && cursorY >= rect_button[i].y && cursorY <= rect_button[i].y + rect_button[i].h) {
             printImageFromTexture(renderer, gameTexture->tick[i*2+5], rect_button[i]);
         }else printImageFromTexture(renderer, gameTexture->tick[i*2+4], rect_button[i]);
+    }
+
+    if(rect_Tick[0].x != 0){
+        for(int i = 0; i < 2; i++){
+            if(cursorX >= rect_Tick[i].x && cursorX <= rect_Tick[i].x + rect_Tick[i].w && cursorY >= rect_Tick[i].y && cursorY <= rect_Tick[i].y + rect_Tick[i].h) {
+                printImageFromTexture(renderer, gameTexture->tick[i*2+1], rect_Tick[i]);
+            }else printImageFromTexture(renderer, gameTexture->tick[i*2], rect_Tick[i]);
+        }
     }
 }
 
@@ -706,7 +741,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture){
 }
 
 
-void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[12], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2]){
+void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[2], SDL_Rect rect_Tick[2]){
 
     int total_t;
 
@@ -721,7 +756,7 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
     ResetRender(renderer, Background);
     printBG(renderer, gameTexture);
     //printDebugGrid(renderer);
-    afficherHUD(renderer, gameTexture, cursorX, cursorY, rect_button, rect_TR);
+    afficherHUD(renderer, gameTexture, cursorX, cursorY, rect_button, rect_TR, rect_Tick);
     printMagnetLockRect(renderer, magnet_lock);
     AffichePlateau(renderer);
     AfficheTuileItem(renderer, gameTexture);
@@ -1190,4 +1225,32 @@ void rotateTuile(uint8_t* tuileRestante, int direction){
         }else *tuileRestante = (*tuileRestante == 1)? 4: (*tuileRestante == 5)? 8: (*tuileRestante == 9)? 10: -1;
         break;
     }
+}
+
+void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock[13]){
+    int decalageX1, decalageX2, decalageY1, decalageY2;
+
+    size_t tickSize = (infoDisplay.tuileSize-3*infoDisplay.borderSize)/2;
+    
+    decalageX1 = (emplacement < 3)? infoDisplay.borderSize : 
+                 (emplacement < 6)? infoDisplay.tuileSize+infoDisplay.borderSize*2 :
+                 (emplacement < 9)? infoDisplay.borderSize : -(tickSize+infoDisplay.borderSize*2);
+
+    decalageX2 = (emplacement < 3)? tickSize + infoDisplay.borderSize*2 : 
+                 (emplacement < 6)? infoDisplay.tuileSize+infoDisplay.borderSize*2 :
+                 (emplacement < 9)? tickSize + infoDisplay.borderSize*2 : -(tickSize+infoDisplay.borderSize*2);
+
+    decalageY1 = (emplacement < 3)? -(tickSize+infoDisplay.borderSize*2) : 
+                 (emplacement < 6)? infoDisplay.borderSize :
+                 (emplacement < 9)? infoDisplay.tuileSize+infoDisplay.borderSize*2 : infoDisplay.borderSize;
+
+    decalageY2 = (emplacement < 3)? -(tickSize+infoDisplay.borderSize*2) : 
+                 (emplacement < 6)? tickSize + infoDisplay.borderSize*2 :
+                 (emplacement < 9)? infoDisplay.tuileSize+infoDisplay.borderSize*2 : tickSize + infoDisplay.borderSize*2;
+
+    rect_Tick[0].x = magnet_lock[emplacement].x+decalageX1; rect_Tick[0].y = magnet_lock[emplacement].y+decalageY1;
+    rect_Tick[0].w = tickSize; rect_Tick[0].h = tickSize;
+
+    rect_Tick[1].x = magnet_lock[emplacement].x+decalageX2; rect_Tick[1].y = magnet_lock[emplacement].y+decalageY2;
+    rect_Tick[1].w = tickSize; rect_Tick[1].h = tickSize;
 }
