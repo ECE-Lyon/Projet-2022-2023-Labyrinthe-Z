@@ -29,7 +29,7 @@ typedef struct{
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[4];
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[8];
 }TextureJeu;
 
 typedef struct{
@@ -338,7 +338,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     // TICK YES ET NO
 
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 8; i++){
         char cheminTick[100];
         sprintf(cheminTick, "images/default/HUD/tick%d.bmp", i+1);
         SDL_Surface *tick_surface = SDL_LoadBMP(cheminTick);
@@ -547,8 +547,8 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
 
     for(int i = 0; i < 2; i++){
         if(cursorX >= rect_button[i].x && cursorX <= rect_button[i].x + rect_button[i].w && cursorY >= rect_button[i].y && cursorY <= rect_button[i].y + rect_button[i].h) {
-            printImageFromTexture(renderer, gameTexture->tick[i*2+1], rect_button[i]);
-        }else printImageFromTexture(renderer, gameTexture->tick[i*2], rect_button[i]);
+            printImageFromTexture(renderer, gameTexture->tick[i*2+5], rect_button[i]);
+        }else printImageFromTexture(renderer, gameTexture->tick[i*2+4], rect_button[i]);
     }
 }
 
