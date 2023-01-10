@@ -63,6 +63,7 @@ void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
 TextureJeu loadGameTexture(SDL_Renderer *renderer);
 TextureMenu loadMenuTexture(SDL_Renderer *renderer);
 void delay(time_t pauseTime);
+void rotateTuile(uint8_t* tuileRestante, int direction);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -496,7 +497,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             cursorY >= rect_button[i].y &&
                             cursorY <= rect_button[i].y + rect_button[i].h)
                         {
-                            
+                            rotateTuile(&tuileRestante.tuile, i);
                         }
                     }
 
@@ -735,13 +736,12 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
 
     delay(freqMax-total_t);
 
-    printf("Frame time: %d us, ", total_t  );
+    //printf("Frame time: %d us, ", total_t  );
 
     int fps = microsecFac / (freqMax+((total_t>freqMax)? total_t-freqMax : 0)); // 100 fps sauf si le frame time est supérieur à 10ms
-    printf("FPS = %d\n", fps);
+    //printf("FPS = %d\n", fps);
 
     SDL_RenderPresent(renderer);
-
 }
 
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12]){
@@ -1173,5 +1173,21 @@ void delay(time_t pauseTime){
     while(total_t < pauseTime){
        gettimeofday(&stop, NULL);
        total_t = (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec;
+    }
+}
+
+void rotateTuile(uint8_t* tuileRestante, int direction){
+    switch (direction)
+    {
+    case 0:
+        if(*tuileRestante != 4 && *tuileRestante != 8 && *tuileRestante != 10){
+            *tuileRestante += 1;
+        }else *tuileRestante = (*tuileRestante == 4)? 1: (*tuileRestante == 8)? 5: (*tuileRestante == 10)? 9: -1;
+        break;
+    case 1:
+        if(*tuileRestante != 1 && *tuileRestante != 5 && *tuileRestante != 9){
+            *tuileRestante -= 1;
+        }else *tuileRestante = (*tuileRestante == 1)? 4: (*tuileRestante == 5)? 8: (*tuileRestante == 9)? 10: -1;
+        break;
     }
 }
