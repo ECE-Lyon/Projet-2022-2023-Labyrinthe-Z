@@ -21,7 +21,8 @@ typedef struct{
 }Case;
 
 typedef struct{
-    uint8_t posX, posY, itemFound; //pareil pour le uint8 (la position va de 0 à 7 et le nombre d'item jusqu'a 6)
+    uint8_t posX, posY;
+    int itemFound; //pareil pour le uint8 (la position va de 0 à 7 et le nombre d'item jusqu'a 6)
 }PlayerDATA;
 
 typedef struct{
@@ -163,6 +164,16 @@ int main(int argc, char **argv){
 
     TextureMenu menuTexture = loadMenuTexture(jeu);
     fenetreMenu(jeu, &menuTexture);
+
+    for ( int i=0 ; i<nbplayer ; i++ )
+    {
+        printf("\n");
+        for (int j = 0; j < 12; j++)
+        {
+            printf("[%d]",playerCard[i].tab[j]);
+        }
+        
+    }printf("\n");
 
     clean(window, jeu, NULL);
 
@@ -647,8 +658,8 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
         SDL_Rect rect_item32 = {rect_cadre.x+140*2.25, rect_cadre.y+25*2.25, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
-        printImageFromTexture(renderer, gameTexture->item32[0], rect_item32);
-    }
+        printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData->itemFound]], rect_item32);
+    }   
 
     printImageFromTexture(renderer, gameTexture->cadreTuileRestante, rect_TR);
 
@@ -1392,16 +1403,6 @@ void RandomCard( int nbPlayer ){
         break;
     default:
         break;
-    }
-
-    for ( int i=0 ; i<nbPlayer ; i++ )
-    {
-        printf("\n");
-        for (int j = 0; j < 12; j++)
-        {
-            printf("[%d]",playerCard[i].tab[j]);
-        }
-        
     }   
 
 }
