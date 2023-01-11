@@ -1,4 +1,4 @@
-// gcc src/plateau_graphique.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
+// gcc src/main_interface.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer
 
 #include <math.h>
 #include <time.h>
@@ -25,11 +25,15 @@ typedef struct{
 }PlayerDATA;
 
 typedef struct{
+    int tab[6];
+}PlayerCARD;
+
+typedef struct{
     size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY, skinSizeX, skinSizeY, menuButtonX, menuButtonY, cadreTR;
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[18];
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[18], *item32[24];
 }TextureJeu;
 
 typedef struct{
@@ -38,6 +42,7 @@ typedef struct{
 
 int getRandomInt(int min, int max);
 
+void RandomCard(int nbCards);
 void ResetRender(SDL_Renderer *renderer, Color color);
 void AfficheButton(SDL_Renderer *renderer,SDL_Rect rect_button, const char* file, Color color, int px);
 void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture);
@@ -92,9 +97,13 @@ Case tuileRestante = {0,0};
 
 PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
+PlayerCARD playerCard[4];
+
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
 char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
+
+int nbCardRestant[24] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24};
 
 Color Background = {255, 233, 210, 255};
 Color ButtonSelected = {216, 192, 168, 255};
@@ -144,6 +153,12 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);        
     }
 
+    if (Mix_OpenAudio(96000, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) < 0){
+        SDL_Log("Erreur initialisation SDL_mixer : %s", Mix_GetError());
+        SDL_Quit();
+        return -1;
+    }
+
     TextureMenu menuTexture = loadMenuTexture(jeu);
     fenetreMenu(jeu, &menuTexture);
 
@@ -181,6 +196,11 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
 
     uint8_t cursorInButton = 0;
 
+    Uint8 volume = 50;
+
+    Mix_Music *button = Mix_LoadMUS("Sound/Button.mp3");
+    Mix_VolumeMusic(volume);
+
     SDL_ShowCursor(SDL_DISABLE);
 
     ResetRender(renderer, Background);
@@ -192,8 +212,10 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
+
             cursorX = event.motion.x;
             cursorY = event.motion.y;
+
             switch( event.type ){
             case SDL_KEYDOWN:               
                 switch ( event.key.keysym.sym ){
@@ -223,10 +245,12 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if(cursorInButton == 1){
-                    resetPlateau();                   
+                    Mix_PlayMusic(button, 0);
+                    resetPlateau();                 
                     RandomPlateau();
                     TextureJeu gameTexture = loadGameTexture(renderer);
                     afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
+                    RandomCard(4);  
 
                     unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
@@ -258,7 +282,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 4; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/default/HUD/BG/1/%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/HUD/BG/2/%d.bmp", i+1);
         SDL_Surface *BG_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(BG_surface);
         gameTexture.BG[i] = SDL_CreateTextureFromSurface(renderer, BG_surface);
@@ -302,12 +326,24 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 24; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/formated/item/item%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/item/item16px/item%d.bmp", i+1);
         SDL_Surface *item_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(item_surface);
         gameTexture.item[i] = SDL_CreateTextureFromSurface(renderer, item_surface);
         handleTextureError(gameTexture.item[i]);
         SDL_FreeSurface(item_surface);
+    }
+
+    // ITEMS 32
+
+    for(int i = 0; i < 24; i++){
+        char cheminImage[100];
+        sprintf(cheminImage, "images/default/item/item32px/item%d.bmp", i+1);
+        SDL_Surface *item32_surface = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(item32_surface);
+        gameTexture.item32[i] = SDL_CreateTextureFromSurface(renderer, item32_surface);
+        handleTextureError(gameTexture.item32[i]);
+        SDL_FreeSurface(item32_surface);
     }
 
     // PLAYERS
@@ -412,6 +448,10 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     uint8_t playerTurn = 0;
     uint8_t gameState = 0;
 
+    Uint8 volume = 50;
+    Mix_Music *music_jeu = Mix_LoadMUS("Sound/Sweden.mp3");
+    Mix_VolumeMusic(volume);
+
     AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
 
     while( windowOpen ){
@@ -419,6 +459,9 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
+
+            Mix_PlayMusic(music_jeu, -1);
+
             switch( event.type ){
             case SDL_MOUSEMOTION:
                 cursorX = event.motion.x;
@@ -607,6 +650,8 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
+        SDL_Rect rect_item32 = {rect_cadre.x+140*2.25, rect_cadre.y+25*2.25, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
+        printImageFromTexture(renderer, gameTexture->item32[0], rect_item32);
     }
 
     printImageFromTexture(renderer, gameTexture->cadreTuileRestante, rect_TR);
@@ -1063,12 +1108,13 @@ void setGUIsize(uint8_t size){
     infoDisplay.skinSizeY = 64*facteurResize;
     infoDisplay.cadreTR = 28*facteurResize*3;
 
+
     char cheminImage[100];
     char cheminImageRedim[100];
 
     // redimentionnement des items
     for(int i = 1; i <= 24; i++){
-        sprintf(cheminImage, "images/default/item/item%d.bmp", i);
+        sprintf(cheminImage, "images/default/item/item16px/item%d.bmp", i);
 
         SDL_Surface *image = SDL_LoadBMP(cheminImage);
         handleSurfaceError(image);
@@ -1305,4 +1351,32 @@ void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock
 
     rect_Tick[1].x = magnet_lock[emplacement].x+decalageX2; rect_Tick[1].y = magnet_lock[emplacement].y+decalageY2;
     rect_Tick[1].w = tickSize; rect_Tick[1].h = tickSize;
+}
+
+void RandomCard( int nbPlayer ){
+
+    melangerTab(nbCardRestant, 24);
+
+    int n=0, p=0;
+
+    for( int i=0 ; i<6*nbPlayer ; i++){
+
+        if( i==6 || i==12 || i==18){
+            n++;
+            p=0;
+        }
+        playerCard[n].tab[p] = nbCardRestant[i];
+        p++;
+    }
+    
+    /*for ( int i = 0; i < 4; i++)
+    {
+        printf("\n");
+        for (int j = 0; j < 6; j++)
+        {
+            printf("[%d]",playerCard[i].tab[j]);
+        }
+        
+    }*/    
+
 }
