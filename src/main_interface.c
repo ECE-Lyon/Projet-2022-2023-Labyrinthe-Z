@@ -101,7 +101,7 @@ PlayerDATA playerData[4] = { 0,0,1,   0,6,1,   6,0,1,   6,6,1 };
 
 PlayerCARD playerCard[4];
 
-int nbplayer = 3;
+int nbplayer = 4;
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
@@ -264,9 +264,10 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
                     Mix_PlayMusic(button, 0);
                     resetPlateau();                 
                     RandomPlateau();
-                    RandomCard(nbplayer);  
+                    RandomCard(nbplayer);
                     TextureJeu gameTexture = loadGameTexture(renderer);
                     afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
+                      
 
                     unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
@@ -678,8 +679,18 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
         SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
         printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
-        SDL_Rect rect_TickProgression = {rect_textPLayer.x, rect_textPLayer.y, 5, 18};
-    }
+        SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*2.25, rect_textPLayer.y, 5, 18};
+        
+        for(int j=0 ; j<playerData[i].itemFound ; j++ ){
+            printImageFromTexture(renderer, gameTexture->tick[19],rect_TickProgression);
+            rect_TickProgression.x += 10;
+        }
+
+        for(int j=0 ; j<24/nbplayer - playerData[i].itemFound ; j++){
+            printImageFromTexture(renderer, gameTexture->tick[18],rect_TickProgression);
+            rect_TickProgression.x += 10;
+        }
+    }   
 
     // LE CADRE QUI DIT A QUI C'EST DE JOUER
 
