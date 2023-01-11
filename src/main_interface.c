@@ -311,7 +311,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     // CADRES DU HUD
 
-    SDL_Surface *cadre_surface = SDL_LoadBMP("images/formated/HUD/cadre2.bmp");
+    SDL_Surface *cadre_surface = SDL_LoadBMP("images/default/HUD/cadre2.bmp");
     handleSurfaceError(cadre_surface);
     gameTexture.cadre = SDL_CreateTextureFromSurface(renderer, cadre_surface);
     handleTextureError(gameTexture.cadre);
@@ -321,7 +321,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 4; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/formated/skin/skin_%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/skin/skin_%d.bmp", i+1);
         SDL_Surface *skin_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(skin_surface);
         gameTexture.skin[i] = SDL_CreateTextureFromSurface(renderer, skin_surface);
@@ -333,7 +333,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 10; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/formated/tuiles/Tuile%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/tuiles/Tuile%d.bmp", i+1);
         SDL_Surface *tuile_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(tuile_surface);
         gameTexture.tuile[i] = SDL_CreateTextureFromSurface(renderer, tuile_surface);
@@ -369,7 +369,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 4; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/formated/skin/player_%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/skin/player_%d.bmp", i+1);
         SDL_Surface *item_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(item_surface);
         gameTexture.player[i] = SDL_CreateTextureFromSurface(renderer, item_surface);
@@ -1161,67 +1161,6 @@ float setGUIsize(uint8_t size){
     char cheminImage[100];
     char cheminImageRedim[100];
 
-    // redimentionnement des items
-    for(int i = 1; i <= 24; i++){
-        sprintf(cheminImage, "images/default/item/item16px/item%d.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-        
-        sprintf(cheminImageRedim, "images/formated/item/item%d.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
-    }
-
-    // redimentionnement des joueurs 
-    for(int i = 1; i <= 4; i++){
-        sprintf(cheminImage, "images/default/skin/player_%d.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-
-        sprintf(cheminImageRedim, "images/formated/skin/player_%d.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
-    }
-
-    // redimentionnement des tuiles 
-    for(int i = 1; i <= 10; i++){
-        sprintf(cheminImage, "images/default/tuiles/Tuile%d.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize, image->h*facteurResize, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-
-        sprintf(cheminImageRedim, "images/formated/tuiles/Tuile%d.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
-    }
-
     // redimentionnement des boutons 
     for(int i = 1; i <= 2; i++){
         sprintf(cheminImage, "images/default/button/button%d.bmp", i);
@@ -1261,66 +1200,6 @@ float setGUIsize(uint8_t size){
 
         // Enregistrement de l'image redimensionnée
         SDL_SaveBMP(image_redim, cheminImageRedim);
-    }
-
-    // redimentionnement des cadres
-    for(int i = 1; i <= 1; i++){
-        sprintf(cheminImage, "images/default/HUD/cadre2.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, image->w*facteurResize*5, image->h*facteurResize*5, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-
-        sprintf(cheminImageRedim, "images/formated/HUD/cadre2.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
-    }
-
-    // redimentionnement du BG
-    for(int i = 1; i <= 1; i++){
-        sprintf(cheminImage, "images/default/HUD/BG.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        //handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, 1920, 1080, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        //handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-
-        sprintf(cheminImageRedim, "images/formated/HUD/BG.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
-    }
-
-    // redimentionnement des skins
-    for(int i = 1; i <= 4; i++){
-        sprintf(cheminImage, "images/default/skin/skin_%d.bmp", i);
-
-        SDL_Surface *image = SDL_LoadBMP(cheminImage);
-        handleSurfaceError(image);
-
-        SDL_Surface *image_redim = SDL_CreateRGBSurface(0, infoDisplay.skinSizeX, infoDisplay.skinSizeY, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-        handleSurfaceError(image_redim);
-        
-        redimImage(image, image_redim);
-
-        sprintf(cheminImageRedim, "images/formated/skin/skin_%d.bmp", i);
-
-        // Enregistrement de l'image redimensionnée
-        SDL_SaveBMP(image_redim, cheminImageRedim);
-        SDL_FreeSurface(image);
-        SDL_FreeSurface(image_redim);
     }
 
     return facteurResize;
