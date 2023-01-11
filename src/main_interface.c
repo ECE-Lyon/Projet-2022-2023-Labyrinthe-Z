@@ -109,6 +109,8 @@ char nbItemRestant[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
 
 int nbCardRestant[24] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24};
 
+char itemTrouves[24] = {0};
+
 Color Background = {255, 233, 210, 255};
 Color ButtonSelected = {216, 192, 168, 255};
 Color ButtonNotSelected = {229, 204, 178, 255};
@@ -865,7 +867,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
                 printImageFromTexture(renderer, gameTexture->player[playerHere[time.tv_sec%nbPlayerHere]],rect_item); // magie noire pour faire clignotter les joueurs si ils sont plusieurs sur la même case
             }else{
                 printImageFromTexture(renderer, gameTexture->tuile[SDLplateau[i][j].tuile-1],rect_tuile);
-                if(SDLplateau[i][j].item!=0) printImageFromTexture(renderer, gameTexture->item[SDLplateau[i][j].item-1],rect_item);
+                if(SDLplateau[i][j].item!=0 && itemTrouves[SDLplateau[i][j].item-1] == 0) printImageFromTexture(renderer, gameTexture->item[SDLplateau[i][j].item-1],rect_item);
             }
 
             rect_tuile.x += infoDisplay.tuileSize+infoDisplay.borderSize;
@@ -1056,7 +1058,7 @@ int pushTuile(int emplacement){
         for(int i = 0; i < 4; i++){
             if(playerData[i].posY == pos){
                 if(playerData[i].posX != 6)playerData[i].posX += 1;
-                else return -1;
+                else playerData[i].posX = 0;
             }
         }
 
@@ -1072,7 +1074,7 @@ int pushTuile(int emplacement){
         for(int i = 0; i < 4; i++){
             if(playerData[i].posX == pos){
                 if(playerData[i].posY != 0)playerData[i].posY -= 1;
-                else return -1;
+                else playerData[i].posY = 6;
             }
         }
 
@@ -1089,7 +1091,7 @@ int pushTuile(int emplacement){
         for(int i = 0; i < 4; i++){
             if(playerData[i].posY == pos){
                 if(playerData[i].posX != 0)playerData[i].posX -= 1;
-                else return -1;
+                else playerData[i].posX = 6;
             }
         }
         tuileRestante = SDLplateau[0][pos]; // définition de la nouvelle tuile restante
@@ -1105,7 +1107,7 @@ int pushTuile(int emplacement){
         for(int i = 0; i < 4; i++){
             if(playerData[i].posX == pos){
                 if(playerData[i].posY != 6)playerData[i].posY += 1;
-                else return -1;
+                else playerData[i].posY = 0;
             }
         }
 
@@ -1140,7 +1142,7 @@ float setGUIsize(uint8_t size){
             facteurResize = 2.0f;
             break;
         case 5:
-            facteurResize = 3.0f;
+            facteurResize = 3.0;
             break;                       
     }
 
@@ -1455,5 +1457,6 @@ void RandomCard( int nbPlayer ){
 void checkObjectif(int x, int y, int player){
     if(playerCard[player].tab[playerData[player].itemFound] == SDLplateau[x][y].item-1){
         playerData[player].itemFound += 1;
-    }
+        itemTrouves[SDLplateau[x][y].item-1] = 1;
+    }    
 }
