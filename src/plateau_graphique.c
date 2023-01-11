@@ -25,11 +25,11 @@ typedef struct{
 }PlayerDATA;
 
 typedef struct{
-    size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY, skinSizeX, skinSizeY, menuButtonX, menuButtonY, cadreTR;
+    size_t itemSize, tuileSize, borderSize, cadreSizeX, cadreSizeY, skinSizeX, skinSizeY, menuButtonX, menuButtonY, cadreTR, text_playerX, text_playerY, tickProgression;
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[18];
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[20], *text_player[4];
 }TextureJeu;
 
 typedef struct{
@@ -52,7 +52,7 @@ void printImage(SDL_Renderer *renderer, SDL_Rect rect_image, const char *chemin_
 void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* cursorX, int* cursorY);
 void resetPlateau();
 void melangerTab(int* tab, size_t tailleTab);
-void setGUIsize(uint8_t size);
+float setGUIsize(uint8_t size);
 void removeTempImages(void);
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], TextureJeu *gameTexture);
 int pushTuile(int emplacement);
@@ -104,6 +104,8 @@ int colorButtonNotSelected[3] = {229, 204, 178};
 
 long current_frame = 0;
 
+float facteurResize;
+
 int main(int argc, char **argv){
 
     SDL_Window *window = NULL;
@@ -123,12 +125,12 @@ int main(int argc, char **argv){
     }
 
     // ajustement de la taille des images pour correspondre au mieux à la taille de l'écran
-    if (Screen.w < 720 || Screen.h < 480) setGUIsize(0);
-    else if(Screen.w < 1280 || Screen.h < 720) setGUIsize(1);
-    else if (Screen.w < 1920 || Screen.h < 1080) setGUIsize(2);
-    else if (Screen.w < 2560 || Screen.h < 1440) setGUIsize(3);
-    else if (Screen.w < 3840 || Screen.h < 2160) setGUIsize(4);
-    else setGUIsize(5);
+    if (Screen.w < 720 || Screen.h < 480) facteurResize = setGUIsize(0);
+    else if(Screen.w < 1280 || Screen.h < 720) facteurResize = setGUIsize(1);
+    else if (Screen.w < 1920 || Screen.h < 1080) facteurResize = setGUIsize(2);
+    else if (Screen.w < 2560 || Screen.h < 1440) facteurResize = setGUIsize(3);
+    else if (Screen.w < 3840 || Screen.h < 2160) facteurResize = setGUIsize(4);
+    else facteurResize = setGUIsize(5);
 
     window = SDL_CreateWindow("Labyrinthe-Z", 0, 0, Screen.w, Screen.h, SDL_WINDOW_FULLSCREEN);
     if( window == NULL ){
@@ -338,9 +340,9 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
     handleTextureError(gameTexture.cadreTuileRestante);
     SDL_FreeSurface(TR_surface);
 
-    // TICK YES ET NO
+    // TICK YES ET NO, BOUTONS ROTATION, CADRES JOUEUR ACTUEL, TICK DE PROGRESSION
 
-    for(int i = 0; i < 18; i++){
+    for(int i = 0; i < 20; i++){
         char cheminTick[100];
         sprintf(cheminTick, "images/default/HUD/tick%d.bmp", i+1);
         SDL_Surface *tick_surface = SDL_LoadBMP(cheminTick);
@@ -348,6 +350,18 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
         gameTexture.tick[i] = SDL_CreateTextureFromSurface(renderer, tick_surface);
         handleTextureError(gameTexture.tick[i]);
         SDL_FreeSurface(tick_surface);
+    }
+
+    // TEXTE PLAYER
+
+    for(int i = 0; i < 4; i++){
+        char cheminTextPlayer[100];
+        sprintf(cheminTextPlayer, "images/default/HUD/textP%d.bmp", i+1);
+        SDL_Surface *textPlayer_surface = SDL_LoadBMP(cheminTextPlayer);
+        handleSurfaceError(textPlayer_surface);
+        gameTexture.text_player[i] = SDL_CreateTextureFromSurface(renderer, textPlayer_surface);
+        handleTextureError(gameTexture.text_player[i]);
+        SDL_FreeSurface(textPlayer_surface);
     }
 
     return gameTexture;
@@ -602,14 +616,23 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
 
     size_t spaceForHUD = (Screen.w-sizePlateau)/2-infoDisplay.borderSize/2-infoDisplay.tuileSize; 
 
+    // LES CADRES POUR LES JOUEURS 
+
     for(int i = 0; i < 4; i++){
         SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+(infoDisplay.cadreSizeY+(double)(sizePlateau-4*infoDisplay.cadreSizeY)/3)*i, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
+        SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
+        printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
+        SDL_Rect rect_TickProgression = {rect_textPLayer.x, rect_textPLayer.y, 5, 18};
     }
 
+    // LE CADRE QUI DIT A QUI C'EST DE JOUER
+
     printImageFromTexture(renderer, gameTexture->cadreTuileRestante, rect_TR);
+
+    // LES BOUTONS DE ROTATION DE TUILE, DE VALIDATION ET L'EMPLACEMENT POUR LA TUILE
 
     for(int i = 0; i < 3; i++){
         if(cursorX >= rect_button[i].x && cursorX <= rect_button[i].x + rect_button[i].w && cursorY >= rect_button[i].y && cursorY <= rect_button[i].y + rect_button[i].h) {
@@ -617,6 +640,8 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         }else printImageFromTexture(renderer, gameTexture->tick[i*2+4], rect_button[i]);
     }
     printImageFromTexture(renderer, gameTexture->tick[14+playerTurn], rect_button[3]);
+
+    // L'AFFICHAGE DES BOUTON DE VALIDATION ET D'ANNULATION
 
     if(rect_Tick[0].x != 0){
         for(int i = 0; i < 2; i++){
@@ -1031,7 +1056,7 @@ int pushTuile(int emplacement){
            (emplacement == 9)? 5: (emplacement == 10)? 4: (emplacement == 11)? 3: -1;
 }
 
-void setGUIsize(uint8_t size){
+float setGUIsize(uint8_t size){
     float facteurResize;
     switch(size){
         case 0:
@@ -1062,6 +1087,8 @@ void setGUIsize(uint8_t size){
     infoDisplay.skinSizeX = 64*facteurResize;
     infoDisplay.skinSizeY = 64*facteurResize;
     infoDisplay.cadreTR = 28*facteurResize*3;
+    infoDisplay.text_playerX = 36*facteurResize*1.5;
+    infoDisplay.text_playerY = 8*facteurResize*1.5;
 
     char cheminImage[100];
     char cheminImageRedim[100];
@@ -1227,6 +1254,8 @@ void setGUIsize(uint8_t size){
         SDL_FreeSurface(image);
         SDL_FreeSurface(image_redim);
     }
+
+    return facteurResize;
 }
 
 void removeTempImages(void){
