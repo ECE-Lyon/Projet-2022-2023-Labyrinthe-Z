@@ -25,7 +25,7 @@ typedef struct{
 }PlayerDATA;
 
 typedef struct{
-    int tab[6];
+    int tab[12];
 }PlayerCARD;
 
 typedef struct{
@@ -98,6 +98,8 @@ Case tuileRestante = {0,0};
 PlayerDATA playerData[4] = { 0,0,0,   0,6,0,   6,0,0,   6,6,0 };
 
 PlayerCARD playerCard[4];
+
+int nbplayer = 3;
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
@@ -250,7 +252,7 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
                     RandomPlateau();
                     TextureJeu gameTexture = loadGameTexture(renderer);
                     afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
-                    RandomCard(4);  
+                    RandomCard(nbplayer);  
 
                     unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
@@ -448,10 +450,6 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     uint8_t playerTurn = 0;
     uint8_t gameState = 0;
 
-    Uint8 volume = 50;
-    Mix_Music *music_jeu = Mix_LoadMUS("Sound/Sweden.mp3");
-    Mix_VolumeMusic(volume);
-
     AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
 
     while( windowOpen ){
@@ -459,8 +457,6 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
         SDL_Event event;
 
         while( SDL_PollEvent(&event) ){
-
-            Mix_PlayMusic(music_jeu, -1);
 
             switch( event.type ){
             case SDL_MOUSEMOTION:
@@ -645,8 +641,8 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
 
     size_t spaceForHUD = (Screen.w-sizePlateau)/2-infoDisplay.borderSize/2-infoDisplay.tuileSize; 
 
-    for(int i = 0; i < 4; i++){
-        SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+(infoDisplay.cadreSizeY+(double)(sizePlateau-4*infoDisplay.cadreSizeY)/3)*i, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+    for(int i=0 ; i<nbplayer ; i++){
+        SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+(infoDisplay.cadreSizeY+(double)(sizePlateau-nbplayer*infoDisplay.cadreSizeY)/nbplayer-1)*i, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
@@ -1359,24 +1355,53 @@ void RandomCard( int nbPlayer ){
 
     int n=0, p=0;
 
-    for( int i=0 ; i<6*nbPlayer ; i++){
+    switch ( nbPlayer )
+    {
+    case 2:
+        for( int i=0 ; i<24 ; i++ ){
 
-        if( i==6 || i==12 || i==18){
-            n++;
-            p=0;
+            if( i==12 ){
+                n++;
+                p=0;
+            }
+            playerCard[n].tab[p] = nbCardRestant[i];
+            p++;
         }
-        playerCard[n].tab[p] = nbCardRestant[i];
-        p++;
+        break;
+    case 3:
+        for( int i=0 ; i<24 ; i++ ){
+
+            if( i==8 || i==16 ){
+                n++;
+                p=0;
+            }
+            playerCard[n].tab[p] = nbCardRestant[i];
+            p++;
+        }
+        break;
+    case 4:
+        for( int i=0 ; i<24 ; i++ ){
+
+            if( i==6 || i==12 || i==18 ){
+                n++;
+                p=0;
+            }
+            playerCard[n].tab[p] = nbCardRestant[i];
+            p++;
+        }
+        break;
+    default:
+        break;
     }
-    
-    /*for ( int i = 0; i < 4; i++)
+
+    for ( int i=0 ; i<nbPlayer ; i++ )
     {
         printf("\n");
-        for (int j = 0; j < 6; j++)
+        for (int j = 0; j < 12; j++)
         {
             printf("[%d]",playerCard[i].tab[j]);
         }
         
-    }*/    
+    }   
 
 }
