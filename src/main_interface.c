@@ -263,9 +263,10 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
                     Mix_PlayMusic(button, 0);
                     resetPlateau();                 
                     RandomPlateau();
+                    RandomCard(nbplayer);
                     TextureJeu gameTexture = loadGameTexture(renderer);
                     afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
-                    RandomCard(nbplayer);  
+                      
 
                     unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
@@ -674,7 +675,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
         SDL_Rect rect_item32 = {rect_cadre.x+140*2.25, rect_cadre.y+25*2.25, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
-        printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData->itemFound]], rect_item32);
+        printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
         SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
         printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
         SDL_Rect rect_TickProgression = {rect_textPLayer.x, rect_textPLayer.y, 5, 18};
@@ -1434,4 +1435,9 @@ void RandomCard( int nbPlayer ){
         break;
     }   
 
+    for (int i = 0; i < 48; i++)
+    {
+        playerCard[i/12].tab[i%12] --;
+    }
+    
 }
