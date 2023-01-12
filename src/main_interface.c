@@ -71,7 +71,7 @@ TextureMenu loadMenuTexture(SDL_Renderer *renderer);
 void delay(time_t pauseTime);
 void rotateTuile(uint8_t* tuileRestante, int direction);
 void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock[13]);
-void checkObjectif(int x, int y, int player);
+int checkObjectif(int x, int y, int player);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -1370,9 +1370,10 @@ void RandomCard( int nbPlayer ){
     }
 }
 
-void checkObjectif(int x, int y, int player){
+int checkObjectif(int x, int y, int player){
     if(playerCard[player].tab[playerData[player].itemFound] == SDLplateau[x][y].item-1){
         playerData[player].itemFound += 1;
         itemTrouves[SDLplateau[x][y].item-1] = 1;
-    }    
+        return 1;
+    }else return 0;
 }
