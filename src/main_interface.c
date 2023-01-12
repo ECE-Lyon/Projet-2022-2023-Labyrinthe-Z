@@ -101,7 +101,7 @@ PlayerDATA playerData[4] = { 0,0,1,   0,6,1,   6,0,1,   6,6,1 };
 
 PlayerCARD playerCard[4];
 
-int nbplayer = 4;
+int nbplayer = 3;
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
@@ -170,16 +170,6 @@ int main(int argc, char **argv){
     TextureMenu menuTexture = loadMenuTexture(jeu);
     fenetreMenu(jeu, &menuTexture);
 
-    /*for ( int i=0 ; i<nbplayer ; i++ )
-    {
-        printf("\n");
-        for (int j = 0; j < 12; j++)
-        {
-            printf("[%d]",playerCard[i].tab[j]);
-        }
-        
-    }printf("\n");*/
-
     clean(window, jeu, NULL);
 
     return EXIT_SUCCESS;
@@ -215,7 +205,6 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
     uint8_t cursorInButton = 0;
 
     Uint8 volume = 50;
-
     Mix_Music *button = Mix_LoadMUS("Sound/Button.mp3");
     Mix_VolumeMusic(volume);
 
@@ -487,6 +476,10 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     uint8_t playerTurn = 0;
     uint8_t gameState = 0;
 
+    Uint8 volume = 50;
+    Mix_Music *button = Mix_LoadMUS("Sound/Button.mp3");
+    Mix_VolumeMusic(volume);
+
     AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
 
     while( windowOpen ){
@@ -602,6 +595,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             cursorY >= rect_button[i].y &&
                             cursorY <= rect_button[i].y + rect_button[i].h)
                         {
+                            Mix_PlayMusic(button, 0);
                             rotateTuile(&tuileRestante.tuile, i);
                         }
                     }
@@ -614,6 +608,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             cursorY >= rect_Tick[i].y &&
                             cursorY <= rect_Tick[i].y + rect_Tick[i].h && gameState == 0)
                         {
+                            Mix_PlayMusic(button, 0);
                             if (i == 0){ // bouton NO
                                 posTuileRestante = 12;
                                 rect_tuileRestante.x = magnet_lock[12].x; rect_tuileRestante.y = magnet_lock[12].y;
@@ -638,7 +633,8 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                             cursorY >= rect_button[2].y &&
                             cursorY <= rect_button[2].y + rect_button[2].h)
                         {
-                            if(playerTurn < 3 ) playerTurn += 1;
+                            Mix_PlayMusic(button, 0);
+                            if(playerTurn < nbplayer-1 ) playerTurn += 1;
                             else playerTurn = 0;
 
                             //on remet la tuile restante dans le cadre
@@ -948,10 +944,25 @@ void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], Textu
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
     for(int i = 0; i < 12; i++){
-        if(i == rectSelect) SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
-        else SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawRect(renderer, &magnet_lock[i]);
-        printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
+        if(i == rectSelect){
+            if( i<3 ){
+                magnet_lock[i].y += 4*facteurResize;
+                printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
+                magnet_lock[i].y -= 4*facteurResize;
+            }else if( i<6 ){
+                magnet_lock[i].x -= 4*facteurResize;
+                printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
+                magnet_lock[i].x += 4*facteurResize;
+            }else if( i<9 ){
+                magnet_lock[i].y -= 4*facteurResize;
+                printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
+                magnet_lock[i].y += 4*facteurResize;
+            }else if( i<12 ){
+                magnet_lock[i].x += 4*facteurResize;
+                printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
+                magnet_lock[i].x -= 4*facteurResize;
+            }
+        }else printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
     }
 
 }
