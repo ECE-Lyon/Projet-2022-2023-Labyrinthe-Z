@@ -691,7 +691,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
 
     for(int i=0 ; i<nbplayer ; i++){
 
-        SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+(infoDisplay.cadreSizeY+(double)(sizePlateau-nbplayer*infoDisplay.cadreSizeY)/nbplayer-1)*i, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+        SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+infoDisplay.cadreSizeY*i+(sizePlateau-nbplayer*infoDisplay.cadreSizeY)/2, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
@@ -699,16 +699,16 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
         SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
         printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
-        SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*1.5*facteurResize, rect_textPLayer.y, 5, 18};
+        SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*1.5*facteurResize, rect_textPLayer.y, (double)5/(double)1.5*facteurResize, 12*facteurResize};
         
         for(int j=0 ; j<playerData[i].itemFound ; j++ ){
             printImageFromTexture(renderer, gameTexture->tick[19],rect_TickProgression);
-            rect_TickProgression.x += 10;
+            rect_TickProgression.x += 7*facteurResize;
         }
 
         for(int j=0 ; j<24/nbplayer - playerData[i].itemFound ; j++){
             printImageFromTexture(renderer, gameTexture->tick[18],rect_TickProgression);
-            rect_TickProgression.x += 10;
+            rect_TickProgression.x += 6*facteurResize;
         }
     }   
 
@@ -873,7 +873,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
         rect_item.x = (Screen.w-sizePlateau)/2+infoDisplay.borderSize+posItem;
         for( int j=0 ; j<7 ; j++){
             nbPlayerHere = 0;
-            for(int k = 0; k < 4; k++){
+            for(int k = 0; k < nbplayer; k++){
                 if(playerData[k].posX == i && playerData[k].posY == j){
                     playerHere[nbPlayerHere] = k;
                     nbPlayerHere++;
