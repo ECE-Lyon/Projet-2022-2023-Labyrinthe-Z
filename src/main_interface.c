@@ -540,6 +540,15 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                         magnet_lock[0].h = 1; // active les cadres de magnet lock
 
                         do {
+                            for(int i = 0; i < 13; i++){
+                                if( cursorX >= (magnet_lock[i].x - infoDisplay.tuileSize/2) &&
+                                    cursorX <= (magnet_lock[i].x + magnet_lock[i].w + infoDisplay.tuileSize/2) &&
+                                    cursorY >= (magnet_lock[i].y - infoDisplay.tuileSize/2) &&
+                                    cursorY <= (magnet_lock[i].y + magnet_lock[i].h + infoDisplay.tuileSize/2))
+                                {
+                                    magnet_lock[0].h = -i-1;
+                                }
+                            }
                             if(SDL_PollEvent(&event)){
                                 cursorX = event.motion.x;
                                 cursorY = event.motion.y;
@@ -927,13 +936,20 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
 }
 
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], TextureJeu *gameTexture){
+
+    int rectSelect = -1;
+
     if(magnet_lock[0].h == 0){
         return;
+    }else if(magnet_lock < 0){
+        rectSelect = -magnet_lock->h-1;
     }else magnet_lock->h = magnet_lock->w;
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
     for(int i = 0; i < 12; i++){
-        //SDL_RenderDrawRect(renderer, &magnet_lock[i]);
+        if(i == rectSelect) SDL_SetRenderDrawColor(renderer,255,0,0, SDL_ALPHA_OPAQUE);
+        else SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawRect(renderer, &magnet_lock[i]);
         printImageFromTexture(renderer, gameTexture->tick[10+i/3], magnet_lock[i]);
     }
 
