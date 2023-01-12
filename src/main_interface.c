@@ -546,7 +546,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                                     cursorY >= (magnet_lock[i].y - infoDisplay.tuileSize/2) &&
                                     cursorY <= (magnet_lock[i].y + magnet_lock[i].h + infoDisplay.tuileSize/2))
                                 {
-                                    magnet_lock[0].h = -i-1;
+                                    magnet_lock[0].h = i+1;
                                 }
                             }
                             if(SDL_PollEvent(&event)){
@@ -941,8 +941,9 @@ void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], Textu
 
     if(magnet_lock[0].h == 0){
         return;
-    }else if(magnet_lock < 0){
-        rectSelect = -magnet_lock->h-1;
+    }else if(magnet_lock[0].h < 13){
+        rectSelect = magnet_lock[0].h-1;
+        magnet_lock->h = magnet_lock->w;
     }else magnet_lock->h = magnet_lock->w;
 
     SDL_SetRenderDrawColor(renderer,0,0,0, SDL_ALPHA_OPAQUE);
