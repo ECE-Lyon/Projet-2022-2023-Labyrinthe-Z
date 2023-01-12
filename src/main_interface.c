@@ -41,6 +41,10 @@ typedef struct{
     SDL_Texture *button[2], *buttonPressed[2], *mouse;
 }TextureMenu;
 
+typedef struct{
+    SDL_Texture *cadre, *mouse, *tick[10], *playerText[4], *BG[16];
+}TextureSelectionJeu;
+
 int getRandomInt(int min, int max);
 
 void RandomCard(int nbCards);
@@ -63,15 +67,18 @@ void removeTempImages(void);
 void printMagnetLockRect(SDL_Renderer *renderer, SDL_Rect magnet_lock[12], TextureJeu *gameTexture);
 int pushTuile(int emplacement);
 void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_button[2], SDL_Rect rect_TR, SDL_Rect rect_Tick[2], int playerTurn);
-void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture);
+void printBG(SDL_Renderer *renderer, SDL_Texture *textureBG[4], SDL_Rect rect_BG);
 void printImageFromSurface(SDL_Renderer *renderer, SDL_Surface *surface_image,SDL_Rect rect_image);
 void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
 TextureJeu loadGameTexture(SDL_Renderer *renderer);
 TextureMenu loadMenuTexture(SDL_Renderer *renderer);
+TextureSelectionJeu loadTextureSelectionJeu(SDL_Renderer *renderer);
 void delay(time_t pauseTime);
 void rotateTuile(uint8_t* tuileRestante, int direction);
 void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock[13]);
 int checkObjectif(int x, int y, int player);
+void afficherFenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, SDL_Rect rectCadre, SDL_Rect rect_tick[6], SDL_Rect rect_fond, int cursorX, int cursorY);
+void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, int* cursorX_, int* cursorY_);
 
 void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
     if(t)
@@ -102,6 +109,7 @@ PlayerDATA playerData[4] = { 0,0,1,   0,6,1,   6,0,1,   6,6,1 };
 PlayerCARD playerCard[4];
 
 int nbplayer = 3;
+int backgrondTheme = 0;
 
 char nbTuileRestant[4] = {6,6,10,12}; // 6 tuiles T avec trésor // 6 tuiles L avec trésor // 10 tuiles L vides // 12 tuiles I vides
 
@@ -257,14 +265,9 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
             case SDL_MOUSEBUTTONDOWN:
                 if(cursorInButton == 1){
                     Mix_PlayMusic(button, 0);
-                    resetPlateau();                 
-                    RandomPlateau();
-                    RandomCard(nbplayer);
-                    TextureJeu gameTexture = loadGameTexture(renderer);
-                    afficherPlateau(renderer, &gameTexture, &cursorX, &cursorY);
-                      
+                    TextureSelectionJeu textureSelectionJeu = loadTextureSelectionJeu(renderer);
+                    fenetreSelectionJeu(renderer, &textureSelectionJeu, &cursorX, &cursorY);
 
-                    unloadTexturesPlateau(renderer, &gameTexture);
                     ResetRender(renderer, Background);
                     AfficheButton(renderer, rect_button_1, "images/formated/button/button1.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
                     AfficheButton(renderer, rect_button_2, "images/formated/button/button2.bmp", ButtonNotSelected, MENU_BUTTON_BORDER);
@@ -286,6 +289,194 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
     }
 }
 
+TextureSelectionJeu loadTextureSelectionJeu(SDL_Renderer *renderer){
+    TextureSelectionJeu textureSelectionJeu;
+
+    SDL_Surface *cadre_surface = SDL_LoadBMP("images/default/HUD/cadre_selection.bmp");
+    handleSurfaceError(cadre_surface);
+    textureSelectionJeu.cadre = SDL_CreateTextureFromSurface(renderer, cadre_surface);
+    handleTextureError(textureSelectionJeu.cadre);
+    SDL_FreeSurface(cadre_surface);
+
+    // CURSEUR
+
+    SDL_Surface *mouse_surface = SDL_LoadBMP("images/default/HUD/mouse.bmp");
+    handleSurfaceError(mouse_surface);
+    textureSelectionJeu.mouse = SDL_CreateTextureFromSurface(renderer, mouse_surface);
+    handleTextureError(textureSelectionJeu.mouse);
+    SDL_FreeSurface(mouse_surface);
+
+    // TICK
+
+    for(int i = 0; i < 10; i++){
+        char cheminImage[100];
+        int indiceTick = (i<2)? 21: (i<6)? 21: -5; 
+        sprintf(cheminImage, "images/default/HUD/tick%d.bmp", i+indiceTick);
+        SDL_Surface *tick_surface = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(tick_surface);
+        textureSelectionJeu.tick[i] = SDL_CreateTextureFromSurface(renderer, tick_surface);
+        handleTextureError(textureSelectionJeu.tick[i]);
+        SDL_FreeSurface(tick_surface);
+    }
+
+    for(int i = 0; i < 4; i++){
+        char cheminImage[100];
+        sprintf(cheminImage, "images/default/HUD/textP%d.bmp", i+5);
+        SDL_Surface *playerText_surface = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(playerText_surface);
+        textureSelectionJeu.playerText[i] = SDL_CreateTextureFromSurface(renderer, playerText_surface);
+        handleTextureError(textureSelectionJeu.playerText[i]);
+        SDL_FreeSurface(playerText_surface);
+    }
+
+    for(int i = 0; i < 16; i++){
+        char cheminImage[100];
+        sprintf(cheminImage, "images/default/HUD/BG/%d/%d.bmp", i/4+1, (i%4)+1);
+        SDL_Surface *BG_surface = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(BG_surface);
+        textureSelectionJeu.BG[i] = SDL_CreateTextureFromSurface(renderer, BG_surface);
+        handleTextureError(textureSelectionJeu.BG[i]);
+        SDL_FreeSurface(BG_surface);
+    }
+
+    return textureSelectionJeu;
+}
+
+void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, int* cursorX_, int* cursorY_){
+
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
+    SDL_Rect rectCadre = {(Screen.w-106*facteurResize*3)/2, (Screen.h-122*facteurResize*3)/2, 106*facteurResize*3, 122*facteurResize*3};
+    SDL_Rect rect_fond = {rectCadre.x+(rectCadre.w-200*facteurResize)/2, rectCadre.y+150*facteurResize, 200*facteurResize, 100*facteurResize};
+    SDL_Rect rect_tick[6] = {rectCadre.x+50*facteurResize, rectCadre.y+56*facteurResize, 12*facteurResize*3, 12*facteurResize*3,
+                             rectCadre.x+234*facteurResize, rectCadre.y+56*facteurResize, 12*facteurResize*3, 12*facteurResize*3,
+                             rectCadre.x+30*facteurResize, rect_fond.y+(rect_fond.h-24*facteurResize*1.5)/2, 14*facteurResize*1.5, 24*facteurResize*1.5,
+                             rectCadre.x+266*facteurResize, rect_fond.y+(rect_fond.h-24*facteurResize*1.5)/2, 14*facteurResize*1.5, 24*facteurResize*1.5,
+                             rectCadre.x+70*facteurResize, rectCadre.y+275*facteurResize, 20*facteurResize*3, 20*facteurResize*3,
+                             rectCadre.x+185*facteurResize, rectCadre.y+275*facteurResize, 20*facteurResize*3, 20*facteurResize*3};
+
+    SDL_bool windowOpen = SDL_TRUE;
+
+    SDL_ShowCursor(SDL_DISABLE);
+    
+    int cursorX = *cursorX_, cursorY = *cursorY_;
+    
+    while(windowOpen){
+
+        SDL_Event event;
+
+        while( SDL_PollEvent(&event) ){
+
+            switch( event.type ){
+            case SDL_MOUSEMOTION:
+                cursorX = event.motion.x;
+                cursorY = event.motion.y;
+            case SDL_KEYDOWN:
+                switch ( event.key.keysym.sym ){
+                case SDLK_ESCAPE:
+                    *cursorX_ = cursorX;
+                    *cursorY_ = cursorY;
+                    return;
+                    break;
+                }
+            case SDL_MOUSEBUTTONDOWN:
+                if(event.button.button == SDL_BUTTON_LEFT) {
+
+                    cursorX = event.motion.x;
+                    cursorY = event.motion.y;
+
+                    if( cursorX >= rect_tick[0].x &&
+                        cursorX <= rect_tick[0].x + rect_tick[0].w &&
+                        cursorY >= rect_tick[0].y &&
+                        cursorY <= rect_tick[0].y + rect_tick[0].h && nbplayer > 2)
+                    {
+                        nbplayer -= 1;
+                    }
+                    else if( cursorX >= rect_tick[1].x &&
+                        cursorX <= rect_tick[1].x + rect_tick[1].w &&
+                        cursorY >= rect_tick[1].y &&
+                        cursorY <= rect_tick[1].y + rect_tick[1].h && nbplayer < 4)
+                    {
+                        nbplayer += 1;
+                    }
+                    else if( cursorX >= rect_tick[2].x &&
+                        cursorX <= rect_tick[2].x + rect_tick[2].w &&
+                        cursorY >= rect_tick[2].y &&
+                        cursorY <= rect_tick[2].y + rect_tick[2].h && backgrondTheme > 0)
+                    {
+                        backgrondTheme -= 1;
+                    }
+                    else if( cursorX >= rect_tick[3].x &&
+                        cursorX <= rect_tick[3].x + rect_tick[3].w &&
+                        cursorY >= rect_tick[3].y &&
+                        cursorY <= rect_tick[3].y + rect_tick[3].h && backgrondTheme < 3)
+                    {
+                        backgrondTheme += 1;
+                    }
+                    else if( cursorX >= rect_tick[4].x &&
+                        cursorX <= rect_tick[4].x + rect_tick[4].w &&
+                        cursorY >= rect_tick[4].y &&
+                        cursorY <= rect_tick[4].y + rect_tick[4].h)
+                    {
+                        *cursorX_ = cursorX;
+                        *cursorY_ = cursorY;
+                        return;
+                    }
+                    else if( cursorX >= rect_tick[5].x &&
+                        cursorX <= rect_tick[5].x + rect_tick[5].w &&
+                        cursorY >= rect_tick[5].y &&
+                        cursorY <= rect_tick[5].y + rect_tick[5].h)
+                    {
+                        *cursorX_ = cursorX;
+                        *cursorY_ = cursorY;
+                        resetPlateau();                 
+                        RandomPlateau();
+                        RandomCard(nbplayer);
+                        TextureJeu gameTexture = loadGameTexture(renderer);
+                        afficherPlateau(renderer, &gameTexture, cursorX_, cursorY_);
+                        
+                        unloadTexturesPlateau(renderer, &gameTexture);
+                        ResetRender(renderer, Background);
+                        return;
+                    }
+                }
+            }
+        }
+        afficherFenetreSelectionJeu(renderer, textureSelectionJeu, rectCadre, rect_tick, rect_fond, cursorX, cursorY);
+    }
+}
+
+void afficherFenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, SDL_Rect rectCadre, SDL_Rect rect_tick[6], SDL_Rect rect_fond, int cursorX, int cursorY){
+    ResetRender(renderer, Background);
+    printImageFromTexture(renderer, textureSelectionJeu->cadre, rectCadre);
+    printImageFromTexture(renderer, textureSelectionJeu->tick[0], rect_tick[0]);
+    printImageFromTexture(renderer, textureSelectionJeu->tick[1], rect_tick[1]);
+    SDL_Rect rect_textPlayer = {rectCadre.x+(rectCadre.w-44*facteurResize*3)/2, rectCadre.y+60*facteurResize, 44*facteurResize*3, 8*facteurResize*3};
+    printImageFromTexture(renderer, textureSelectionJeu->playerText[nbplayer-1], rect_textPlayer);
+    for(int i = 0; i < 4; i++){
+        printImageFromTexture(renderer, textureSelectionJeu->BG[i+4*backgrondTheme], rect_fond);
+    }
+
+    //Tick Gauche/Droite
+    for(int i = 0; i < 2; i++){
+        if(cursorX >= rect_tick[i+2].x && cursorX <= rect_tick[i+2].x + rect_tick[i+2].w && cursorY >= rect_tick[i+2].y && cursorY <= rect_tick[i+2].y + rect_tick[i+2].h) {
+            printImageFromTexture(renderer, textureSelectionJeu->tick[i*2+3], rect_tick[i+2]);
+        }else printImageFromTexture(renderer, textureSelectionJeu->tick[i*2+2], rect_tick[i+2]);
+    }
+
+    //Tick Yes/No
+    for(int i = 0; i < 2; i++){
+        if(cursorX >= rect_tick[i+4].x && cursorX <= rect_tick[i+4].x + rect_tick[i+4].w && cursorY >= rect_tick[i+4].y && cursorY <= rect_tick[i+4].y + rect_tick[i+4].h) {
+            printImageFromTexture(renderer, textureSelectionJeu->tick[i*2+7], rect_tick[i+4]);
+        }else printImageFromTexture(renderer, textureSelectionJeu->tick[i*2+6], rect_tick[i+4]);
+    }
+
+    //Curseur
+    SDL_Rect rect_mouse = {cursorX, cursorY, 32, 32};
+    printImageFromTexture(renderer, textureSelectionJeu->mouse, rect_mouse);
+    SDL_RenderPresent(renderer);
+}
 
 TextureJeu loadGameTexture(SDL_Renderer *renderer){
     TextureJeu gameTexture;
@@ -294,7 +485,7 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
 
     for(int i = 0; i < 4; i++){
         char cheminImage[100];
-        sprintf(cheminImage, "images/default/HUD/BG/2/%d.bmp", i+1);
+        sprintf(cheminImage, "images/default/HUD/BG/%d/%d.bmp",backgrondTheme+1, i+1);
         SDL_Surface *BG_surface = SDL_LoadBMP(cheminImage);
         handleSurfaceError(BG_surface);
         gameTexture.BG[i] = SDL_CreateTextureFromSurface(renderer, BG_surface);
@@ -736,18 +927,18 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
     }
 }
 
-void printBG(SDL_Renderer *renderer, TextureJeu *gameTexture){
+void printBG(SDL_Renderer *renderer, SDL_Texture **textureBG, SDL_Rect rect_BG){
     SDL_DisplayMode Screen;
     SDL_GetCurrentDisplayMode(0, &Screen);
 
     double vitesseScroll = (double)Screen.w/(double)24000; //pour que la vitesse reste la même peu importe la taille d'écran
 
     for(int i = 0; i < 4; i++){
-        SDL_Rect rect_BG1 = {(int)(-Screen.w+(int)((vitesseScroll*current_frame)*i)%Screen.w), 0, Screen.w, Screen.h};
-        SDL_Rect rect_BG2 = {(int)(0+(vitesseScroll*current_frame)*i)%Screen.w, 0, Screen.w, Screen.h};
+        SDL_Rect rect_BG1 = {(int)(rect_BG.x-rect_BG.w+(int)((vitesseScroll*current_frame)*i)%rect_BG.w), rect_BG.y, rect_BG.w, rect_BG.h};
+        SDL_Rect rect_BG2 = {(int)(rect_BG.x+(int)((vitesseScroll*current_frame)*i)%rect_BG.w), rect_BG.y, rect_BG.w, rect_BG.h};
 
-        printImageFromTexture(renderer, gameTexture->BG[i], rect_BG1);
-        printImageFromTexture(renderer, gameTexture->BG[i], rect_BG2);
+        printImageFromTexture(renderer, textureBG[i], rect_BG1);
+        printImageFromTexture(renderer, textureBG[i], rect_BG2);
     }
 
     current_frame = (current_frame == (int)(Screen.w/vitesseScroll-1))? 0 : ++current_frame;
@@ -899,6 +1090,9 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
 
 void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante, SDL_Rect rect_itemRestant, SDL_Rect magnet_lock[13], TextureJeu *gameTexture, int cursorX, int cursorY, SDL_Rect rect_TR, SDL_Rect rect_button[4], SDL_Rect rect_Tick[2], int playerTurn){
 
+    SDL_DisplayMode Screen;
+    SDL_GetCurrentDisplayMode(0, &Screen);
+
     int total_t;
 
     int microsecFac = 1000000;
@@ -909,8 +1103,10 @@ void AffichePlateauTuileItem(SDL_Renderer *renderer, SDL_Rect rect_tuileRestante
     struct timeval stop, start;
     gettimeofday(&start, NULL);
 
+    SDL_Rect rectBG = {0, 0, Screen.w, Screen.h};
+
     ResetRender(renderer, Background);
-    printBG(renderer, gameTexture);
+    printBG(renderer, gameTexture->BG, rectBG);
     //printDebugGrid(renderer);
     afficherHUD(renderer, gameTexture, cursorX, cursorY, rect_button, rect_TR, rect_Tick, playerTurn);
     printMagnetLockRect(renderer, magnet_lock, gameTexture);
