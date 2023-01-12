@@ -121,6 +121,10 @@ long current_frame = 0;
 
 float facteurResize;
 
+Uint8 volume = 50;
+Mix_Music *button = NULL;
+Mix_Music *exp_sound = NULL;
+
 int main(int argc, char **argv){
 
     SDL_Window *window = NULL;
@@ -476,8 +480,8 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
     uint8_t playerTurn = 0;
     uint8_t gameState = 0;
 
-    Uint8 volume = 50;
-    Mix_Music *button = Mix_LoadMUS("Sound/Button.mp3");
+    exp_sound = Mix_LoadMUS("Sound/Exp.mp3");
+    button = Mix_LoadMUS("Sound/Button.mp3");
     Mix_VolumeMusic(volume);
 
     AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
@@ -873,7 +877,7 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
                 if(playerData[k].posX == i && playerData[k].posY == j){
                     playerHere[nbPlayerHere] = k;
                     nbPlayerHere++;
-                    checkObjectif(i, j, k);
+                    if(checkObjectif(i, j, k) == 1) Mix_PlayMusic(exp_sound,0); 
                 }else playerHere[k] = -1;
             }
             if(nbPlayerHere != 0){
