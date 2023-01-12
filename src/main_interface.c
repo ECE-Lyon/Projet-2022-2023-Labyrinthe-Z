@@ -1,4 +1,4 @@
-// gcc src/main_interface.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer
+// gcc src/main_interface.c -o bin/prog -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_mixer
 
 #include <math.h>
 #include <time.h>
@@ -34,7 +34,7 @@ typedef struct{
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[20], *item32[24], *text_player[4];
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[20], *item32[24], *text_player[4], *text_objectif;
 }TextureJeu;
 
 typedef struct{
@@ -417,6 +417,14 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
         SDL_FreeSurface(textPlayer_surface);
     }
 
+    // TEXTE OBJECTIF
+
+    SDL_Surface *textObjectif_surface = SDL_LoadBMP("images/default/HUD/objectif.bmp");
+    handleSurfaceError(textObjectif_surface);
+    gameTexture.text_objectif = SDL_CreateTextureFromSurface(renderer, textObjectif_surface);
+    handleTextureError(gameTexture.text_objectif);
+    SDL_FreeSurface(textObjectif_surface);
+
     return gameTexture;
 }
 
@@ -673,6 +681,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
     // LES CADRES POUR LES JOUEURS 
 
     for(int i=0 ; i<nbplayer ; i++){
+
         SDL_Rect rect_cadre = {(spaceForHUD-infoDisplay.cadreSizeX)/2-infoDisplay.borderSize, (Screen.h-sizePlateau)/2+(infoDisplay.cadreSizeY+(double)(sizePlateau-nbplayer*infoDisplay.cadreSizeY)/nbplayer-1)*i, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
