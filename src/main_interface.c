@@ -695,11 +695,11 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         printImageFromTexture(renderer, gameTexture->cadre, rect_cadre);
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
-        SDL_Rect rect_item32 = {rect_cadre.x+140*2.25, rect_cadre.y+25*2.25, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
+        SDL_Rect rect_item32 = {rect_cadre.x+140*1.5*facteurResize, rect_cadre.y+25*1.5*facteurResize, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
         printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
         SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
         printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
-        SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*2.25, rect_textPLayer.y, 5, 18};
+        SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*1.5*facteurResize, rect_textPLayer.y, 5, 18};
         
         for(int j=0 ; j<playerData[i].itemFound ; j++ ){
             printImageFromTexture(renderer, gameTexture->tick[19],rect_TickProgression);
