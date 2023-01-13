@@ -47,6 +47,7 @@ typedef struct{
 
 int getRandomInt(int min, int max);
 
+const char* RandomGrassSound();
 void RandomCard(int nbCards);
 void ResetRender(SDL_Renderer *renderer, Color color);
 void AfficheButton(SDL_Renderer *renderer,SDL_Rect rect_button, const char* file, Color color, int px);
@@ -132,6 +133,7 @@ float facteurResize;
 Uint8 volume = 50;
 Mix_Music *button = NULL;
 Mix_Music *exp_sound = NULL;
+Mix_Music *grass_step = NULL;
 
 int main(int argc, char **argv){
 
@@ -217,7 +219,7 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
     uint8_t cursorInButton = 0;
 
     Uint8 volume = 50;
-    Mix_Music *button = Mix_LoadMUS("Sound/Button.mp3");
+    button = Mix_LoadMUS("Sound/Button.mp3");
     Mix_VolumeMusic(volume);
 
     SDL_ShowCursor(SDL_DISABLE);
@@ -361,6 +363,10 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
     SDL_ShowCursor(SDL_DISABLE);
     
     int cursorX = *cursorX_, cursorY = *cursorY_;
+
+    Uint8 volume = 50;
+    button = Mix_LoadMUS("Sound/Button.mp3");
+    Mix_VolumeMusic(volume);
     
     while(windowOpen){
 
@@ -391,6 +397,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                         cursorY >= rect_tick[0].y &&
                         cursorY <= rect_tick[0].y + rect_tick[0].h && nbplayer > 2)
                     {
+                        Mix_PlayMusic(button,0);
                         nbplayer -= 1;
                     }
                     else if( cursorX >= rect_tick[1].x &&
@@ -398,6 +405,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                         cursorY >= rect_tick[1].y &&
                         cursorY <= rect_tick[1].y + rect_tick[1].h && nbplayer < 4)
                     {
+                        Mix_PlayMusic(button,0);
                         nbplayer += 1;
                     }
                     else if( cursorX >= rect_tick[2].x &&
@@ -405,6 +413,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                         cursorY >= rect_tick[2].y &&
                         cursorY <= rect_tick[2].y + rect_tick[2].h && backgrondTheme > 0)
                     {
+                        Mix_PlayMusic(button,0);
                         backgrondTheme -= 1;
                     }
                     else if( cursorX >= rect_tick[3].x &&
@@ -412,6 +421,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                         cursorY >= rect_tick[3].y &&
                         cursorY <= rect_tick[3].y + rect_tick[3].h && backgrondTheme < 3)
                     {
+                        Mix_PlayMusic(button,0);
                         backgrondTheme += 1;
                     }
                     else if( cursorX >= rect_tick[4].x &&
@@ -421,6 +431,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                     {
                         *cursorX_ = cursorX;
                         *cursorY_ = cursorY;
+                        Mix_PlayMusic(button,0);
                         return;
                     }
                     else if( cursorX >= rect_tick[5].x &&
@@ -428,6 +439,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
                         cursorY >= rect_tick[5].y &&
                         cursorY <= rect_tick[5].y + rect_tick[5].h)
                     {
+                        Mix_PlayMusic(button,0);
                         *cursorX_ = cursorX;
                         *cursorY_ = cursorY;
                         resetPlateau();                 
@@ -688,7 +700,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                 cursorX = event.motion.x;
                 cursorY = event.motion.y;
             case SDL_KEYDOWN:
-                switch ( event.key.keysym.sym ){
+                switch ( event.key.keysym.sym ){  
                 case SDLK_ESCAPE:
                     *cursorX_ = cursorX;
                     *cursorY_ = cursorY;
@@ -1239,10 +1251,31 @@ int checkDeplacement(int player, int direction){
 int movePlayer(int player, int direction){
   if(checkDeplacement(player, direction) == 1){
     switch (direction) {
-      case 0: playerData[player].posX -= 1; break;
-      case 1: playerData[player].posY += 1; break;
-      case 2: playerData[player].posX += 1; break;
-      case 3: playerData[player].posY -= 1; break;
+      char grass_path[100];  
+      case 0: 
+        playerData[player].posX -= 1;
+        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
+        grass_step = Mix_LoadMUS(grass_path);
+        Mix_PlayMusic(grass_step, 0);
+        break;
+      case 1: 
+        playerData[player].posY += 1;
+        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
+        grass_step = Mix_LoadMUS(grass_path);
+        Mix_PlayMusic(grass_step, 0);         
+        break;
+      case 2: 
+        playerData[player].posX += 1;
+        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
+        grass_step = Mix_LoadMUS(grass_path);
+        Mix_PlayMusic(grass_step, 0);        
+        break;
+      case 3: 
+        playerData[player].posY -= 1;
+        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
+        grass_step = Mix_LoadMUS(grass_path);
+        Mix_PlayMusic(grass_step, 0); 
+        break;
       case 4: break;
     }
     return 0;
