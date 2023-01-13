@@ -1250,31 +1250,22 @@ int checkDeplacement(int player, int direction){
 
 int movePlayer(int player, int direction){
   if(checkDeplacement(player, direction) == 1){
-    switch (direction) {
-      char grass_path[100];  
+    char grass_path[100];
+    sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
+    grass_step = Mix_LoadMUS(grass_path);
+    Mix_PlayMusic(grass_step, 0);
+    switch (direction) { 
       case 0: 
         playerData[player].posX -= 1;
-        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
-        grass_step = Mix_LoadMUS(grass_path);
-        Mix_PlayMusic(grass_step, 0);
         break;
       case 1: 
-        playerData[player].posY += 1;
-        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
-        grass_step = Mix_LoadMUS(grass_path);
-        Mix_PlayMusic(grass_step, 0);         
+        playerData[player].posY += 1;       
         break;
       case 2: 
-        playerData[player].posX += 1;
-        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
-        grass_step = Mix_LoadMUS(grass_path);
-        Mix_PlayMusic(grass_step, 0);        
+        playerData[player].posX += 1;        
         break;
       case 3: 
-        playerData[player].posY -= 1;
-        sprintf(grass_path,"Sound/grass%d.mp3",getRandomInt(1,6));
-        grass_step = Mix_LoadMUS(grass_path);
-        Mix_PlayMusic(grass_step, 0); 
+        playerData[player].posY -= 1; 
         break;
       case 4: break;
     }
