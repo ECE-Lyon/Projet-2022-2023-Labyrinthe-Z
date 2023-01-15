@@ -108,6 +108,8 @@ long current_frame = 0;
 
 float facteurResize;
 
+int gameWin = -1;
+
 Uint8 volume = 50;
 Mix_Music *button = NULL;
 Mix_Music *exp_sound = NULL;
@@ -446,7 +448,7 @@ void afficherFinJeu(SDL_Renderer *renderer, TextureFinJeu *textureFinJeu, Textur
         SDL_Rect rect_player = {rect_cadrePlayer.x+infoDisplay.cadreSizeY/4, rect_cadrePlayer.y+infoDisplay.cadreSizeY/4, infoDisplay.skinSizeX*0.75, infoDisplay.skinSizeY*0.75};       
         
         for(int i = 0; i < nbplayer; i++){
-            printImageFromTexture(renderer, textureFinJeu->cadrePlayer[(playerData[i].itemFound >= 24/nbplayer)? 0 : 1], rect_cadrePlayer);
+            printImageFromTexture(renderer, textureFinJeu->cadrePlayer[(i == gameWin)? 0 : 1], rect_cadrePlayer);
             printImageFromTexture(renderer, textureJeu->skin[i], rect_player);
 
             SDL_Rect rect_textPLayer = {rect_cadrePlayer.x+96*facteurResize, rect_cadrePlayer.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
@@ -710,7 +712,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
         
         int a = 0;
         for(int i = 0; i < 4; i++){
-            if(playerData[i].itemFound >= 24/nbplayer){
+            if(gameWin >= 0){
                 TextureFinJeu textureFinJeu = loadTextureFinJeu(renderer);
                 *cursorX_ = cursorX;
                 *cursorY_ = cursorY;
@@ -754,7 +756,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         SDL_Rect rect_player = {rect_cadre.x+infoDisplay.cadreSizeY/4, rect_cadre.y+infoDisplay.cadreSizeY/4, infoDisplay.cadreSizeY/2, infoDisplay.cadreSizeY/2};
         printImageFromTexture(renderer, gameTexture->skin[i] ,rect_player);
         SDL_Rect rect_item32 = {rect_cadre.x+140*1.5*facteurResize, rect_cadre.y+25*1.5*facteurResize, infoDisplay.itemSize*2, infoDisplay.itemSize*2};
-        printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
+        if(playerData[i].itemFound < 24/nbplayer) printImageFromTexture(renderer, gameTexture->item32[playerCard[i].tab[playerData[i].itemFound]], rect_item32);
         SDL_Rect rect_textPLayer = {rect_cadre.x+96*facteurResize, rect_cadre.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
         printImageFromTexture(renderer, gameTexture->text_player[i], rect_textPLayer);
         SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*1.5*facteurResize, rect_textPLayer.y, (double)5/(double)1.5*facteurResize, 12*facteurResize};
@@ -926,6 +928,8 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
     int playerHere[4] = {-1,-1,-1,-1};
     int nbPlayerHere = 0;
 
+    int basicPos[8] = {0,0,   0,6,   6,0,   6,6};
+
     for( int i=0 ; i<7 ; i++ ){
         rect_tuile.x = (Screen.w-sizePlateau)/2+infoDisplay.borderSize;
         rect_item.x = (Screen.w-sizePlateau)/2+infoDisplay.borderSize+posItem;
@@ -935,9 +939,14 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
                 if(playerData[k].posX == i && playerData[k].posY == j){
                     playerHere[nbPlayerHere] = k;
                     nbPlayerHere++;
-                    if(checkObjectif(i, j, k) == 1 && playerData[k].itemFound < 24/nbplayer) Mix_PlayMusic(exp_sound,0);
-                    else if(playerData[k].itemFound >= 24/nbplayer) Mix_PlayMusic(end_sound,0);
+                    if(playerData[k].itemFound < 24/nbplayer){
+                        if(checkObjectif(i, j, k) == 1) Mix_PlayMusic(exp_sound,0);
+                    }
                 }else playerHere[k] = -1;
+                if(playerData[k].posX == basicPos[k*2] && playerData[k].posY == basicPos[k*2+1] && playerData[k].itemFound >= 24/nbplayer) {
+                    gameWin = k;
+                    Mix_PlayMusic(end_sound,0);
+                }
             }
             if(nbPlayerHere != 0){
                 printImageFromTexture(renderer, gameTexture->tuile[SDLplateau[i][j].tuile-1],rect_tuile);
