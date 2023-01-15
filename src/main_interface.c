@@ -110,7 +110,7 @@ float facteurResize;
 
 int gameWin = -1;
 
-Uint8 volume = 50;
+Uint8 volume = 30;
 Mix_Music *button = NULL;
 Mix_Music *exp_sound = NULL;
 Mix_Music *grass_step = NULL;
@@ -187,7 +187,7 @@ void fenetreMenu(SDL_Renderer *renderer, TextureMenu *menuTexture){
 
     uint8_t cursorInButton = 0;
 
-    Uint8 volume = 50;
+    Uint8 volume = 30;
     button = Mix_LoadMUS("Sound/Button.mp3");
     Mix_VolumeMusic(volume);
 
@@ -280,7 +280,7 @@ void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSel
     
     int cursorX = *cursorX_, cursorY = *cursorY_;
 
-    Uint8 volume = 50;
+    Uint8 volume = 30;
     button = Mix_LoadMUS("Sound/Button.mp3");
     Mix_VolumeMusic(volume);
     
