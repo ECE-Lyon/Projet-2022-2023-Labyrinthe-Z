@@ -34,7 +34,7 @@ typedef struct{
 }InfoDisplay;
 
 typedef struct{
-    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[20], *item32[24], *text_player[4], *text_objectif;
+    SDL_Texture *BG[4], *cadre, *skin[4], *tuile[12], *item[24], *player[4], *mouse, *cadreTuileRestante, *tick[20], *item32[24], *text_player[4];
 }TextureJeu;
 
 typedef struct{
@@ -44,6 +44,10 @@ typedef struct{
 typedef struct{
     SDL_Texture *cadre, *mouse, *tick[10], *playerText[4], *BG[16];
 }TextureSelectionJeu;
+
+typedef struct{
+    SDL_Texture *cadre[3], *cadrePlayer[2];
+}TextureFinJeu;
 
 int getRandomInt(int min, int max);
 
@@ -74,14 +78,16 @@ void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture);
 TextureJeu loadGameTexture(SDL_Renderer *renderer);
 TextureMenu loadMenuTexture(SDL_Renderer *renderer);
 TextureSelectionJeu loadTextureSelectionJeu(SDL_Renderer *renderer);
+TextureFinJeu loadTextureFinJeu(SDL_Renderer *renderer);
 void delay(time_t pauseTime);
 void rotateTuile(uint8_t* tuileRestante, int direction);
 void createRectTick(SDL_Rect rect_Tick[2], int emplacement, SDL_Rect magnet_lock[13]);
 int checkObjectif(int x, int y, int player);
 void afficherFenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, SDL_Rect rectCadre, SDL_Rect rect_tick[6], SDL_Rect rect_fond, int cursorX, int cursorY);
 void fenetreSelectionJeu(SDL_Renderer *renderer, TextureSelectionJeu *textureSelectionJeu, int* cursorX_, int* cursorY_);
+void afficherFinJeu(SDL_Renderer *renderer, TextureFinJeu *textureFinJeu, TextureJeu *textureJeu, int* cursorX_, int* cursorY_);
 
-void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){   
+void clean(SDL_Window *w, SDL_Renderer *r, SDL_Texture *t){
     if(t)
         SDL_DestroyTexture(t);
     if(r)
@@ -134,6 +140,7 @@ Uint8 volume = 50;
 Mix_Music *button = NULL;
 Mix_Music *exp_sound = NULL;
 Mix_Music *grass_step = NULL;
+Mix_Music *end_sound = NULL;
 
 int main(int argc, char **argv){
 
@@ -176,7 +183,7 @@ int main(int argc, char **argv){
     }
 
     if (Mix_OpenAudio(96000, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) < 0){
-        SDL_Log("Erreur initialisation SDL_mixer : %s", Mix_GetError());
+        SDL_Log("Erreur initialisation er : %s", Mix_GetError());
         SDL_Quit();
         return -1;
     }
@@ -613,14 +620,6 @@ TextureJeu loadGameTexture(SDL_Renderer *renderer){
         SDL_FreeSurface(textPlayer_surface);
     }
 
-    // TEXTE OBJECTIF
-
-    SDL_Surface *textObjectif_surface = SDL_LoadBMP("images/default/HUD/objectif.bmp");
-    handleSurfaceError(textObjectif_surface);
-    gameTexture.text_objectif = SDL_CreateTextureFromSurface(renderer, textObjectif_surface);
-    handleTextureError(gameTexture.text_objectif);
-    SDL_FreeSurface(textObjectif_surface);
-
     return gameTexture;
 }
 
@@ -630,6 +629,110 @@ void unloadTexturesPlateau(SDL_Renderer *renderer ,TextureJeu *gameTexture){
 
         SDL_Texture* pSurTexture = (SDL_Texture *) ((int)gameTexture + i); // calcule la valeur du pointeur de la texture actuelle
         SDL_DestroyTexture(pSurTexture);
+
+    }
+}
+
+TextureFinJeu loadTextureFinJeu(SDL_Renderer *renderer){
+
+    TextureFinJeu textureFinJeu;
+
+    // Cadre principal
+    for(int i = 0; i < 3; i++){
+        char cheminImage[100];
+        sprintf(cheminImage, "images/default/HUD/cadreFin%d.bmp", i+1);
+        SDL_Surface *cadre_surface = SDL_LoadBMP(cheminImage);
+        handleSurfaceError(cadre_surface);
+        textureFinJeu.cadre[i] = SDL_CreateTextureFromSurface(renderer, cadre_surface);
+        handleTextureError(textureFinJeu.cadre[i]);
+        SDL_FreeSurface(cadre_surface);
+    }
+
+    //  Cadre Player
+
+    SDL_Surface *cadrePlayer_surface1 = SDL_LoadBMP("images/default/HUD/cadre3.bmp");
+    handleSurfaceError(cadrePlayer_surface1);
+    textureFinJeu.cadrePlayer[0] = SDL_CreateTextureFromSurface(renderer, cadrePlayer_surface1);
+    handleTextureError(textureFinJeu.cadrePlayer[0]);
+    SDL_FreeSurface(cadrePlayer_surface1);
+
+    SDL_Surface *cadrePlayer_surface2 = SDL_LoadBMP("images/default/HUD/cadre4.bmp");
+    handleSurfaceError(cadrePlayer_surface2);
+    textureFinJeu.cadrePlayer[1] = SDL_CreateTextureFromSurface(renderer, cadrePlayer_surface2);
+    handleTextureError(textureFinJeu.cadrePlayer[1]);
+    SDL_FreeSurface(cadrePlayer_surface2);
+
+
+    return textureFinJeu;
+}
+
+void afficherFinJeu(SDL_Renderer *renderer, TextureFinJeu *textureFinJeu, TextureJeu *textureJeu, int* cursorX_, int* cursorY_){
+
+    SDL_bool windowOpen = SDL_TRUE;
+
+    while(windowOpen == SDL_TRUE){
+
+        SDL_Event event;
+
+        while( SDL_PollEvent(&event) ){
+
+            switch( event.type ){
+                case SDL_MOUSEMOTION:
+                    *cursorX_ = event.motion.x;
+                    *cursorY_ = event.motion.y;
+                    break;
+                case SDL_KEYDOWN:
+                    windowOpen = SDL_FALSE;
+                    break;
+                case SDL_QUIT:
+                    windowOpen = SDL_FALSE;
+                    break;
+                default:
+                    continue;
+            }
+        }
+
+        ResetRender(renderer, Background);
+
+        SDL_DisplayMode Screen;
+        SDL_GetCurrentDisplayMode(0, &Screen);
+
+        SDL_Rect rect_cadre[3] = {(Screen.w-106*facteurResize*3)/2, (Screen.h-(5*2+36*nbplayer)*facteurResize*3)/2, 106*facteurResize*3, 5*facteurResize*3,
+                                  (Screen.w-106*facteurResize*3)/2, (Screen.h-(5*2+36*nbplayer)*facteurResize*3)/2+5*facteurResize*3-1, 106*facteurResize*3, 36*nbplayer*facteurResize*3,
+                                  (Screen.w-106*facteurResize*3)/2, (Screen.h-(5*2+36*nbplayer)*facteurResize*3)/2+(5+36*nbplayer)*facteurResize*3-1, 106*facteurResize*3, 5*facteurResize*3};
+        for(int i = 0; i < 3; i++){
+            printImageFromTexture(renderer, textureFinJeu->cadre[i], rect_cadre[i]);
+        }   
+
+        SDL_Rect rect_cadrePlayer = {rect_cadre[0].x+25*facteurResize, rect_cadre[0].y+25*facteurResize, infoDisplay.cadreSizeX, infoDisplay.cadreSizeY};
+        SDL_Rect rect_player = {rect_cadrePlayer.x+infoDisplay.cadreSizeY/4, rect_cadrePlayer.y+infoDisplay.cadreSizeY/4, infoDisplay.skinSizeX*0.75, infoDisplay.skinSizeY*0.75};       
+        
+        for(int i = 0; i < nbplayer; i++){
+            printImageFromTexture(renderer, textureFinJeu->cadrePlayer[(playerData[i].itemFound >= 24/nbplayer)? 0 : 1], rect_cadrePlayer);
+            printImageFromTexture(renderer, textureJeu->skin[i], rect_player);
+
+            SDL_Rect rect_textPLayer = {rect_cadrePlayer.x+96*facteurResize, rect_cadrePlayer.y+12*facteurResize, infoDisplay.text_playerX, infoDisplay.text_playerY};
+            printImageFromTexture(renderer, textureJeu->text_player[i], rect_textPLayer);
+            SDL_Rect rect_TickProgression = {rect_textPLayer.x+44*1.5*facteurResize, rect_textPLayer.y, (double)5/(double)1.5*facteurResize, 12*facteurResize};
+            
+            for(int j=0 ; j<playerData[i].itemFound ; j++ ){
+                printImageFromTexture(renderer, textureJeu->tick[19],rect_TickProgression);
+                rect_TickProgression.x += 6*facteurResize;
+            }
+
+            for(int j=0 ; j<24/nbplayer - playerData[i].itemFound ; j++){
+                printImageFromTexture(renderer, textureJeu->tick[18],rect_TickProgression);
+                rect_TickProgression.x += 6*facteurResize;
+            }
+
+            rect_cadrePlayer.y += infoDisplay.cadreSizeY+infoDisplay.borderSize*4;
+            rect_player.y += infoDisplay.cadreSizeY+infoDisplay.borderSize*4;
+        }
+        
+
+        SDL_Rect rect_mouse = {*cursorX_, *cursorY_, 32, 32};
+        printImageFromTexture(renderer, textureJeu->mouse, rect_mouse);
+        SDL_RenderPresent(renderer);
 
     }
 }
@@ -685,6 +788,7 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
 
     exp_sound = Mix_LoadMUS("Sound/Exp.mp3");
     button = Mix_LoadMUS("Sound/Button.mp3");
+    end_sound = Mix_LoadMUS("Sound/End.mp3");
     Mix_VolumeMusic(volume);
 
     AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
@@ -865,7 +969,20 @@ void afficherPlateau(SDL_Renderer *renderer, TextureJeu *gameTexture, int* curso
                 continue;
             }
         }
-        AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
+        
+        int a = 0;
+        for(int i = 0; i < 4; i++){
+            if(playerData[i].itemFound >= 24/nbplayer){
+                TextureFinJeu textureFinJeu = loadTextureFinJeu(renderer);
+                *cursorX_ = cursorX;
+                *cursorY_ = cursorY;
+                afficherFinJeu(renderer, &textureFinJeu, gameTexture, cursorX_, cursorY_);
+                windowOpen = SDL_FALSE;
+                a ++;
+                break;
+            } 
+        }
+        if(a == 0) AffichePlateauTuileItem(renderer, rect_tuileRestante, rect_itemRestant, magnet_lock, gameTexture, cursorX, cursorY, rect_TR, rect_button, rect_Tick, playerTurn);
     }
 }
 
@@ -906,7 +1023,7 @@ void afficherHUD(SDL_Renderer *renderer, TextureJeu *gameTexture, int cursorX, i
         
         for(int j=0 ; j<playerData[i].itemFound ; j++ ){
             printImageFromTexture(renderer, gameTexture->tick[19],rect_TickProgression);
-            rect_TickProgression.x += 7*facteurResize;
+            rect_TickProgression.x += 6*facteurResize;
         }
 
         for(int j=0 ; j<24/nbplayer - playerData[i].itemFound ; j++){
@@ -1080,7 +1197,8 @@ void AfficheTuileItem(SDL_Renderer *renderer, TextureJeu *gameTexture, struct ti
                 if(playerData[k].posX == i && playerData[k].posY == j){
                     playerHere[nbPlayerHere] = k;
                     nbPlayerHere++;
-                    if(checkObjectif(i, j, k) == 1) Mix_PlayMusic(exp_sound,0); 
+                    if(checkObjectif(i, j, k) == 1 && playerData[k].itemFound < 24/nbplayer) Mix_PlayMusic(exp_sound,0);
+                    else if(playerData[k].itemFound >= 24/nbplayer) Mix_PlayMusic(end_sound,0);
                 }else playerHere[k] = -1;
             }
             if(nbPlayerHere != 0){
