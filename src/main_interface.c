@@ -1149,6 +1149,7 @@ void resetPlateau(){
 
     char tempArray[24] = {0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1};
     char tempArray2[4] = {6,6,10,12};
+    char tempArray3[24] = {0};
 
     for(int i = 1; i<6; i+=2){
         for(int j = 1; j<6; j+=2){
@@ -1163,6 +1164,8 @@ void resetPlateau(){
     SDL_memcpy(&playerData, &tempPlayerData, sizeof(PlayerDATA)*4);
     SDL_memcpy(&nbItemRestant, &tempArray, sizeof(char)*24);
     SDL_memcpy(&nbTuileRestant, &tempArray2, sizeof(char)*4);
+    SDL_memcpy(&itemTrouves, &tempArray3, sizeof(int)*24);
+    gameWin = -1;
 }
 
 void melangerTab(int* tab, size_t tailleTab){
